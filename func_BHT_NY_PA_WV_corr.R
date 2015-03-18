@@ -11,7 +11,8 @@
 #     reg           [region coded by 
 #                       1 = Allegheny Plateau 
 #                       0 = Rome Trough and PA points south east
-#                       2 = West Virginia]
+#                       2 = West Virginia
+#                       3 = Modified Harrison]
 # variable names are designed to match NGDS standard names when possible
 
 # output matrix add columns for 
@@ -92,8 +93,31 @@ NY_PA_BHT2 <- function(X){
         BHT_corrected$corr_bht_c[i] <- X$bht_c[i]  # no temperature correction
       }
       
+      
     # West Virginia correction  
     else if(X$reg[i] == 2){
+        
+      # checking for given depth
+      if(is.na(X$calc_depth_m[i])){ 
+        BHT_corrected$corr_bht_c[i] <- X$bht_c[i] # providing no adjustment
+        BHT_corrected$corr_error[i] <- 22 # error for missing depth
+      }
+        
+      # correction uses maximum value within data
+      else if(X$calc_depth_m[i] >= 6500){
+        BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + 15
+        BHT_corrected$corr_error[i] <- 20 # depth likely too deep
+      }
+        
+      # correction for portion of data within bounds, becomes positive at 467 m which is shallower than minimum depth used
+      else{
+        BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + max(15, -3.562 + 0.00763*X$calc_depth_m[i])
+      }
+        
+    }  
+      
+    # Modifed Harrison Correction  
+    else if(X$reg[i] == 3){
       
       # checking for given depth
       if(is.na(X$calc_depth_m[i])){ 

@@ -32,7 +32,7 @@ These scripts, codes, and documents pertain to the bottom-hole temperature corre
 \textsf{X} 			 & R data frame with variables named\\
  & \textsf{bht\_c}: Recorded bottom-hole temperature in Celsius\\
  & \textsf{calc\_depth\_m}: Calculated depth of well in meters\\
- & \textsf{reg}:  Region for that point, 0=Rome Trough and areas south east in PA, 1=Allegheny Plateau (NY and north east PA), and 2=West VA\\
+ & \textsf{reg}:  Region for that point, 0=Rome Trough and areas south east in PA, 1=Allegheny Plateau (NY and north east PA), 2=West VA, and 3=modifed Harrison Correction (used in previous studies of the area)\\
 \hline
 \end{tabular} 
 \end{table}
@@ -50,14 +50,14 @@ The output is a data frame with the following columns added.
   & 20: depth outside of normal range\\
   & 21: depth is negative\\
   & 22: depth is missing for Allegheny Plateau or West Virginia data\\
-  & 30: categorical variable not 0,1, or 2\\
+  & 30: categorical variable not 0,1, 2, or 3\\
   & 32: categorical variable missing\\
   & 42: bottom-hole missing\\
 \hline
 \end{tabular} 
 \end{table}
 
-\textbf{Equations}: The equations used to calculate the temperature correction $\Delta T$ are given below. Depth ($z_0$) is in meters and temperature correction ($\Delta T$) is in Celsius. See Frone and Blackwell (2010) for details of the West Virginia correction.
+\textbf{Equations}: The equations used to calculate the temperature correction $\Delta T$ are given below. Depth ($z_0$) is in meters and temperature correction ($\Delta T$) is in Celsius. See Frone and Blackwell (2010) for details on the modified Harrison correction. If no region is specified no temperature correction is computed and an error is printed in the output.
 
 \begin{equation} \label{DT_ap}
 {\Delta T}_{Alle. Plat.} =  \left\{
@@ -71,14 +71,19 @@ The output is a data frame with the following columns added.
 {\Delta T}_{Rome Tr.} = 0
 \end{equation}
 
-\begin{equation} \label{DT_wva}
-{\Delta T}_{WV} =  \left\{
+\begin{equation} \label{DT_wv}
+{\Delta T}_{W Va.} = \max\{15, -3.562+0.00763z_0 \}
+\end{equation}
+
+\begin{equation} \label{DT_modhar}
+{\Delta T}_{Mod. Harr.} =  \left\{
 \begin{array}{ll}
 0,	& (z_0 < 1000 \mathrm{m})\\
 -16.51 + (1.83\times 10^{-2})z_0 +(2.34\times 10^{-6})z_0^2 ,  & (1000 \mathrm{m} < z_0 < 3860 m)\\
 19.07, & (z_0 > 3860 m)\\
 \end{array} \right .
 \end{equation}
+
 
 \subsection*{\textsf{example\_bht\_corr.R}}
 
