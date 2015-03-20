@@ -22,7 +22,7 @@ These scripts, codes, and documents pertain to the bottom-hole temperature corre
 
 \subsection*{\textsf{func\_BHT\_NY\_PA\_WV\_corr.R}}
 
-\textbf{Description}: Script with a function to compute bottom-hole temperature corrections for NY, PA, and WV based on the region. Function accepts a R data frame and returns the data frame with two additional columns for the corrected bottom-hole temperature and the error.
+\textbf{Description}: Script with a function to compute bottom-hole temperature corrections for NY, PA, and WV based on the region. Function accepts an R data frame and returns the data frame with two additional columns for the corrected bottom-hole temperature and the error.
 
 \begin{table}[H]
 \begin{tabular} {p{2cm} p{11cm}}
@@ -96,9 +96,9 @@ The output is a data frame with the following columns added.
 \section*{Outliers}
 These codes, scripts, and files pertain to the outlier identification procedures.
 
-\subsection*{\textsf{outlier_identification.R}}
+\subsection*{\textsf{outlier\_identification.R}}
 
-\textbf{Description}: Script with several functions to compute outliers based using one of the specified algorithms with the specified inputs. Most algorithms have separate functions described below.
+\textbf{Description}: Script with several functions to compute outliers using one of the specified algorithms with the specified inputs. Most algorithms have separate functions described below.
 
 \begin{table}[H]
 \begin{tabular} {p{2.5cm} p{10cm}}
@@ -137,7 +137,7 @@ These codes, scripts, and files pertain to the outlier identification procedures
 \textsf{pt\_min} & Minimum number of points required to perform local test for \textsf{algo}=2 or 3 (default = 25)\\
 \textsf{rad\_max} & Maximum radius (in km) at which to take points when \textsf{algo}=1 (default = 16)\\
 \textsf{k\_glob} & Constant multiplied by the upper- and lower-half quartile ranges in global analysis (default = 3)\\
-\textsf{k\_log} & Constant multiplied by the upper- and lower-half quartile ranges in local analysis (default = 3)\\
+\textsf{k\_loc} & Constant multiplied by the upper- and lower-half quartile ranges in local analysis (default = 3)\\
 \textsf{type}	 & Type of quantile estimation (default = 7, see R documentation)\\
 \hline
 \end{tabular} 
