@@ -111,7 +111,7 @@ NY_PA_BHT2 <- function(X){
         
       # correction for portion of data within bounds, becomes positive at 467 m which is shallower than minimum depth used
       else{
-        BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + max(15, -3.562 + 0.00763*X$calc_depth_m[i])
+        BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + min(15, -3.562 + 0.00763*X$calc_depth_m[i])
       }
         
     }  
