@@ -9,18 +9,18 @@
 \usepackage[labelformat=empty]{caption}
 \usepackage{outlines}
 \author{Calvin A. Whealton (caw324@cornell.edu)}
-\title{Geothermal Play Fairway Analysis Codes Documentation}
+\title{Geothermal Play Fairway Analysis Code Documentation}
 
 \begin{document}
 
 \maketitle
-The following document provides supporting information for codes written by Calvin Whealton for the Geothermal Play Fairway Analysis grant. This is not a comprehensive list of all codes written for the project.
+The following document provides supporting information for codes written by Calvin Whealton for the Geothermal Play Fairway Analysis grant. This is not a comprehensive list of all code written for the project. Section 1 is for bottom-hole temperature corrections, section 2 is for outlier identification, and section 3 is for reservoir ideality. 
 
 \section*{Bottom-hole Temperature Corrections}
 
 These scripts, codes, and documents pertain to the bottom-hole temperature correction calculations.
 
-\subsection*{\textsf{func\_BHT\_NY\_PA\_WV\_corr.R}}
+\section*{\textsf{func\_BHT\_NY\_PA\_WV\_corr.R}}
 
 \textbf{Description}: Script with a function to compute bottom-hole temperature corrections for NY, PA, and WV based on the region. Function accepts an R data frame and returns the data frame with two additional columns for the corrected bottom-hole temperature and the error.
 
@@ -79,7 +79,7 @@ The output is a data frame with the following columns added.
 {\Delta T}_{Mod. Harr.} =  \left\{
 \begin{array}{ll}
 0,	& (z_0 < 1000 \mathrm{m})\\
--16.51 + (1.83\times 10^{-2})z_0 +(2.34\times 10^{-6})z_0^2 ,  & (1000 \mathrm{m} < z_0 < 3860 m)\\
+-16.51 + (1.83\times 10^{-2})z_0 -(2.34\times 10^{-6})z_0^2 ,  & (1000 \mathrm{m} < z_0 < 3860 m)\\
 19.07, & (z_0 > 3860 m)\\
 \end{array} \right .
 \end{equation}
@@ -201,6 +201,70 @@ B_{upper} = q_{0.75} + k(q_{0.75} - q_{0.5})
 \subsection*{\textsf{cornell\_data.csv}}
 
 \textbf{Description}: Cornell heat flow database with 8,919 points used to test sensitivity of the outlier identification algorithm. See Cornell University (2014).
+
+\section*{Reservoir Ideality}
+
+\subsection*{\textsf{MainIdeality.m}}
+
+\textbf{Description}: Script that runs the reservoir ideality uncertainty analysis. Subsidiary functions are called from this script. This script also imports an example dataset and uncertainty mapping from \textsf{TestFormationData.csv} and \textsf{TestUncertaintyLevels.csv}, respectively. This script can be modified to include more graphs and statistical analysis.
+
+\subsection*{\textsf{GenRandNums.m}}
+
+\textbf{Description}: Function to generate random numbers from uniform, triangular, normal, or lognormal distributions.
+
+\begin{table}[H]
+\begin{tabular} {p{2cm} p{11cm}}
+\hline
+\textbf{Variable} & \textbf{Description}\\
+\hline
+\textsf{mean} 			 & Mean value of the distribution (real-space)\\
+\textsf{unc} & uncertainty (spread) of the distribution as a percentage of the mean\\
+ & uniform: bounds are defined from uncertainty\\
+ & triangular: bounds are defined from uncertainty\\
+ & normal: 95\% central region of distribution defined by uncertainty\\
+ & lognormal: real-space coefficient of variation  defined by uncertainty\\
+\textsf{dist} & Distribution selected\\
+ & 1: Non-standard uniform distribution\\
+ & 2: Triangular distribution, symmetric\\
+ & 3: Normal distribution\\
+ & 4: Lognormal distribution\\
+\textsf{reps} & Number of replicates to generate\\
+\hline
+\end{tabular} 
+\end{table}
+
+The output is a column vector with of numbers for the specified distribution.
+
+\subsection{\textsf{MonteCarloApprox.m}}
+
+\textbf{Description}: Function to calculate Monte Carlo Approximation of the distribution of reservoir ideality.
+
+\begin{table}[H]
+\begin{tabular} {p{2cm} p{11cm}}
+\hline
+\textbf{Variable} & \textbf{Description}\\
+\hline
+\textsf{mat} 			 & Matrix of random values for reservoir ideality calculation\\
+ & column 1: $k$, permeability/conductivity\\
+ & column 2: $T$, thickness\\
+ & column 3: $P$, pressure\\
+\textsf{ideality} & ideality metric\\
+ & 1: $kT/P$\\
+ & 2: not currently used\\
+\textsf{reps} & Number of replicates to generate\\
+\hline
+\end{tabular} 
+\end{table}
+
+The output is a column vector with the distribution of the reservoir ideality.
+
+\subsection{\textsf{TestFormationData.csv}}
+
+\textbf{Description}: Example file for input of formation data. The version of MATLAB used to develop this could not handle strings and numbers, so all input converted to numbers. The header line is dropped when reading-in the file.
+
+\subsection{\textsf{TestUncertaintyLevels.csv}}
+
+\textbf{Description}: Example file for mapping uncertainty levels in \textsf{TestFormationData.csv} to percentage uncertainty. Column 1 is the uncertainty mapping (1-5). Columns 2-4 are the percentage uncertainty associated with that level for $k$, $T$, and $P$, respectively.
 
 \section*{References}
 
