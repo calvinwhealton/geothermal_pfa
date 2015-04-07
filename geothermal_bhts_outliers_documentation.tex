@@ -246,17 +246,21 @@ The output is a column vector with of numbers for the specified distribution.
 \hline
 \textsf{mat} 			 & Matrix of random values for reservoir ideality calculation\\
  & column 1: $k$, permeability/conductivity\\
- & column 2: $T$, thickness\\
- & column 3: $P$, pressure\\
+ & column 2: $H$, thickness\\
+ & column 3: $P_o$, pressure\\
+ & column 4: $P_b$, pressure\\
+ & column 5: $R_o$, radius\\
+\textsf{mu} & Viscosity\\
+\textsf{Rb} & Casing radius\\
 \textsf{ideality} & ideality metric\\
- & 1: $kT/P$\\
+ & 1: $(2\pi/\mu)kH(P_o - P_b)/(\ln(R_b) - \ln(R_o))$\\
  & 2: not currently used\\
 \textsf{reps} & Number of replicates to generate\\
 \hline
 \end{tabular} 
 \end{table}
 
-The output is a column vector with the distribution of the reservoir ideality.
+Note that in the code $P_{diff} = -|P_o - P_b|$ is used. The difference between $P_o$ and $P_b$ should be large so that this is generally not necessary, but it ensures that there are no problems. The output is a column vector with the distribution of the reservoir ideality.
 
 \subsection{\textsf{TestFormationData.csv}}
 
@@ -264,7 +268,7 @@ The output is a column vector with the distribution of the reservoir ideality.
 
 \subsection{\textsf{TestUncertaintyLevels.csv}}
 
-\textbf{Description}: Example file for mapping uncertainty levels in \textsf{TestFormationData.csv} to percentage uncertainty. Column 1 is the uncertainty mapping (1-5). Columns 2-4 are the percentage uncertainty associated with that level for $k$, $T$, and $P$, respectively.
+\textbf{Description}: Example file for mapping uncertainty levels in \textsf{TestFormationData.csv} to percentage uncertainty. Column 1 is the uncertainty mapping (1-5). Columns 2-6 are the percentage uncertainty associated with that level for $k$, $H$, $P_o$, $P_b$, and $R_o$, respectively.
 
 \section*{References}
 

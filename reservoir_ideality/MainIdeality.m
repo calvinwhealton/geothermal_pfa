@@ -2,19 +2,24 @@
 % coded by Calvin Whealton (caw324@cornell.edu)
 
 % import data
-% my need to do this manually
+% may need to do this manually
 % I could not find a function that worked well
 % all data must be in the form of numbers
 % for distributions, 1=uniform, 2=triangular,3=normal,4=lognormal
 % all columns must be in the same order as the example
+% [k, H, Po, Pb, Ro]
 formdata = csvread('TestFormationData.csv',1,0);
 
 % undertianty map has column 1 as 1-5 (uncertainty levels)
-% columns 2,3,4 for k, T, and P, respectively
+% columns [2,3,4,5,6] for [k, H, Po, Pb, Ro] respectively
 uncermap = csvread('TestUncertaintyLevels.csv',1,0);
 
 % setting number of replicates for Monte Carlo calculation
 repsMC = 100000;
+
+% physical constants
+mu = 10; % units
+Rb = 2; % units
 
 % finding number of formations
 forms = length(formdata(:,1));
@@ -22,33 +27,41 @@ forms = length(formdata(:,1));
 % initializing matrix to hold all Monte Carlo calcutions for the formations
 allFormMC = zeros(repsMC,forms);
 
-%column index of k, T, and P  for mean, uncertainty level, and distribution
+%column index of k, H, Po, Pb, and Ro  for mean, uncertainty level, and distribution
 ind_k = [2,3,4];
-ind_T = [5,6,7];
-ind_P = [8,9,10];
+ind_H = [5,6,7];
+ind_Po = [8,9,10];
+ind_Pb = [11,12,13];
+ind_Ro = [14,15,16];
+
+% rows are variables, columns are [mean, uncertainty level, distribution]
+inds_mat = [ind_k; ind_H; ind_Po; ind_Pb; ind_Ro]; % converting to matrix
 
 for i = 1:forms % loop over formations
     
     % initializing matrix to hold the random numbers
-    % columns will be k, T and P (in that order)
-    rand_nums = zeros(repsMC,3);
+    % columns will be k, H, Po, Pb, Ro
+    rand_nums = zeros(repsMC,length(inds_mat(:,1)));
     
-    % generating values for variables
-    % for k, column 1
-    rand_nums(:,1) = GenRandNums(formdata(i,ind_k(1)),uncermap(formdata(i,ind_k(2)),2),formdata(i,ind_k(3)),repsMC);
+    % generating values for variables, looping to make code cleaner
+    for j = 1:length(inds_mat(:,1))
+        %                            mean value                 uncertainty level                   distribution
+        rand_nums(:,j) = GenRandNums(formdata(i,inds_mat(j,1)),uncermap(formdata(i,inds_mat(j,2)),j+1),formdata(i,inds_mat(j,3)),repsMC);
     
-    % for T, column 2
-    rand_nums(:,2) = GenRandNums(formdata(i,ind_T(1)),uncermap(formdata(i,ind_T(2)),3),formdata(i,ind_T(3)),repsMC);
+        %hist(rand_nums(:,j))
+        %pause
     
-    % for P, column 3
-    rand_nums(:,3) = GenRandNums(formdata(i,ind_P(1)),uncermap(formdata(i,ind_P(2)),4),formdata(i,ind_P(3)),repsMC);    
+    end
     
-    % calculating the MC ideality
-    allFormMC(:,i) = MonteCarloApprox(rand_nums,1);
+    allFormMC(:,i) = MonteCarloApprox(rand_nums, 1, mu, Rb);
+    
+    %hist(allFormMC(:,i))
+    %pause
     
 end
 
 % can plot histograms
-hist(allFormMC(:,2))
+%hist(allFormMC(:,1))
+%hist(allFormMC(:,1))
 
-% can calculate statistics
+% can calculate other statistics
