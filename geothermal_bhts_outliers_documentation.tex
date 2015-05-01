@@ -18,7 +18,7 @@ The following document provides supporting information for codes written by Calv
 
 \section*{Bottom-hole Temperature Corrections}
 
-These scripts, codes, and documents pertain to the bottom-hole temperature correction calculations.
+These scripts, code, and documents pertain to the bottom-hole temperature correction calculations.
 
 \section*{\textsf{func\_BHT\_NY\_PA\_WV\_corr.R}}
 
@@ -92,6 +92,8 @@ The output is a data frame with the following columns added.
 \subsection*{\textsf{bht\_test\_data.csv}}
 
 \textbf{Description}: Synthetic data to test \textsf{func\_BHT\_NY\_PA\_WV\_corr.R} for proper corrections and generating all possible errors.
+
+\newpage
 
 \section*{Outliers}
 These codes, scripts, and files pertain to the outlier identification procedures.
@@ -202,6 +204,8 @@ B_{upper} = q_{0.75} + k(q_{0.75} - q_{0.5})
 
 \textbf{Description}: Cornell heat flow database with 8,919 points used to test sensitivity of the outlier identification algorithm. See Cornell University (2014).
 
+\newpage
+
 \section*{Reservoir Ideality}
 
 \subsection*{\textsf{MainIdeality.m}}
@@ -235,7 +239,7 @@ B_{upper} = q_{0.75} + k(q_{0.75} - q_{0.5})
 
 The output is a column vector with of numbers for the specified distribution.
 
-\subsection{\textsf{MonteCarloApprox.m}}
+\subsection*{\textsf{MonteCarloApprox.m}}
 
 \textbf{Description}: Function to calculate Monte Carlo Approximation of the distribution of reservoir ideality.
 
@@ -262,13 +266,15 @@ The output is a column vector with of numbers for the specified distribution.
 
 Note that in the code $P_{diff} = -|P_o - P_b|$ is used. The difference between $P_o$ and $P_b$ should be large so that this is generally not necessary, but it ensures that there are no problems. The output is a column vector with the distribution of the reservoir ideality.
 
-\subsection{\textsf{TestFormationData.csv}}
+\subsection*{\textsf{TestFormationData.csv}}
 
 \textbf{Description}: Example file for input of formation data. The version of MATLAB used to develop this could not handle strings and numbers, so all input converted to numbers. The header line is dropped when reading-in the file.
 
-\subsection{\textsf{TestUncertaintyLevels.csv}}
+\subsection*{\textsf{TestUncertaintyLevels.csv}}
 
 \textbf{Description}: Example file for mapping uncertainty levels in \textsf{TestFormationData.csv} to percentage uncertainty. Column 1 is the uncertainty mapping (1-5). Columns 2-6 are the percentage uncertainty associated with that level for $k$, $H$, $P_o$, $P_b$, and $R_o$, respectively.
+
+\newpage
 
 \section*{References}
 
