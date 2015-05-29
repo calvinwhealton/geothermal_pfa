@@ -392,7 +392,7 @@ fluid_air_fs <- c("Air/Fluid/Foam", "Air/Foam/Fluid", "Air/Foam/pm/Fluid"
 other <- c("Oily", "Flowline", "Fresh Air"
            , "Oli")
 
-# CONDENSING 1
+# CONDENSING 1----
 # making list from fluid to code----
 df_list <- list("norec" = norec
               ,"empty" = empty
@@ -434,14 +434,14 @@ for(i in 1:length(names(df_list))){
 
 checkdefs <- pa$DrillingFluid[which(pa$gen_name1 %in% NA)]
 # making barplot----
-dfs_tf_names <- unique(pa$gen_name) 
-dfs_tf_cnt <- rep(0,length(dfs_tf_names))
-for(i in 1:length(dfs_tf_names)){
-  dfs_tf_cnt[i] <- length(which(pa$gen_name %in% dfs_tf_names[i]))
+dfs_tf_names1 <- unique(pa$gen_name1) 
+dfs_tf_cnt1 <- rep(0,length(dfs_tf_names1))
+for(i in 1:length(dfs_tf_names1)){
+  dfs_tf_cnt1[i] <- length(which(pa$gen_name1 %in% dfs_tf_names1[i]))
 }
-dfs_tf_pct <- 100*dfs_tf_cnt/sum(dfs_tf_cnt)
+dfs_tf_pct <- 100*dfs_tf_cnt1/sum(dfs_tf_cnt1)
 par(mar=c(4.5,5,2,2))
-barplot(dfs_tf_pct
+barplot(dfs_tf_pct1
         , horiz=TRUE
         , xlab = "Percentage of Wells"
         , xlim = c(0,20))
@@ -480,15 +480,15 @@ lines(c(17.5,17.5)
       , col="white"
       , lwd = 2
       , lty = 1)
-text(c(rep(0,length(dfs_tf_names)))
-     , (c(seq(1,length(dfs_tf_names),1))-.5)*1.2
-     , labels = dfs_tf_names
+text(c(rep(0,length(dfs_tf_names1)))
+     , (c(seq(1,length(dfs_tf_names1),1))-.5)*1.2
+     , labels = dfs_tf_names1
      , pos =2
      , xpd = TRUE
      , xlim = c(0,16)
      , cex=0.5)
 
-# CONDENSING 2
+# CONDENSING 2----
 ## creating mega-groups----
 pa$gen_name2 <- NA
 notrec <- c(norec)
@@ -525,14 +525,14 @@ for(i in 1:length(names(df_list2))){
 
 checkdefs2 <- pa$DrillingFluid[which(pa$gen_name2 %in% NA)]
 # making barplot----
-dfs_conden_names <- unique(pa$gen_name2) 
-dfs_conden_cnt <- rep(0,length(dfs_conden_names))
-for(i in 1:length(dfs_conden_names)){
-  dfs_conden_cnt[i] <- length(which(pa$gen_name2 %in% dfs_conden_names[i]))
+dfs_conden_names2 <- unique(pa$gen_name2) 
+dfs_conden_cnt2 <- rep(0,length(dfs_conden_names2))
+for(i in 1:length(dfs_conden_names2)){
+  dfs_conden_cnt2[i] <- length(which(pa$gen_name2 %in% dfs_conden_names2[i]))
 }
-dfs_conden_pct <- 100*dfs_conden_cnt/sum(dfs_conden_cnt)
+dfs_conden_pct2 <- 100*dfs_conden_cnt2/sum(dfs_conden_cnt2)
 par(mar=c(4.5,10.5,2,2))
-barplot(dfs_conden_pct
+barplot(dfs_conden_pct2
         , horiz=TRUE
         , xlab = "Percentage of Wells"
         , xlim = c(0,40)
@@ -552,8 +552,8 @@ lines(c(30,30)
       , col="white"
       , lwd = 2
       , lty = 1)
-text(c(rep(0,length(dfs_conden_names)))
-     , (c(seq(1,length(dfs_conden_names),1))-.5)*1.2
+text(c(rep(0,length(dfs_conden_names2)))
+     , (c(seq(1,length(dfs_conden_names2),1))-.5)*1.2
      , labels = c("No Fluid", "Mud/Gel/Polymer", "Not Recorded", "Air/Gas/Foam/Soap", "Air-Drilled", "Formation/Produced Fluid","Water", "Water/Air/Gas", "Other")
      , pos =2
      , xpd = TRUE
@@ -561,7 +561,7 @@ text(c(rep(0,length(dfs_conden_names)))
      , cex=0.7
      )
 
-# CONDENSING 3
+# CONDENSING 3----
 # making most coarse groups----
 pa$gen_name3 <- NA
 all_agfsad <- c(adall, agfs)
@@ -583,14 +583,14 @@ for(i in 1:length(names(df_list3))){
 }
 checkdefs3 <- pa$DrillingFluid[which(pa$gen_name3 %in% NA)]
 # making barplot----
-dfs_conden_names <- unique(pa$gen_name3) 
-dfs_conden_cnt <- rep(0,length(dfs_conden_names))
-for(i in 1:length(dfs_conden_names)){
-  dfs_conden_cnt[i] <- length(which(pa$gen_name3 %in% dfs_conden_names[i]))
+dfs_conden_names3 <- unique(pa$gen_name3) 
+dfs_conden_cnt3 <- rep(0,length(dfs_conden_names3))
+for(i in 1:length(dfs_conden_names3)){
+  dfs_conden_cnt3[i] <- length(which(pa$gen_name3 %in% dfs_conden_names3[i]))
 }
-dfs_conden_pct <- 100*dfs_conden_cnt/sum(dfs_conden_cnt)
+dfs_conden_pct3 <- 100*dfs_conden_cnt3/sum(dfs_conden_cnt3)
 par(mar=c(4.5,12.5,1,1))
-barplot(dfs_conden_pct
+barplot(dfs_conden_pct3
         , horiz=TRUE
         , xlab = "Percentage of Wells"
         , xlim = c(0,60)
@@ -620,8 +620,8 @@ lines(c(50,50)
       , col="white"
       , lwd = 2
       , lty = 1)
-text(c(rep(0,length(dfs_conden_names)))
-     , (c(seq(1,length(dfs_conden_names),1))-.5)*1.2
+text(c(rep(0,length(dfs_conden_names3)))
+     , (c(seq(1,length(dfs_conden_names3),1))-.5)*1.2
      , labels = c("Other",  "Mud/Gel/Polymer \n or Water","Air/Gas/Foam/Soap \n or Air-Drilled" )
      , pos =2
      , xpd = TRUE
@@ -840,8 +840,8 @@ par(xpd=FALSE)
 write.csv(pa, file="padatadrillingfluid.csv", fileEncoding="utf8")
 
 ### Whealton NY and PA DF----
-# CONDENSING 1
-# making groups
+# CONDENSING 1-----
+# making groups----
 unique(wh$FLUID_TYPE)
 wh_agfs <- c("A", "AG", "AGF", "AH", "A/D"
             , "D", "SP", "VD")
@@ -884,14 +884,84 @@ for(i in 1:length(names(df_listwh))){
 
 checkdefs <- wh$FLUID_TYPE[which(wh$gen_name1 %in% NA)]
 # making barplot----
-dfs_conden_names <- unique(wh$gen_name1) 
-dfs_conden_cnt <- rep(0,length(dfs_conden_names))
-for(i in 1:length(dfs_conden_names)){
-  dfs_conden_cnt[i] <- length(which(wh$gen_name1 %in% dfs_conden_names[i]))
+dfs_conden_names_wh1 <- unique(wh$gen_name1) 
+dfs_conden_cnt_wh1 <- rep(0,length(dfs_conden_names_wh1))
+for(i in 1:length(dfs_conden_names_wh1)){
+  dfs_conden_cnt_wh1[i] <- length(which(wh$gen_name1 %in% dfs_conden_names_wh1[i]))
 }
-dfs_conden_pct <- 100*dfs_conden_cnt/sum(dfs_conden_cnt)
+dfs_conden_pct_wh1 <- 100*dfs_conden_cnt_wh1/sum(dfs_conden_cnt_wh1)
 par(mar=c(4.5,10.5,2,2))
-barplot(dfs_conden_pct
+barplot(dfs_conden_pct_wh1
+        , horiz=TRUE
+        , xlab = "Percentage of Wells"
+        , xlim = c(0,40)
+)
+lines(c(10,10)
+      , c(0,60)
+      , col="white"
+      , lwd = 2
+      , lty = 1)
+lines(c(20,20)
+      , c(0,60)
+      , col="white"
+      , lwd = 2
+      , lty = 1)
+lines(c(30,30)
+      , c(0,60)
+      , col="white"
+      , lwd = 2
+      , lty = 1)
+lines(c(40,40)
+      , c(0,60)
+      , col="white"
+      , lwd = 2
+      , lty = 1)
+lines(c(50,50)
+      , c(0,60)
+      , col="white"
+      , lwd = 2
+      , lty = 1)
+text(c(rep(0,length(dfs_conden_names_wh1)))
+     , (c(seq(1,length(dfs_conden_names_wh1),1))-.5)*1.2
+     , labels = c("Water","Mud/Gel/Polymer","Other","Air-Drilled","Air/Gas/Foam/Soap",  "No Fluid","Formation/Produced Fluid" )
+     , pos =2
+     , xpd = TRUE
+     , xlim = c(0,16)
+     , cex=0.7
+)
+
+
+# CONDENSING 2-----
+# making groups----
+wh_all_afgsad <- c(wh_agfs, wh_ad)
+wh_all_mgpw <- c(wh_water, wh_mudgel)
+wh_all_other <- c(wh_ffpf, wh_fluid, wh_other, wh_nf)
+
+wh$gen_name2 <- NA
+df_listwh2 <- list("all_agfs" = wh_all_afgsad
+                  ,"wh_all_mgpw " = wh_all_mgpw 
+                  , "wh_all_other"=wh_all_other)
+
+
+for(i in 1:length(names(df_listwh2))){
+  
+  names_group <- df_listwh2[[i]]
+  
+  for(j in 1:as.numeric(summary(df_listwh2)[[i]])){
+    wh$gen_name2[which(wh$FLUID_TYPE %in% names_group[j])] <- names(df_listwh2)[i]
+  }
+}
+
+checkdefs2 <- wh$FLUID_TYPE[which(wh$gen_name2 %in% NA)]
+# making barplot----
+dfs_conden_names_wh2 <- unique(wh$gen_name2) 
+dfs_conden_cnt_wh2 <- rep(0,length(dfs_conden_names_wh2))
+for(i in 1:length(dfs_conden_names_wh2)){
+  dfs_conden_cnt_wh2[i] <- length(which(wh$gen_name2 %in% dfs_conden_names_wh2[i]))
+}
+dfs_conden_pct_wh2 <- 100*dfs_conden_cnt_wh2/sum(dfs_conden_cnt_wh2)
+par(mar=c(4.5,10.5,2,2))
+barplot(dfs_conden_pct_wh2
         , horiz=TRUE
         , xlab = "Percentage of Wells"
         , xlim = c(0,50)
@@ -921,17 +991,76 @@ lines(c(50,50)
       , col="white"
       , lwd = 2
       , lty = 1)
-text(c(rep(0,length(dfs_conden_names)))
-     , (c(seq(1,length(dfs_conden_names),1))-.5)*1.2
-     , labels = c("Water","Mud/Gel/Polymer","Other","Air-Drilled","Air/Gas/Foam/Soap",  "No Fluid","Formation/Produced Fluid" )
+text(c(rep(0,length(dfs_conden_names_wh2)))
+     , (c(seq(1,length(dfs_conden_names_wh2),1))-.5)*1.2
+     , labels = c("Mud/Gel/Polymer \n or Water", "Other", "Air/Gas/Foam/Soap \n or Air-Drilled")
      , pos =2
      , xpd = TRUE
      , xlim = c(0,16)
      , cex=0.7
 )
 
-## CONDENSING 2
-#
+# side-by-side barplot----
+# creating dataframe
+dfs_conden_names_wh2_NYonly <- unique(wh$gen_name2[which(wh$STATE %in% 'NY')]) 
+dfs_conden_cnt_wh2_NYonly  <- rep(0,length(dfs_conden_names_wh2_NYonly))
+for(i in 1:length(dfs_conden_names_wh2_NYonly)){
+  dfs_conden_cnt_wh2_NYonly[i] <- length(which(wh$gen_name2[which(wh$STATE %in% 'NY')] %in% dfs_conden_names_wh2_NYonly[i]))
+}
+dfs_conden_pct_wh2_NYonly <- 100*dfs_conden_cnt_wh2_NYonly/sum(dfs_conden_cnt_wh2_NYonly)
+
+NYandPAcombined <- matrix(0,3,2)
+NYandPAcombined[,2] <- dfs_conden_pct3
+NYandPAcombined[1,1] <- dfs_conden_pct_wh2_NYonly[2]
+NYandPAcombined[2,1] <- dfs_conden_pct_wh2_NYonly[1]
+NYandPAcombined[3,1] <- dfs_conden_pct_wh2_NYonly[3]
+
+par(mar=c(4.5,10.5,2,2))
+barplot(t(NYandPAcombined)
+        , beside=TRUE
+        , horiz = TRUE
+        , col = c("lightcoral", "deepskyblue")
+        , xlim = c(0,60)
+)
+lines(c(10,10)
+      , c(0,60)
+      , col="white"
+      , lwd = 2
+      , lty = 1)
+lines(c(20,20)
+      , c(0,60)
+      , col="white"
+      , lwd = 2
+      , lty = 1)
+lines(c(30,30)
+      , c(0,60)
+      , col="white"
+      , lwd = 2
+      , lty = 1)
+lines(c(40,40)
+      , c(0,60)
+      , col="white"
+      , lwd = 2
+      , lty = 1)
+lines(c(50,50)
+      , c(0,60)
+      , col="white"
+      , lwd = 2
+      , lty = 1)
+text(c(rep(0,length(dfs_conden_names_wh2)))
+     , (c(seq(1,length(dfs_conden_names_wh2),1))-0.25)*3
+     , labels = c( "Other", "Mud/Gel/Polymer \n or Water","Air/Gas/Foam/Soap \n or Air-Drilled")
+     , pos =2
+     , xpd = TRUE
+     , xlim = c(0,16)
+     , cex=1.2
+)
+legend(30,3
+        , c("New York", "Pennsylvania")
+        , col=c('lightcoral','deepskyblue')
+       , pch=15)
+
+
 #################################
 # fitting multinomial logit model
 #################################
