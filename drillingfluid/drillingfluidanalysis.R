@@ -738,23 +738,27 @@ legend("bottomright"
        , col = dfcols[1:4]
        )
 # making plots based on decade logged----
+yr_1900 <- union(which(pa$DrillYear %in% 1900), which(pa$LogYear %in% 1900))
+yr_biddiff <- which(abs(pa$DrillYear - pa$LogYear) > 1)
+inds_use <- setdiff(seq(1,nrow(pa),by=1),c(yr_1900,yr_biddiff ))
+
 yrs <- seq(1950,2010,by=10)
 depths <- seq(500,7000,by=250)
 
-x <- matrix(0,length(yrs),length(names(df_list2)))
+x <- matrix(0,length(yrs),2)
 
 for(i in 1:length(yrs)){
   
-  yrins <- intersect(which(pa$LogYear >= yrs[i]), which(pa$LogYear <= yrs[i]+9))
+  yrins <- intersect(which(pa$LogYear[inds_use] >= yrs[i]), which(pa$LogYear[inds_use]<= yrs[i]+9))
   
-  for(j in 1:length(names(df_list2))){
+  for(j in 1:2){
 
-      x[i,j] <- length(which(pa$group_condensed[yrins] %in% names(df_list2)[[j]]))
+      x[i,j] <- length(which(pa$gen_name3[yrins] %in% names(df_list3)[[j]]))
 
   }
 }
 
-xrn <- matrix(0,length(yrs),length(names(df_list2)))
+xrn <- matrix(0,length(yrs),2)
 
 # renormalizing x
 for(i in 1:nrow(x)){
@@ -764,14 +768,14 @@ for(i in 1:nrow(x)){
 
 par(mar=(c(4,4,2,8)+0.1))
 barplot(t(xrn)
-        , col=dfcols
+        , col=dfcols[c(1,2)]
         , horiz=TRUE
         , xlab = "Proportion of Wells"
         , ylab = "Decade Logged")
 par(xpd = TRUE)
 legend(c(2,6)
-       , names(df_list2)
-       , col=dfcols
+       , c("Air/Foam/ \n Air-Drilled", "Mud/Gel/Water")
+       , col=dfcols[1:2]
        , pch = 15
        , border="white"
        , fill = "white"
@@ -788,20 +792,20 @@ text(x=0.5
      , col="white")
 par(xpd=FALSE)
 ## making plot based on depth drilled-----
-y <- matrix(0,length(depths),length(names(df_list2)))
+y <- matrix(0,length(depths),2)
 
 for(i in 1:length(depths)){
   
-  yrins <- intersect(which(pa$DrillerTotalDepth*0.3048 >= depths[i]), which(pa$DrillerTotalDepth*0.3048 < depths[i]+250))
+  yrins <- intersect(which(pa$DrillerTotalDepth[inds_use]*0.3048 >= depths[i]), which(pa$DrillerTotalDepth[inds_use]*0.3048 < depths[i]+250))
   
-  for(j in 1:length(names(df_list2))){
+  for(j in 1:2){
     
-    y[i,j] <- length(which(pa$group_condensed[yrins] %in% names(df_list2)[[j]]))
+    y[i,j] <- length(which(pa$gen_name3[yrins] %in% names(df_list3)[[j]]))
     
   }
 }
 
-yrn <- matrix(0,length(depths),length(names(df_list2)))
+yrn <- matrix(0,length(depths),2)
 
 # renormalizing x
 for(i in 1:nrow(y)){
@@ -811,23 +815,23 @@ for(i in 1:nrow(y)){
 
 par(mar=(c(4,4,2,8)+0.1))
 barplot(t(yrn)
-        , col=dfcols
+        , col=dfcols[c(1,2)]
         , horiz=TRUE
         , xlab = "Proportion of Wells"
         , ylab = "Driller Total Depth")
 par(xpd = TRUE)
 legend(c(2,20)
-       , names(df_list2)
-       , col=dfcols
+       , c("Air/Foam/ \n Air-Drilled", "Mud/Gel/Water")
+       , col=dfcols[c(1,2)]
        , pch = 15
        , border="white"
        , fill = "white"
        , bty = "n")
 
 text(x=rep(0,7)
-     , y=seq(0,24,1)*1.2+.6
+     , y=seq(0,21,1)*1.2+.6
      , pos=2
-     , labels=c('500-750', '750-1000', '1000-1250', '1250-1500', '1500-1750', '1750-2000','200-2250', '2250-2500', '2500-2750', '2750-3000', '3000-3250', '3250-3500', '3500-3750', '3750-4000', '4000-4250', '4250-4500', '4500-4750', '4750-5000', '5000-5250', '5250-5500', '5500-5750', '5750-6000', '6000-6250', '6250-6500', '6500-6750')
+     , labels=c('500-750', '750-1000', '1000-1250', '1250-1500', '1500-1750', '1750-2000','200-2250', '2250-2500', '2500-2750', '2750-3000', '3000-3250', '3250-3500', '3500-3750', '3750-4000', '4000-4250', '4250-4500', '4500-4750', '4750-5000', '5000-5250', '5250-5500', '5500-5750', '5750-6000')
       , cex=0.5
      )
 text(x=0.5
@@ -1060,27 +1064,143 @@ legend(30,3
         , col=c('lightcoral','deepskyblue')
        , pch=15)
 
+# making plots based on decade logged----
+inds_usewh <- which(wh$STATE %in% 'NY')
 
-#################################
-# fitting multinomial logit model
-#################################
+yrs <- seq(1950,2010,by=10)
+depths <- seq(500,7000,by=250)
 
-# cleaning data
-pa$yr_diff <- abs(pa$DrillYear - pa$LogYear)
+xwh <- matrix(0,length(yrs),2)
 
-ind_good_yr <- union(which(pa$yr_diff %in% 0), which(pa$yr_diff %in% 1))
+for(i in 1:length(yrs)){
+  
+  yrins <- intersect(which(wh$YEAR[inds_usewh] >= yrs[i]), which(wh$YEAR[inds_usewh]<= yrs[i]+9))
+  
+  for(j in 1:2){
+    
+    xwh[i,j] <- length(which(wh$gen_name2[yrins] %in% names(df_listwh2)[[j]]))
+    
+  }
+}
 
-intersect(ind_good_yr, which(pa$DrillYear %in% 1900)) # check of 1900's dropped
+xrnwh <- matrix(0,length(yrs),2)
 
-pa$depth_m <- pa$DrillerTotalDepth*0.3048
+# renormalizing x
+for(i in 1:nrow(x)){
+  xrnwh[i,]<- xwh[i,]/sum(xwh[i,])
+  
+}
 
-pa_mat <- matrix(0,length(ind_good_yr),2)
-pa_mat[,1] <- pa$depth_m[ind_good_yr]
-pa_mat[,2] <- pa$LogYear[ind_good_yr]
-pa_clean <- data.frame(pa_mat)
-colnames(pa_clean) <- c("depth", "logYear")
-pa_clean$cat <- pa$coarse_gp[ind_good_yr]
+par(mar=(c(4,4,2,8)+0.1))
+barplot(t(xrnwh)
+        , col=dfcols[c(1,2)]
+        , horiz=TRUE
+        , xlab = "Proportion of Wells"
+        , ylab = "Decade Logged")
+par(xpd = TRUE)
+legend(c(2,6)
+       , c("Air/Foam/ \n Air-Drilled", "Mud/Gel/Water")
+       , col=dfcols[1:2]
+       , pch = 15
+       , border="white"
+       , fill = "white"
+       , bty = "n")
 
-pa_ml <- mlogit.data(pa_clean, choice = "cat")
+text(x=rep(0,7)
+     , y=seq(0,6,1)*1.2+.5
+     , pos=2
+     , labels=c('50s', '60s', '70s', '80s', '90s', '00s', '10s')
+)
+text(x=0.5
+     , y=seq(0,6,1)*1.2+.6
+     , labels = c(sum(xwh[1,]), sum(xwh[2,]), sum(xwh[3,]), sum(xwh[4,]), sum(xwh[5,]), sum(xwh[6,]), sum(xwh[7,]))
+     , col="white")
+par(xpd=FALSE)
+## making plot based on depth drilled-----
+ywh <- matrix(0,length(depths),2)
+
+for(i in 1:length(depths)){
+  
+  yrins <- intersect(which(wh$BOTTO_.LOGGED_INTERVAL[inds_usewh]*0.3048 >= depths[i]), which(wh$BOTTO_.LOGGED_INTERVAL[inds_usewh]*0.3048 < depths[i]+250))
+  
+  for(j in 1:2){
+    
+    ywh[i,j] <- length(which(wh$gen_name2[yrins] %in% names(df_listwh2)[[j]]))
+    
+  }
+}
+
+yrnwh <- matrix(0,length(depths),2)
+
+# renormalizing x
+for(i in 1:nrow(y)){
+  yrnwh[i,]<- ywh[i,]/sum(ywh[i,])
+  
+}
+
+par(mar=(c(4,4,2,8)+0.1))
+barplot(t(yrnwh[seq(1,16),])
+        , col=dfcols[c(1,2)]
+        , horiz=TRUE
+        , xlab = "Proportion of Wells"
+        , ylab = "Driller Total Depth")
+par(xpd = TRUE)
+legend(c(2,20)
+       , c("Air/Foam/ \n Air-Drilled", "Mud/Gel/Water")
+       , col=dfcols[c(1,2)]
+       , pch = 15
+       , border="white"
+       , fill = "white"
+       , bty = "n")
+
+text(x=rep(0,7)
+     , y=seq(0,15,1)*1.2+.6
+     , pos=2
+     , labels=c('500-750', '750-1000', '1000-1250', '1250-1500', '1500-1750', '1750-2000','200-2250', '2250-2500', '2500-2750', '2750-3000', '3000-3250', '3250-3500', '3500-3750', '3750-4000', '4000-4250', '4250-4500')
+     , cex=0.5
+)
+text(x=0.5
+     , y=seq(0,26,1)*1.2+.7
+     , labels = c(rowSums(ywh))
+     , col="white"
+     , cex=0.8)
+par(xpd=FALSE)
+
+# PA year-depth scatter----
+pa$gn3col <- NA
+pa$gn3col[which(pa$gen_name3 %in% "all_agfsad")] <- dfcols[1]
+pa$gn3col[which(pa$gen_name3 %in% "all_mwgp")] <- dfcols[2]
 
 
+plot(pa$LogYear[inds_use]
+      , pa$DrillerTotalDepth[inds_use]*0.3048
+       , col = pa$gn3col
+     , ylim = c(6000,0)
+     , pch =  19
+     , cex=0.5
+     , ylab = "Depth Drilled (m)"
+     , xlab = "Year Logged")
+legend('bottomleft'
+       , c("Air/Foam/ \n Air-Drilled", "Mud/Gel/Water")
+       , col = dfcols[c(1,2)]
+       , pch=19)
+
+# NY year-depth scatter----
+wh$gn2col <- NA
+wh$gn2col[which(wh$gen_name2 %in% "all_agfs")] <- dfcols[1]
+wh$gn2col[which(wh$gen_name2 %in% "wh_all_mgpw ")] <- dfcols[2]
+
+
+plot(wh$YEAR[inds_use]
+     , wh$BOTTO_.LOGGED_INTERVAL[inds_use]*0.3048
+     , col = wh$gn2col
+     , ylim = c(6000,0)
+     , pch =  19
+     , cex=0.5
+     , ylab = "Depth Drilled (m)"
+     , xlab = "Year Logged"
+     , xlim = c(1930,2015))
+legend('bottomleft'
+       , c("Air/Foam/ \n Air-Drilled", "Mud/Gel/Water")
+       , col = dfcols[c(1,2)]
+       , pch=19)
