@@ -32,7 +32,7 @@ These scripts, code, and documents pertain to the bottom-hole temperature correc
 \textsf{X} 			 & R data frame with variables named\\
  & \textsf{bht\_c}: Recorded bottom-hole temperature in Celsius\\
  & \textsf{calc\_depth\_m}: Calculated depth of well in meters\\
- & \textsf{reg}:  Region for that point, 0=Rome Trough and areas south east in PA, 1=Allegheny Plateau (NY and north east PA), 2=West VA, and 3=modifed Harrison Correction (used in previous studies of the area)\\
+ & \textsf{reg}:  Region for that point, 0=Rome Trough and areas south east in PA, 1=Allegheny Plateau (NY and north east PA), and 2=West VA Correction (used in previous studies of the area)\\
 \hline
 \end{tabular} 
 \end{table}
@@ -62,8 +62,8 @@ The output is a data frame with the following columns added.
 \begin{equation} \label{DT_ap}
 {\Delta T}_{Alle. Plat.} =  \left\{
 \begin{array}{ll}
-\max\{0,-23.48 + (1.791\times 10^{-2})z_0\},	& (z_0 < 4000 \mathrm{m})\\
-48.16,  & (z_0 > 4000 \mathrm{m})\\
+0.02150\left[ \left(1892^3 + z_0^3\right) - 1892 \right],	& (z_0 < 4000 \mathrm{m})\\
+48,  & (z_0 > 4000 \mathrm{m})\\
 \end{array} \right .
 \end{equation}
 
@@ -74,16 +74,6 @@ The output is a data frame with the following columns added.
 \begin{equation} \label{DT_wv}
 {\Delta T}_{W Va.} = \min\{15, -3.562+0.00763z_0 \}
 \end{equation}
-
-\begin{equation} \label{DT_modhar}
-{\Delta T}_{Mod. Harr.} =  \left\{
-\begin{array}{ll}
-0,	& (z_0 < 1000 \mathrm{m})\\
--16.51 + (1.83\times 10^{-2})z_0 -(2.34\times 10^{-6})z_0^2 ,  & (1000 \mathrm{m} < z_0 < 3860 m)\\
-19.07, & (z_0 > 3860 m)\\
-\end{array} \right .
-\end{equation}
-
 
 \subsection*{\textsf{example\_bht\_corr.R}}
 

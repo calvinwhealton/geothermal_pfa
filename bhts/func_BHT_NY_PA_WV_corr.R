@@ -11,8 +11,7 @@
 #     reg           [region coded by 
 #                       1 = Allegheny Plateau 
 #                       0 = Rome Trough and PA points south east
-#                       2 = West Virginia
-#                       3 = Modified Harrison]
+#                       2 = West Virginia]
 # variable names are designed to match NGDS standard names when possible
 
 # output matrix add columns for 
@@ -67,16 +66,16 @@ NY_PA_BHT2 <- function(X){
         else if ((X$calc_depth_m[i] < 6500) && (X$calc_depth_m[i] > 0)){
         
           if(X$calc_depth_m[i] > 4000){
-            BHT_corrected$corr_bht_c[i] <- X$bht_c[i] - 23.48 + 0.01791*4000 # correction at 4000 m used for interval deeper than 4000 m, avoids extrapolation
+            BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + 48 # correction at 4000 m used for interval deeper than 4000 m, avoids extrapolation
           }
           else{
-            BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + max(0, - 23.48 + 0.01791*X$calc_depth_m[i])
+            BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + 0.02150*((1892^3 + X$calc_depth_m[i]^3)^(1/3) - 1892)
           }
         }
       
         # checking for excessively deep measurements (6500, Inf)
         else if(X$calc_depth_m[i]>6500){ 
-          BHT_corrected$corr_bht_c[i] <- X$bht_c[i] - 23.48 + 0.01791*4000 # correction at 4000 m used for interval deeper than 4000 m, avoids extrapolation
+          BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + 48 # correction at 4000 m used for interval deeper than 4000 m, avoids extrapolation
           BHT_corrected$corr_error[i] <- 20 # error for measurement too deep to be normal
         }
       
@@ -115,37 +114,6 @@ NY_PA_BHT2 <- function(X){
       }
         
     }  
-      
-    # Modifed Harrison Correction  
-    else if(X$reg[i] == 3){
-      
-      # checking for given depth
-      if(is.na(X$calc_depth_m[i])){ 
-        BHT_corrected$corr_bht_c[i] <- X$bht_c[i] # providing no adjustment
-        BHT_corrected$corr_error[i] <- 22 # error for missing depth
-      }
-      
-      # correction uses maximum value for depths deeper than peak
-      else if(X$calc_depth_m[i] >= 6500){
-        BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + 19.07
-        BHT_corrected$corr_error[i] <- 20 # depth likely too deep
-      }
-      
-      else if(X$calc_depth_m[i] >= 3860){
-        BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + 19.07
-      }
-      
-      # correction for positive portion of correction less than peak correction
-      else if(X$calc_depth_m[i] >= 1000){
-        BHT_corrected$corr_bht_c[i] <- X$bht_c[i] -16.51 + 0.0183*X$calc_depth_m[i] - (2.34*10^(-6))*((X$calc_depth_m[i])^2)
-      }
-     
-      # no correction for data shallower than 1000 m
-      else{
-        BHT_corrected$corr_bht_c[i] <- X$bht_c[i]
-      }
-      
-    }
     
     # categorical variable defined but not 0, 1, or 2
     else{
