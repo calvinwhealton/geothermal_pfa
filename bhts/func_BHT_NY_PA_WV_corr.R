@@ -13,6 +13,7 @@
 #                       0 = Rome Trough and PA points south east
 #                       2 = West Virginia
 #                       3 = Allegheny Plateau with Drilling Fluid]
+#     PctMud        [estimated probability of mud, 0 < prob < 1]
 # variable names are designed to match NGDS standard names when possible
 
 # output matrix add columns for 
@@ -112,7 +113,6 @@ NY_PA_BHT2 <- function(X){
       else{
         BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + min(15, -3.562 + 0.00763*X$calc_depth_m[i])
       }
-        
     }  
     
     # Allegheny Plateau with drilling fluid  correction  
@@ -124,13 +124,28 @@ NY_PA_BHT2 <- function(X){
         BHT_corrected$corr_error[i] <- 22 # error for missing depth
       }
       
-      ??????????????????????
-      
+      # correction for depth deeper than 4000 m
+      else if(X$calc_depth_m[i] > 4000){
+        #                                             mud portion             air portion
+        BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + 38.4*X$PctMud[i] + 12.8*(1-X$PctMud[i])
+      }
+      # correction for depth > 2500m, < 4000 m
+      else if(X$calc_depth_m[i] > 2500){
+        #                                             mud portion             air portion
+        BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + (0.01503*((1519^3 + X$calc_depth_m[i]^3)^(1/3) - 1519))*X$PctMud[i] + 12.8*(1-X$PctMud[i])
+      }
+      # correction for depth <  2500m, > 0
+      else if(X$calc_depth_m[i] > 2500){
+        #                                             mud portion + air portion
+        BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + (0.01503*((1519^3 + X$calc_depth_m[i]^3)^(1/3) - 1519))*X$PctMud[i] 
+                                                  + (0.00564*((240^3 + X$calc_depth_m[i]^3)^(1/3) - 240))*(1-X$PctMud[i])
+      }
+      else{
+        BHT_corrected$corr_bht_c[i] <- X$bht_c[i]
+      }
     }
     
-    
-    
-    # categorical variable defined but not 0, 1, or 2
+    # categorical variable defined but not 0, 1, 2, or 3
     else{
       BHT_corrected$corr_bht_c[i] <- X$bht_c[i] # providing no adjustment
       BHT_corrected$corr_error[i] <- 30
