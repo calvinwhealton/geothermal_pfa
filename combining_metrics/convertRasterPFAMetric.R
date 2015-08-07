@@ -17,16 +17,20 @@ convRastPFRank <- function(rast         # raster
   
   # assigning 0 to values < minimum criteria
   # only assigning values with raster cell is not ignored
-  rast_pfa[intersect((rast != ignore),(rast < thresholds[1]))] <- num_cat[1]
+  rast_pfa[(rast != ignore)&(rast < thresholds[1])] <- num_cat[1]
   
   # assigning highest to values >= maximum criteria
   # only assigning values with raster cell is not ignored
-  rast_pfa[intersect((rast != ignore),(rast >= thresholds[length(thresholds)]))] <- num_cat[length(num_cat)]
+  rast_pfa[(rast != ignore)&(rast >= thresholds[length(thresholds)])] <- num_cat[length(num_cat)]
   
   # looping over intermediate values (between min and max)
   for(i in 1:(length(thresholds)-1)){
     
+    # values between the two thresholds are linearly scaled
     rast_pfa[(rast >= thresholds[i])&(rast < thresholds[i+1])] <- (rast[(rast >= thresholds[i])&(rast < thresholds[i+1])] - thresholds[i])/(thresholds[i+1]-thresholds[i]) + i - 1
-    print(i)
+
   }
+  
+  # returning calculated raster
+  return(rast_pfa)
 }
