@@ -111,7 +111,7 @@ NY_PA_BHT2 <- function(X){
         
       # correction for portion of data within bounds, becomes positive at 467 m which is shallower than minimum depth used
       else{
-        BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + min(15, -3.562 + 0.00763*X$calc_depth_m[i])
+        BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + min(15, -1.99 + 0.00652*X$calc_depth_m[i])
       }
     }  
     
@@ -127,18 +127,18 @@ NY_PA_BHT2 <- function(X){
       # correction for depth deeper than 4000 m
       else if(X$calc_depth_m[i] > 4000){
         #                                             mud portion             air portion
-        BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + 38.4*X$PctMud[i] + 12.8*(1-X$PctMud[i])
+        BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + 37.8*X$PctMud[i] + 15.4*(1-X$PctMud[i])
       }
       # correction for depth > 2500m, < 4000 m
       else if(X$calc_depth_m[i] > 2500){
         #                                             mud portion             air portion
-        BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + (0.01503*((1519^3 + X$calc_depth_m[i]^3)^(1/3) - 1519))*X$PctMud[i] + 12.8*(1-X$PctMud[i])
+        BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + (0.0155*((1650^3 + X$calc_depth_m[i]^3)^(1/3) - 1650))*X$PctMud[i] + 15.4*(1-X$PctMud[i])
       }
       # correction for depth <  2500m, > 0
       else if(X$calc_depth_m[i] > 2500){
         #                                             mud portion + air portion
-        BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + (0.01503*((1519^3 + X$calc_depth_m[i]^3)^(1/3) - 1519))*X$PctMud[i] 
-                                                  + (0.00564*((240^3 + X$calc_depth_m[i]^3)^(1/3) - 240))*(1-X$PctMud[i])
+        BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + (0.0155*((1650^3 + X$calc_depth_m[i]^3)^(1/3) - 1650))*X$PctMud[i] 
+                                                  + (0.0104*((1090^3 + X$calc_depth_m[i]^3)^(1/3) - 1090))*(1-X$PctMud[i])
       }
       else{
         BHT_corrected$corr_bht_c[i] <- X$bht_c[i]
