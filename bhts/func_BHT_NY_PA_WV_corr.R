@@ -54,98 +54,77 @@ NY_PA_WV_BHT2 <- function(X){
         BHT_corrected$corr_error[i] <- 32 # no categorical variable error
       }
     
-      # checking if observation is in Allegheny Plateau
-      else if(X$reg[i] == 1){ 
-      
-        ## chekcing the depth variable & computing correction when appropriate
-        # checking missing depth value
-        if(is.na(X$calc_depth_m[i])==TRUE){ 
-          BHT_corrected$corr_bht_c[i] <- X$bht_c[i] # providing no adjustment
-          BHT_corrected$corr_error[i] <- 22 # error for missing depth
-        }
-      
-        # general case with no problems (0,6500)
-        else if ((X$calc_depth_m[i] < 6500) && (X$calc_depth_m[i] > 0)){
-        
-          if(X$calc_depth_m[i] > 4000){
-            BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + 38# correction at 4000 m used for interval deeper than 4000 m, avoids extrapolation
-          }
-          else{
-            BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + 0.01698*((1933^3 + X$calc_depth_m[i]^3)^(1/3) - 1933)
-          }
-        }
-      
-        # checking for excessively deep measurements (6500, Inf)
-        else if(X$calc_depth_m[i]>6500){ 
-          BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + 38 # correction at 4000 m used for interval deeper than 4000 m, avoids extrapolation
-          BHT_corrected$corr_error[i] <- 20 # error for measurement too deep to be normal
-        }
-      
-        # checking for negative depths (-Inf, 0)
-        else{
-          BHT_corrected$corr_bht_c[i]<- X$bht_c[i] # negative depth has correction 0
-          BHT_corrected$corr_error[i] <- 21 # error for negative depth
-        }
-      
-      } # end Allegheny Plateau calculation
-    
       # checking if observation is in Rome Trough and PA points SE
       else if(X$reg[i] == 0){ 
         BHT_corrected$corr_bht_c[i] <- X$bht_c[i]  # no temperature correction
       }
       
-    # West Virginia correction  
-    else if(X$reg[i] == 2){
+      # West Virginia correction  
+      else if(X$reg[i] == 2){
         
-      # checking for given depth
-      if(is.na(X$calc_depth_m[i])){ 
-        BHT_corrected$corr_bht_c[i] <- X$bht_c[i] # providing no adjustment
-        BHT_corrected$corr_error[i] <- 22 # error for missing depth
-      }
+        # checking for given depth
+        if(is.na(X$calc_depth_m[i])){ 
+          BHT_corrected$corr_bht_c[i] <- X$bht_c[i] # providing no adjustment
+          BHT_corrected$corr_error[i] <- 22 # error for missing depth
+        }
+          
+        # correction uses maximum value within data
+        else if(X$calc_depth_m[i] >= 6500){
+          BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + 15
+          BHT_corrected$corr_error[i] <- 20 # depth likely too deep
+        }
         
-      # correction uses maximum value within data
-      else if(X$calc_depth_m[i] >= 6500){
-        BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + 15
-        BHT_corrected$corr_error[i] <- 20 # depth likely too deep
-      }
-        
-      # correction for portion of data within bounds, becomes positive at 467 m which is shallower than minimum depth used
-      else{
-        BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + min(15, -1.99 + 0.00652*X$calc_depth_m[i])
-      }
-    }  
-    
-    # Allegheny Plateau with drilling fluid  correction  
-    else if(X$reg[i] == 3){
+        # correction for portion of data within bounds, becomes positive at 305 m which is shallower than minimum depth used
+        else if(X$calc_depth_m[i] > 305){
+          BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + min(15, -1.99 + 0.00652*X$calc_depth_m[i])
+        }
       
-      # checking for given depth
-      if(is.na(X$calc_depth_m[i])){ 
-        BHT_corrected$corr_bht_c[i] <- X$bht_c[i] # providing no adjustment
-        BHT_corrected$corr_error[i] <- 22 # error for missing depth
-      }
+        # correction for portion greater than 0 < 305 m
+        else if(X$calc_depth_m[i] > 0){
+          BHT_corrected$corr_bht_c[i] <- X$bht_c[i]
+        }
       
-      # correction for depth deeper than 4000 m
-      else if(X$calc_depth_m[i] > 4000){
-        #                                             mud portion             air portion
-        BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + 37.8*X$PctMud[i] + 15.4*(1-X$PctMud[i])
-      }
-      # correction for depth > 2500m, < 4000 m
-      else if(X$calc_depth_m[i] > 2500){
-        #                                             mud portion             air portion
-        BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + (0.0155*((1650^3 + X$calc_depth_m[i]^3)^(1/3) - 1650))*X$PctMud[i] + 15.4*(1-X$PctMud[i])
-      }
-      # correction for depth <  2500m, > 0
-      else if(X$calc_depth_m[i] > 2500){
-        #                                             mud portion + air portion
-        BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + (0.0155*((1650^3 + X$calc_depth_m[i]^3)^(1/3) - 1650))*X$PctMud[i] 
-                                                  + (0.0104*((1090^3 + X$calc_depth_m[i]^3)^(1/3) - 1090))*(1-X$PctMud[i])
-      }
-      else{
-        BHT_corrected$corr_bht_c[i] <- X$bht_c[i]
-      }
-    }
+        # no correction for negative depths and return an error
+        else{
+  
+          BHT_corrected$corr_bht_c[i] <- X$bht_c[i]
+          BHT_corrected$corr_error[i] <- 21 # error for negative depth
+        }
+      }  
     
-    # categorical variable defined but not 0, 1, 2, or 3
+      # Allegheny Plateau with drilling fluid  correction  
+      else if(X$reg[i] == 3){
+        
+        # checking for given depth
+        if(is.na(X$calc_depth_m[i])){ 
+          BHT_corrected$corr_bht_c[i] <- X$bht_c[i] # providing no adjustment
+          BHT_corrected$corr_error[i] <- 22 # error for missing depth
+        }
+      
+        # correction for depth deeper than 4000 m
+        else if(X$calc_depth_m[i] > 4000){
+          #                                             mud portion             air portion
+          BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + 37.8*X$PctMud[i] + 15.4*(1-X$PctMud[i])
+        }
+        # correction for depth > 2500m, < 4000 m
+        else if(X$calc_depth_m[i] > 2500){
+          #                                             mud portion             air portion
+          BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + (0.0155*((1650^3 + X$calc_depth_m[i]^3)^(1/3) - 1650))*X$PctMud[i] + 15.4*(1-X$PctMud[i])
+        }
+        # correction for depth <  2500m, > 0
+        else if(X$calc_depth_m[i] >= 0){
+          #                                             mud portion + air portion
+          BHT_corrected$corr_bht_c[i] <- X$bht_c[i] + (0.0155*((1650^3 + X$calc_depth_m[i]^3)^(1/3) - 1650))*X$PctMud[i]  + (0.0104*((1090^3 + X$calc_depth_m[i]^3)^(1/3) - 1090))*(1-X$PctMud[i])
+                                                      
+                                                    
+        }
+        else{
+          BHT_corrected$corr_bht_c[i] <- X$bht_c[i]
+          BHT_corrected$corr_error[i] <- 21 # error for negative depth
+        }
+      }
+    
+    # categorical variable defined but not 0, 2, or 3
     else{
       BHT_corrected$corr_bht_c[i] <- X$bht_c[i] # providing no adjustment
       BHT_corrected$corr_error[i] <- 30
