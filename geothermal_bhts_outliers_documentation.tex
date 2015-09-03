@@ -33,8 +33,7 @@ These scripts, code, and documents pertain to the bottom-hole temperature correc
  & \textsf{bht\_c}: Recorded bottom-hole temperature in Celsius\\
  & \textsf{calc\_depth\_m}: Calculated depth of well in meters\\
  & \textsf{reg}:  Region for that point\\
- & 0=Rome Trough and areas south east in PA\\
- & 1=Allegheny Plateau (NY and north east PA)\\
+ & 0=Rome Trough and areas south east in PA \\
  & 2=West VA Correction\\
  & 3=Allegheny Plateau with drilling fluid information\\
 \hline
@@ -54,7 +53,7 @@ The output is a data frame with the following columns added.
   & 20: depth outside of normal range\\
   & 21: depth is negative\\
   & 22: depth is missing for Allegheny Plateau or West Virginia data\\
-  & 30: categorical variable not 0,1, 2, or 3\\
+  & 30: categorical variable not 0, 2, or 3\\
   & 32: categorical variable missing\\
   & 42: bottom-hole missing\\
 \hline
@@ -63,13 +62,6 @@ The output is a data frame with the following columns added.
 
 \textbf{Equations}: The equations used to calculate the temperature correction $\Delta T$ are given below. Depth ($z_0$) is in meters and temperature correction ($\Delta T$) is in Celsius. See Frone and Blackwell (2010) for details on the modified Harrison correction. If no region is specified no temperature correction is computed and an error is printed in the output.
 
-\begin{equation} \label{DT_ap}
-{\Delta T}_{Alle. Plat.} =  \left\{
-\begin{array}{ll}
-0.01698\left[ \left(1933^3 + z_0^3\right)^{1/3} - 1933 \right],	& (z_0 < 4000 \mathrm{m})\\
-38,  & (z_0 > 4000 \mathrm{m})\\
-\end{array} \right .
-\end{equation}
 
 \begin{equation} \label{DT_rt}
 {\Delta T}_{Rome Tr.} = 0
