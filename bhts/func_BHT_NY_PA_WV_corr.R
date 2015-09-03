@@ -29,7 +29,7 @@
 # 32: missing categorical variable
 # 42: BHT is missing
 
-NY_PA_BHT2 <- function(X){
+NY_PA_WV_BHT2 <- function(X){
   
   # initializing data frame to hold all initial data 
   # and new columns for the corrected values and errors
