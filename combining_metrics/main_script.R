@@ -46,6 +46,10 @@ NY_co2 <- spTransform(NY_co,CRS("+init=epsg:31986"))
 PA_co2 <- spTransform(PA_co,CRS("+init=epsg:31986"))
 WV_co2 <- spTransform(WV_co,CRS("+init=epsg:31986"))
 
+# importing city locations
+cities <- readOGR(dsn='/Users/calvinwhealton/Dropbox/PFA_Rasters/', layer="usCensusPlaces", stringsAsFactors=FALSE)
+cities2 <- spTransform(cities,CRS("+init=epsg:31986"))
+
 ##### user-defined functions #####
 setwd('/Users/calvinwhealton/GitHub/geothermal/combining_metrics')
 source('checkSameProjCoords.R')
@@ -174,10 +178,9 @@ makeHist(rast=calc(res_pred_max,fun=log10)
          ,thresh5=log10(res_thresh5)
          ,rev_sc=FALSE
          ,plotnm='re_hist.png'
-         ,yloc=-0.22
+         ,yloc=-0.15
          ,yshift=0.02
-         ,title='log10 of Reservoir Ideality')
-
+         ,title='log10 of Reservoir Productivity Index (L/MPa-s)')
 
 # converting into the play fairway scheme
 # three color
@@ -336,7 +339,7 @@ makeHist(rast=seis_eq_pred[(seis_eq_pred<10^5)]
          ,thresh3=seis_eq_thresh3
          ,thresh5=seis_eq_thresh5
          ,rev_sc=FALSE
-         ,plotnm='se_eq_hist.png'
+         ,plotnm='seEq_hist.png'
          ,yloc=-1.5*10^-5
          ,yshift=3*10^-6
          ,title='Seismic Risk for Proximity to Earthquake (m)')
@@ -346,7 +349,7 @@ makeHist(rast=seis_stress_pred[(seis_stress_pred<100)]
          ,thresh3=seis_stress_thresh3
          ,thresh5=seis_stress_thresh5
          ,rev_sc=FALSE
-         ,plotnm='se_stress_hist.png'
+         ,plotnm='seSt_hist.png'
          ,yloc=-0.017
          ,yshift=0.003
          ,title='Seismic Risk for Angle in Stress (diff degree)')
@@ -407,7 +410,7 @@ seSt_5_0_5_NA <- convRastPFRank(rast=seis_stress_pred
 saveRast(rast=seSt_5_0_5_NA
          ,wd=wd_raster
          ,rastnm='seSt_5_0_5_NA.tif')
-makeMap(rast=seEq_5_0_5_NA
+makeMap(rast=seSt_5_0_5_NA
         ,plotnm='seSt_5_0_5_NA.png'
         ,wd=wd_image
         ,numCol=5
@@ -464,7 +467,7 @@ makeHist(rast=co_3_0_12_s
          ,plotnm='co_3_0_12_s_hist.png'
          ,yloc=-0.1
          ,yshift=0
-         ,title='Combined Play Fairway Metric: Sum')
+         ,title='')
 saveRast(rast=co_3_0_12_s
          ,wd=wd_raster
          ,rastnm='co_3_0_12_s.tif')
@@ -484,7 +487,7 @@ makeHist(rast=co_5_0_20_s
          ,plotnm='co_5_0_20_s_hist.png'
          ,yloc=-0.04
          ,yshift=0
-         ,title='Combined Play Fairway Metric: Sum')
+         ,title='')
 saveRast(rast=co_5_0_20_s
          ,wd=wd_raster
          ,rastnm='co_5_0_20_s.tif')
@@ -507,7 +510,7 @@ makeHist(rast=co_3_0_81_p
          ,plotnm='co_3_0_81_p_hist.png'
          ,yloc=-0.1
          ,yshift=0
-         ,title='Combined Play Fairway Metric: Product')
+         ,title='')
 saveRast(rast=co_3_0_81_p
          ,wd=wd_raster
          ,rastnm='co_3_0_81_p.tif')
@@ -527,7 +530,7 @@ makeHist(rast=co_5_0_625_p
          ,plotnm='co_5_0_625_p_hist.png'
          ,yloc=-0.01
          ,yshift=0
-         ,title='Combined Play Fairway Metric: Product')
+         ,title='')
 saveRast(rast=co_5_0_625_p
          ,wd=wd_raster
          ,rastnm='co_5_0_625_p.tif')
@@ -548,9 +551,9 @@ makeHist(rast=co_3_0_3_m
          ,thresh5=c()
          ,rev_sc=FALSE
          ,plotnm='co_3_0_3_m_hist.png'
-         ,yloc=-0.1
+         ,yloc=-1.2
          ,yshift=0
-         ,title='Combined Play Fairway Metric: Minimum')
+         ,title='')
 saveRast(rast=co_3_0_3_m
          ,wd=wd_raster
          ,rastnm='co_3_0_3_m.tif')
@@ -568,9 +571,9 @@ makeHist(rast=co_5_0_5_m
          ,thresh5=c(0,1,2,3,4,5)
          ,rev_sc=FALSE
          ,plotnm='co_5_0_5_m_hist.png'
-         ,yloc=-0.01
+         ,yloc=-0.8
          ,yshift=0
-         ,title='Combined Play Fairway Metric: Minimum')
+         ,title='')
 saveRast(rast=co_5_0_5_m
          ,wd=wd_raster
          ,rastnm='co_5_0_5_m.tif')
@@ -586,7 +589,7 @@ makeMap(rast=co_5_0_5_m
 comb_pfa3_geo <- stack(c(re_3_0_3_NA,th_3_0_3_NA,se_3_0_3_a))
 comb_pfa5_geo <- stack(c(re_5_0_5_NA,th_5_0_5_NA,se_5_0_5_a))
 
-
+# sums
 co_3_0_9_s_geo <- calc(comb_pfa3_geo,fun=sum,na.rm=FALSE)
 co_5_0_15_s_geo <- calc(comb_pfa5_geo,fun=sum,na.rm=FALSE)
 
@@ -598,11 +601,11 @@ makeHist(rast=co_3_0_9_s_geo
          ,plotnm='co_3_0_9_s_geo_hist.png'
          ,yloc=-0.1
          ,yshift=0
-         ,title='Combined Play Fairway Metric: Sum')
-saveRast(rast=co_3_0_9_s
+         ,title='')
+saveRast(rast=co_3_0_9_s_geo
          ,wd=wd_raster
          ,rastnm='co_3_0_9_s_geo.tif')
-makeMap(rast=co_3_0_12_s
+makeMap(rast=co_3_0_9_s_geo
         ,plotnm='co_3_0_9_s_geo.png'
         ,wd=wd_image
         ,numCol=3
@@ -615,10 +618,10 @@ makeHist(rast=co_5_0_15_s_geo
          ,thresh3=c()
          ,thresh5=c(0,1,2,3,4,5)*3
          ,rev_sc=FALSE
-         ,plotnm='co_5_0_20_s_geo_hist.png'
+         ,plotnm='co_5_0_15_s_geo_hist.png'
          ,yloc=-0.04
          ,yshift=0
-         ,title='Combined Play Fairway Metric: Sum')
+         ,title='')
 saveRast(rast=co_5_0_15_s_geo
          ,wd=wd_raster
          ,rastnm='co_5_0_15_s_geo.tif')
@@ -628,3 +631,356 @@ makeMap(rast=co_5_0_15_s_geo
         ,numCol=5
         ,comTy='sum'
         ,numRF=3)
+
+# product
+co_3_0_27_p_geo <- calc(comb_pfa3_geo,fun=prod,na.rm=FALSE)
+co_5_0_125_p_geo <- calc(comb_pfa5_geo,fun=prod,na.rm=FALSE)
+
+setwd(wd_image)
+makeHist(rast=co_3_0_27_p_geo
+         ,thresh3=c(0,1,2,3)^3
+         ,thresh5=c()
+         ,rev_sc=FALSE
+         ,plotnm='co_3_0_27_p_geo_hist.png'
+         ,yloc=-0.05
+         ,yshift=0
+         ,title='')
+saveRast(rast=co_3_0_27_p_geo
+         ,wd=wd_raster
+         ,rastnm='co_3_0_27_p_geo.tif')
+makeMap(rast=co_3_0_27_p_geo
+        ,plotnm='co_3_0_27_p_geo.png'
+        ,wd=wd_image
+        ,numCol=3
+        ,comTy='prod'
+        ,numRF=3)
+
+
+setwd(wd_image)
+makeHist(rast=co_5_0_125_p_geo
+         ,thresh3=c()
+         ,thresh5=c(0,1,2,3,4,5)^3
+         ,rev_sc=FALSE
+         ,plotnm='co_5_0_125_p_geo_hist.png'
+         ,yloc=-0.01
+         ,yshift=0
+         ,title='')
+saveRast(rast=co_5_0_125_p_geo
+         ,wd=wd_raster
+         ,rastnm='co_5_0_125_p_geo.tif')
+makeMap(rast=co_5_0_125_p_geo
+        ,plotnm='co_5_0_125_p_geo.png'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='prod'
+        ,numRF=3)
+
+# minimum
+co_3_0_3_m_geo <- calc(comb_pfa3_geo,fun=min,na.rm=FALSE)
+co_5_0_5_m_geo <- calc(comb_pfa5_geo,fun=min,na.rm=FALSE)
+
+setwd(wd_image)
+makeHist(rast=co_3_0_3_m_geo
+         ,thresh3=c(0,1,2,3)
+         ,thresh5=c()
+         ,rev_sc=FALSE
+         ,plotnm='co_3_0_3_m_geo_hist.png'
+         ,yloc=-0.8
+         ,yshift=0
+         ,title='')
+saveRast(rast=co_3_0_3_m_geo
+         ,wd=wd_raster
+         ,rastnm='co_3_0_3_m_geo.tif')
+makeMap(rast=co_3_0_3_m_geo
+        ,plotnm='co_3_0_3_m_geo.png'
+        ,wd=wd_image
+        ,numCol=3
+        ,comTy='min'
+        ,numRF=3)
+
+
+setwd(wd_image)
+makeHist(rast=co_5_0_5_m_geo
+         ,thresh3=c()
+         ,thresh5=c(0,1,2,3,4,5)
+         ,rev_sc=FALSE
+         ,plotnm='co_5_0_5_m_geo_hist.png'
+         ,yloc=-0.01
+         ,yshift=0
+         ,title='')
+saveRast(rast=co_5_0_5_m_geo
+         ,wd=wd_raster
+         ,rastnm='co_5_0_5_m_geo.tif')
+makeMap(rast=co_5_0_5_m_geo
+        ,plotnm='co_5_0_5_m_geo.png'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min'
+        ,numRF=3)
+
+# no reservoirs
+comb_pfa3_egs <- stack(c(ut5_3_0_3_NA,th_3_0_3_NA,se_3_0_3_a))
+comb_pfa5_egs <- stack(c(ut5_5_0_5_NA,th_5_0_5_NA,se_5_0_5_a))
+
+# sums
+co_3_0_9_s_egs <- calc(comb_pfa3_egs,fun=sum,na.rm=FALSE)
+co_5_0_15_s_egs <- calc(comb_pfa5_egs,fun=sum,na.rm=FALSE)
+
+setwd(wd_image)
+makeHist(rast=co_3_0_9_s_egs
+         ,thresh3=c(0,1,2,3)*3
+         ,thresh5=c()
+         ,rev_sc=FALSE
+         ,plotnm='co_3_0_9_s_egs_hist.png'
+         ,yloc=-0.1
+         ,yshift=0
+         ,title='')
+saveRast(rast=co_3_0_9_s_egs
+         ,wd=wd_raster
+         ,rastnm='co_3_0_9_s_egs.tif')
+makeMap(rast=co_3_0_9_s_egs
+        ,plotnm='co_3_0_9_s_egs.png'
+        ,wd=wd_image
+        ,numCol=3
+        ,comTy='sum'
+        ,numRF=3)
+
+
+setwd(wd_image)
+makeHist(rast=co_5_0_15_s_egs
+         ,thresh3=c()
+         ,thresh5=c(0,1,2,3,4,5)*3
+         ,rev_sc=FALSE
+         ,plotnm='co_5_0_15_s_egs_hist.png'
+         ,yloc=-0.04
+         ,yshift=0
+         ,title='')
+saveRast(rast=co_5_0_15_s_egs
+         ,wd=wd_raster
+         ,rastnm='co_5_0_15_s_egs.tif')
+makeMap(rast=co_5_0_15_s_egs
+        ,plotnm='co_5_0_15_s_egs.png'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='sum'
+        ,numRF=3)
+
+# product
+co_3_0_27_p_egs <- calc(comb_pfa3_egs,fun=prod,na.rm=FALSE)
+co_5_0_125_p_egs <- calc(comb_pfa5_egs,fun=prod,na.rm=FALSE)
+
+setwd(wd_image)
+makeHist(rast=co_3_0_27_p_egs
+         ,thresh3=c(0,1,2,3)^3
+         ,thresh5=c()
+         ,rev_sc=FALSE
+         ,plotnm='co_3_0_27_p_egs_hist.png'
+         ,yloc=-0.05
+         ,yshift=0
+         ,title='')
+saveRast(rast=co_3_0_27_p_egs
+         ,wd=wd_raster
+         ,rastnm='co_3_0_27_p_egs.tif')
+makeMap(rast=co_3_0_27_p_egs
+        ,plotnm='co_3_0_27_p_egs.png'
+        ,wd=wd_image
+        ,numCol=3
+        ,comTy='prod'
+        ,numRF=3)
+
+
+setwd(wd_image)
+makeHist(rast=co_5_0_125_p_egs
+         ,thresh3=c()
+         ,thresh5=c(0,1,2,3,4,5)^3
+         ,rev_sc=FALSE
+         ,plotnm='co_5_0_125_p_egs_hist.png'
+         ,yloc=-0.01
+         ,yshift=0
+         ,title='')
+saveRast(rast=co_5_0_125_p_egs
+         ,wd=wd_raster
+         ,rastnm='co_5_0_125_p_egs.tif')
+makeMap(rast=co_5_0_125_p_egs
+        ,plotnm='co_5_0_125_p_egs.png'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='prod'
+        ,numRF=3)
+
+# minimum
+co_3_0_3_m_egs <- calc(comb_pfa3_egs,fun=min,na.rm=FALSE)
+co_5_0_5_m_egs <- calc(comb_pfa5_egs,fun=min,na.rm=FALSE)
+
+setwd(wd_image)
+makeHist(rast=co_3_0_3_m_egs
+         ,thresh3=c(0,1,2,3)
+         ,thresh5=c()
+         ,rev_sc=FALSE
+         ,plotnm='co_3_0_3_m_egs_hist.png'
+         ,yloc=-0.8
+         ,yshift=0
+         ,title='')
+saveRast(rast=co_3_0_3_m_egs
+         ,wd=wd_raster
+         ,rastnm='co_3_0_3_m_egs.tif')
+makeMap(rast=co_3_0_3_m_egs
+        ,plotnm='co_3_0_3_m_egs.png'
+        ,wd=wd_image
+        ,numCol=3
+        ,comTy='min'
+        ,numRF=3)
+
+
+setwd(wd_image)
+makeHist(rast=co_5_0_5_m_egs
+         ,thresh3=c()
+         ,thresh5=c(0,1,2,3,4,5)
+         ,rev_sc=FALSE
+         ,plotnm='co_5_0_5_m_egs_hist.png'
+         ,yloc=-0.01
+         ,yshift=0
+         ,title='')
+saveRast(rast=co_5_0_5_m_egs
+         ,wd=wd_raster
+         ,rastnm='co_5_0_5_m_egs.tif')
+makeMap(rast=co_5_0_5_m_egs
+        ,plotnm='co_5_0_5_m_egs.png'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min'
+        ,numRF=3)
+
+
+########################
+# extracting values of layers for cities
+combined_all_rasters <- stack(c(th_5_0_5_NA,re_5_0_5_NA,se_5_0_5_a,ut5_5_0_5_NA
+                                ,co_5_0_20_s,co_5_0_625_p,co_5_0_5_m))
+                
+combined_all_rasters[combined_all_rasters<0] <- NA
+extract_pts <- extract(x=combined_all_rasters
+              ,y=cities2
+              ,sp=TRUE
+              ,nl=7
+              ,df=TRUE
+              ,na.rm=TRUE
+              ,method='simple'
+              ,buffer=2000
+              ,fun=mean
+              )
+
+extract_pts2 <- as.data.frame(extract_pts)
+names(extract_pts2)[15] <- "th_5"
+names(extract_pts2)[16] <- "re_5"
+names(extract_pts2)[17] <- "se_5"
+names(extract_pts2)[18] <- "ut_5"
+names(extract_pts2)[19] <- "co_s_5"
+names(extract_pts2)[20] <- "co_p_5"
+names(extract_pts2)[21] <- "co_m_5"
+
+
+extract_pts3 <- extract_pts2[complete.cases(extract_pts2),]
+
+ny_inds <- intersect(which(extract_pts3$USPS == 'NY'),which(extract_pts3$co_p_5 > 0))
+pa_inds <- intersect(which(extract_pts3$USPS == 'PA'),which(extract_pts3$co_p_5 > 0))
+wv_inds <- intersect(which(extract_pts3$USPS == 'WV'),which(extract_pts3$co_p_5 > 0))
+
+inds_gtr0 <- c(ny_inds,pa_inds,wv_inds)
+# setting export criteria for plot
+setwd(wd_image)
+png('scatter_p_s.png'
+    ,height=6
+    ,width=6
+    ,units='in'
+    ,res=300
+)
+plot(extract_pts3$co_s_5[inds_gtr0]
+     ,extract_pts3$co_p_5[inds_gtr0]
+     ,pch=19
+     ,xlab='Combined Sum'
+     ,ylab='Combined Product'
+     )
+dev.off()
+
+# setting export criteria for plot
+setwd(wd_image)
+png('scatter_m_s.png'
+    ,height=6
+    ,width=6
+    ,units='in'
+    ,res=300
+)
+plot(extract_pts3$co_s_5[inds_gtr0]
+     ,extract_pts3$co_m_5[inds_gtr0]
+     ,pch=19
+     ,xlab='Combined Sum'
+     ,ylab='Combined Minimum'
+)
+dev.off()
+
+# setting export criteria for plot
+setwd(wd_image)
+png('scatter_m_p.png'
+    ,height=6
+    ,width=6
+    ,units='in'
+    ,res=300
+)
+plot(extract_pts3$co_p_5[inds_gtr0]
+     ,extract_pts3$co_m_5[inds_gtr0]
+     ,pch=19
+     ,xlab='Combined Product'
+     ,ylab='Combined Minimum'
+)
+dev.off()
+
+inds_top10pct <- which(extract_pts3$co_s_5 > quantile(extract_pts3$co_s_5,0.9))
+
+# making plot with color
+setwd(wd_image)
+png('parallel.png'
+    ,height=4
+    ,width=6
+    ,units='in'
+    ,res=300
+)
+
+plot(NA,NA
+     ,xlim=c(0,3)
+     ,ylim=c(0,5)
+     ,xaxt='n'
+     ,xlab=''
+     ,ylab='Scaled Risk Factor')
+lines(c(1,1)
+     ,c(-1,6)
+     ,lwd=1
+     ,col='black')
+lines(c(2,2)
+      ,c(-1,6)
+      ,lwd=1
+      ,col='black')
+lines(c(3,3)
+      ,c(-1,6)
+      ,lwd=1
+      ,col='black')
+
+for(i in 1:length(inds_top10pct)){
+  
+  lines(c(0,1,2,3)
+       ,c(extract_pts3$th_5[inds_top10pct[i]],extract_pts3$re_5[inds_top10pct[i]],extract_pts3$se_5[inds_top10pct[i]],extract_pts3$ut_5[inds_top10pct[i]])
+       ,lwd=2
+       ,col='seagreen')
+  
+}
+par(xpd=TRUE)
+text(c(0,1,2,3)
+     ,y=-0.5
+     ,labels=c('Thermal','Reservoir', 'Seismic','Utilization')
+     ,col='black'
+     ,adj=0.5)
+par(xpd=FALSE)
+dev.off()
+
+
+
+
