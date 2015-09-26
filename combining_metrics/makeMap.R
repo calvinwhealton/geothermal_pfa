@@ -6,6 +6,7 @@ makeMap <- function(rast    # raster
                     ,numCol # number of colors
                     ,comTy=NA  # method of combining
                     ,numRF  # number of risk factors
+                    ,sdMap=FALSE # standard deviation map T/F
                     ){
   
   # setting directory for saving file
@@ -48,6 +49,11 @@ makeMap <- function(rast    # raster
     print('Not a valid selection of comTy')
   }
   
+  if(sdMap == TRUE){
+    cols <- rev(brewer.pal(9,'PuBu'))
+    breaks <- NA
+  }
+  
   # setting exporting parameters
   png(plotnm
       ,height=6
@@ -56,14 +62,25 @@ makeMap <- function(rast    # raster
       ,res=300
   )
   
-  # plotting raster
-  plot(rast
-       ,breaks=breaks
-       ,col=cols # colors
-       ,legend=FALSE # no legend
-       ,xaxt='n' # no x axis
-       ,yaxt='n' # no y axis
-       )
+  if(sdMap == TRUE){
+    plot(rast
+         ,col=cols # colors
+         ,legend=TRUE # no legend
+         ,xaxt='n' # no x axis
+         ,yaxt='n' # no y axis
+    )
+  }else{
+    # plotting raster
+    plot(rast
+         ,breaks=breaks
+         ,col=cols # colors
+         ,legend=FALSE # no legend
+         ,xaxt='n' # no x axis
+         ,yaxt='n' # no y axis
+         )
+         
+    colorbar(usr)
+  }
   
   # adding counties
   plot(NY_co2, add=TRUE)
