@@ -24,3 +24,25 @@ combining_metrics/.Rhistory
 *.adf
 
 *.xml
+
+*.sbx
+
+*.shx
+
+*.prj
+
+*.dbf
+
+*.shp
+
+*.sbn
+
+*.cpg
+
+*.qpj
+
+*.RData
+
+*.xlsx
+
+*.rtf
