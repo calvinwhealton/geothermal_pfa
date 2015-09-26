@@ -46,12 +46,13 @@ makeHist <- function(rast         # raster
 
   # finding plotting limits for 3 and 5 color scheme
   if(length(xlims) == 0){
-    t3 <- c(par("usr")[1],thresh3,par("usr")[2])
-    t5 <- c(par("usr")[1],thresh5,par("usr")[2])
+    t3 <- c(max(par("usr")[1],thresh3[1]),thresh3,min(par("usr")[2],thresh3[length(thresh3)]))
+    t5 <- c(max(par("usr")[1],thresh5[1]),thresh5,min(par("usr")[2],thresh5[length(thresh5)]))
   }else{
-    t3 <- c(max(par("usr")[1],xlims[1]),thresh3,min(xlims[2],par("usr")[2]))
-    t5 <- c(max(par("usr")[1],xlims[1]),thresh5,min(xlims[2],par("usr")[2]))
+    t3 <- c(max(par("usr")[1],xlims[1],thresh3[1]),thresh3,min(xlims[2],par("usr")[2],thresh3[length(thresh3)]))
+    t5 <- c(max(par("usr")[1],xlims[1],thresh5[1]),thresh5,min(xlims[2],par("usr")[2],thresh5[length(thesh5)]))
   }
+  
   
   
   # plotting lines outside of the plot region
