@@ -64,7 +64,7 @@ makeMap <- function(rast    # raster
   
   if(sdMap == TRUE){
     plot(rast
-         ,col=cols # colors
+         ,col=rev(cols) # colors
          ,legend=TRUE # no legend
          ,xaxt='n' # no x axis
          ,yaxt='n' # no y axis
@@ -78,8 +78,6 @@ makeMap <- function(rast    # raster
          ,xaxt='n' # no x axis
          ,yaxt='n' # no y axis
          )
-         
-    colorbar(usr)
   }
   
   # adding counties
