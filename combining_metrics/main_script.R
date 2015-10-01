@@ -73,7 +73,7 @@ source('plotWeightBuf.R')
 ##### THERMAL ######
 # file containing all commands for analysis of thermal resource
 setwd(wd_source)
-source('thermal_calcs.R') 
+source('therm_calcs.R') 
 
 
 
