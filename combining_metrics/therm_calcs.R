@@ -69,8 +69,8 @@ th_interp_tab3 <- as.matrix(read.xlsx('/Users/calvinwhealton/GitHub/geothermal/c
 th_interp_tab5 <- as.matrix(read.xlsx('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/th_d80_pfvar5.xlsx',1,header=FALSE))
 
 # values to interpolate variance
-th_means <- therm_pred@data@values
-th_ses <- therm_err@data@values
+th_means <- values(therm_pred)
+th_ses <- values(therm_err)
 
 # values used in making the interpolation table
 mean_thd80 <- seq(750,6350,by=200) # range of means
@@ -80,7 +80,13 @@ std_thd80 <- seq(40,1740,by=50) # range of standard deviations
 th_means[which(th_means %in% NA)] <- max(mean_thd80)
 th_ses[which(th_ses %in% NA)] <- min(std_thd80)
 
+th_means[which(th_means %in% -9999)] <- max(mean_thd80)
+th_ses[which(th_ses %in% -9999)] <- min(std_thd80)
+
+
+
 # interpolating for the 3 color scheme
+Sys.time()
 thvecPFvar3 <- interp2(x=std_thd80
                     ,y=mean_thd80
                     ,Z=th_interp_tab3
@@ -88,6 +94,7 @@ thvecPFvar3 <- interp2(x=std_thd80
                     ,yp=th_means
                     ,method='linear'
                     )
+Sys.time()
 
 # interpolating for the 5 color scheme
 thvecPFvar5 <- interp2(x=std_thd80
@@ -99,8 +106,8 @@ thvecPFvar5 <- interp2(x=std_thd80
 )
 
 # setting values back to NAs
-thvecPFvar3[which(therm_pred@data@values %in% NA)] <- NA
-thvecPFvar5[which(therm_pred@data@values %in% NA)] <- NA
+thvecPFvar3[which(values(therm_pred) %in% -9999)] <- NA
+thvecPFvar5[which(values(therm_pred) %in% -9999)] <- NA
 
 # initializing raster for the stored values
 therm_pfa_var3 <- therm_err
@@ -128,6 +135,30 @@ saveRast(rast=therm_pfa_var5
          ,rastnm='th_pfa_var5.tif')
 makeMap (rast=therm_pfa_var5
          ,plotnm='th_pfa_var5.png'
+         ,wd=wd_image
+         ,numCol=5
+         ,comTy=NA
+         ,numRF=1
+         ,sdMap=TRUE)
+
+
+# saving rasters and making maps
+saveRast(rast=calc(therm_pfa_var3,fun=sqrt)
+         ,wd=wd_raster
+         ,rastnm='th_pfa_sd3.tif')
+makeMap (rast=calc(therm_pfa_var3,fun=sqrt)
+         ,plotnm='th_pfa_sd3.png'
+         ,wd=wd_image
+         ,numCol=5
+         ,comTy=NA
+         ,numRF=1
+         ,sdMap=TRUE)
+
+saveRast(rast=calc(therm_pfa_var5,fun=sqrt)
+         ,wd=wd_raster
+         ,rastnm='th_pfa_sd5.tif')
+makeMap (rast=calc(therm_pfa_var5,fun=sqrt)
+         ,plotnm='th_pfa_sd5.png'
          ,wd=wd_image
          ,numCol=5
          ,comTy=NA
