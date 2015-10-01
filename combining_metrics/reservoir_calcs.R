@@ -47,8 +47,8 @@ err_tf5 <- calc(stack(c(tf_rast5,res_err[[5]])),fun=prod)
 err_tf6 <- calc(stack(c(tf_rast6,res_err[[6]])),fun=prod)
 
 # making stacked raster and taking maximum
-res_pred_max_err <- calc(stack(c(err_tf1,err_tf2,err_tf3,err_tf4,err_tf5,err_tf6)),fun=max)
 res_pred_max_err[(res_pred_max_err < 0)] <- NA
+res_pred_max_err <- calc(stack(c(err_tf1,err_tf2,err_tf3,err_tf4,err_tf5,err_tf6)),fun=max)
 
 # thresholds
 res_min <- 3*10^-5
@@ -104,8 +104,8 @@ re_interp_tab3 <- as.matrix(read.xlsx('/Users/calvinwhealton/GitHub/geothermal/c
 re_interp_tab5 <- as.matrix(read.xlsx('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/re_pfvar5.xlsx',1,header=FALSE))
 
 # values to interpolate variance
-re_means <- re_pred_max@data@values
-re_uncer <- re_pred_max_err@data@values
+re_means <- log(res_pred_max2@data@values)
+re_uncer <- res_pred_max_err@data@values
 
 # values used in making the interpolation table
 mean_re <- seq(-6,6,0.25) # range of means
@@ -134,12 +134,12 @@ revecPFvar5 <- interp2(x=uncer_re
 )
 
 # setting values back to NAs
-revecPFvar3[which(re_pred_max@data@values %in% NA)] <- NA
-revecPFvar5[which(re_pred_max@data@values %in% NA)] <- NA
+revecPFvar3[which(res_pred_max@data@values %in% NA)] <- NA
+revecPFvar5[which(res_pred_max@data@values %in% NA)] <- NA
 
 # initializing raster for the stored values
-re_pfa_var3 <- re_pred_max_err
-re_pfa_var5 <- re_pred_max_err
+re_pfa_var3 <- res_pred_max_err
+re_pfa_var5 <- res_pred_max_err
 
 # updating values of the raster
 # note: setValues() did not work
@@ -163,6 +163,31 @@ saveRast(rast=re_pfa_var5
          ,rastnm='re_pfa_var5.tif')
 makeMap (rast=re_pfa_var5
          ,plotnm='re_pfa_var5.png'
+         ,wd=wd_image
+         ,numCol=5
+         ,comTy=NA
+         ,numRF=1
+         ,sdMap=TRUE)
+
+
+
+# saving rasters and making maps
+saveRast(rast=calc(re_pfa_var3,fun=sqrt)
+         ,wd=wd_raster
+         ,rastnm='re_pfa_sd3.tif')
+makeMap (rast=calc(re_pfa_var3,fun=sqrt)
+         ,plotnm='re_pfa_sd3.png'
+         ,wd=wd_image
+         ,numCol=5
+         ,comTy=NA
+         ,numRF=1
+         ,sdMap=TRUE)
+
+saveRast(rast=calc(re_pfa_var5,fun=sqrt)
+         ,wd=wd_raster
+         ,rastnm='re_pfa_sd5.tif')
+makeMap (rast=calc(re_pfa_var5,fun=sqrt)
+         ,plotnm='re_pfa_sd5.png'
          ,wd=wd_image
          ,numCol=5
          ,comTy=NA
