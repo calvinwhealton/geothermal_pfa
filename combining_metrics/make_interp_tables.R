@@ -3,8 +3,8 @@
 # created a table for the uncertainty
 
 ### for seismic worm angle to stress ----
-mean_seSt <- seq(0,70,by=3) # range of means
-std_seSt <- seq(0,260,by=10) # range of standard deviations
+mean_seSt <- seq(0,72,by=3) # range of means
+std_seSt <- seq(0,310,by=10) # range of standard deviations
 nMC_seSt <- 100000 # number of monte carlo
 
 set.seed(10) # setting seed
@@ -19,12 +19,50 @@ for(i in 1:length(mean_seSt)){
     
     # creating random values
     # normal approximaton is wrong, but using von Mises was not working
+    # abs value used because -1 is equivalent to +1
     rand <- abs(rnorm(nMC_seSt,mean_seSt[i],std_seSt[j]))
     
-    # max distance to angle is 65.2 deg, so converting to this range
-    rand[rand>0] <- rand[rand>0]  %% 65.2
-    rand[rand<0] <- (rand[rand<0] %% 65.2)
-    
+    # max distance to angle is 65.2 deg
+    # process to convert everything to interval [0, 65.2]
+    # is to take values that are on (65.2,2*65.2) and reverse them
+    # and them put them on the scale of [0, 65.2]
+    # the reason is that being close to 2*65.2 is being close to another failure (0)
+    # the values greater than 2*65.2 have 2*65.2 subtracted and the new values have the previous
+    # step performed on them
+    rand[intersect(which(rand > 65.2),which(rand < 2*65.2))] <- 2*65.2 - rand[intersect(which(rand > 65.2),which(rand < 2*65.2))]
+    rand[which(rand > 2*65.2)] <- rand[which(rand > 2*65.2)] - 2*65.2
+    rand[intersect(which(rand > 65.2),which(rand < 2*65.2))] <- 2*65.2 - rand[intersect(which(rand > 65.2),which(rand < 2*65.2))]
+    rand[which(rand > 2*65.2)] <- rand[which(rand > 2*65.2)] - 2*65.2
+    rand[intersect(which(rand > 65.2),which(rand < 2*65.2))] <- 2*65.2 - rand[intersect(which(rand > 65.2),which(rand < 2*65.2))]
+    rand[which(rand > 2*65.2)] <- rand[which(rand > 2*65.2)] - 2*65.2
+    rand[intersect(which(rand > 65.2),which(rand < 2*65.2))] <- 2*65.2 - rand[intersect(which(rand > 65.2),which(rand < 2*65.2))]
+    rand[which(rand > 2*65.2)] <- rand[which(rand > 2*65.2)] - 2*65.2
+    rand[intersect(which(rand > 65.2),which(rand < 2*65.2))] <- 2*65.2 - rand[intersect(which(rand > 65.2),which(rand < 2*65.2))]
+    rand[which(rand > 2*65.2)] <- rand[which(rand > 2*65.2)] - 2*65.2
+    rand[intersect(which(rand > 65.2),which(rand < 2*65.2))] <- 2*65.2 - rand[intersect(which(rand > 65.2),which(rand < 2*65.2))]
+    rand[which(rand > 2*65.2)] <- rand[which(rand > 2*65.2)] - 2*65.2
+    rand[intersect(which(rand > 65.2),which(rand < 2*65.2))] <- 2*65.2 - rand[intersect(which(rand > 65.2),which(rand < 2*65.2))]
+    rand[which(rand > 2*65.2)] <- rand[which(rand > 2*65.2)] - 2*65.2
+    rand[intersect(which(rand > 65.2),which(rand < 2*65.2))] <- 2*65.2 - rand[intersect(which(rand > 65.2),which(rand < 2*65.2))]
+    rand[which(rand > 2*65.2)] <- rand[which(rand > 2*65.2)] - 2*65.2
+    rand[intersect(which(rand > 65.2),which(rand < 2*65.2))] <- 2*65.2 - rand[intersect(which(rand > 65.2),which(rand < 2*65.2))]
+    rand[which(rand > 2*65.2)] <- rand[which(rand > 2*65.2)] - 2*65.2
+    rand[intersect(which(rand > 65.2),which(rand < 2*65.2))] <- 2*65.2 - rand[intersect(which(rand > 65.2),which(rand < 2*65.2))]
+    rand[which(rand > 2*65.2)] <- rand[which(rand > 2*65.2)] - 2*65.2
+    rand[intersect(which(rand > 65.2),which(rand < 2*65.2))] <- 2*65.2 - rand[intersect(which(rand > 65.2),which(rand < 2*65.2))]
+    rand[which(rand > 2*65.2)] <- rand[which(rand > 2*65.2)] - 2*65.2
+    rand[intersect(which(rand > 65.2),which(rand < 2*65.2))] <- 2*65.2 - rand[intersect(which(rand > 65.2),which(rand < 2*65.2))]
+    rand[which(rand > 2*65.2)] <- rand[which(rand > 2*65.2)] - 2*65.2
+    rand[intersect(which(rand > 65.2),which(rand < 2*65.2))] <- 2*65.2 - rand[intersect(which(rand > 65.2),which(rand < 2*65.2))]
+    rand[which(rand > 2*65.2)] <- rand[which(rand > 2*65.2)] - 2*65.2
+    rand[intersect(which(rand > 65.2),which(rand < 2*65.2))] <- 2*65.2 - rand[intersect(which(rand > 65.2),which(rand < 2*65.2))]
+    rand[which(rand > 2*65.2)] <- rand[which(rand > 2*65.2)] - 2*65.2
+    rand[intersect(which(rand > 65.2),which(rand < 2*65.2))] <- 2*65.2 - rand[intersect(which(rand > 65.2),which(rand < 2*65.2))]
+    rand[which(rand > 2*65.2)] <- rand[which(rand > 2*65.2)] - 2*65.2
+    rand[intersect(which(rand > 65.2),which(rand < 2*65.2))] <- 2*65.2 - rand[intersect(which(rand > 65.2),which(rand < 2*65.2))]
+    rand[which(rand > 2*65.2)] <- rand[which(rand > 2*65.2)] - 2*65.2
+    rand[intersect(which(rand > 65.2),which(rand < 2*65.2))] <- 2*65.2 - rand[intersect(which(rand > 65.2),which(rand < 2*65.2))]
+    rand[which(rand > 2*65.2)] <- rand[which(rand > 2*65.2)] - 2*65.2
     # calculating play fairway 3
     pfm3 <- rep(0,nMC_seSt)
     pfm3[rand < 0.01] <-3
