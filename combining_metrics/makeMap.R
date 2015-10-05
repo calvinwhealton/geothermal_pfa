@@ -50,7 +50,7 @@ makeMap <- function(rast    # raster
   }
   
   if(sdMap == TRUE){
-    cols <- rev(brewer.pal(9,'PuBu'))
+    cols <- rev(brewer.pal(9,'GnBu')[seq(3,9)])
     breaks <- NA
   }
   

@@ -3,10 +3,10 @@
 # reading-in prediction raster
 util_pred <- raster('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/Utilization/lch4000p-')
 
-util_pred[(util_pred %in% -9999)] <- NA
-
-util_err <- util_pred
-util_err[(util_pred > 0)] <- 2
+# changing -9999 to NA
+preds <- values(util_pred)
+preds[which(preds %in% -9999)] <- NA
+values(util_pred) <- preds
 
 # thresholds
 util_min <- 5
@@ -99,4 +99,3 @@ makeMap(rast=ut5_5_0_5_NA
         ,numCol=5
         ,comTy=NA
         ,numRF=1)
-

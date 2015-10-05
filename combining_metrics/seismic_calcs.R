@@ -8,17 +8,31 @@ seis_eq_err <- raster('/Users/calvinwhealton/GitHub/geothermal/combining_metrics
 seis_stress_pred <- raster('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/Seismic/StressFieldBased - Use 2km/stressrisk2p-')
 seis_stress_err <- raster('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/Seismic/StressFieldBased - Use 2km/stressrisk2e-')
 
-# setting values to NA where there is no data
-seis_eq_pred[(seis_eq_pred %in% -9999)] <- NA
-seis_stress_pred[(seis_stress_pred %in% -9999)] <- NA
+# setting values to NA where there is no data for STRESS
+preds2 <- values(seis_stress_pred)
+errs2 <- values(seis_stress_err)
 
-seis_eq_err[(seis_eq_err %in% -9999)] <- NA
+preds2[which(preds2 %in% -9999)] <- NA
+errs2[which(errs2 %in% -9999)] <- NA
 
-# modiviation of values for two special cases
-seis_eq_err[(seis_eq_err %in% 3000)] <- 2550
-seis_eq_err[(seis_eq_err %in% 2750)] <- 2515
+values(seis_stress_pred) <- preds2
+values(seis_stress_err) <- errs2
 
+# setting values to NA where there is no data for EARTHQUAKE
+preds1 <- values(seis_eq_pred)
+errs1 <- values(seis_eq_err)
 
+preds1[which(preds1 %in% -9999)] <- NA
+errs1[which(errs1 %in% -9999)] <- NA
+
+# special values 
+errs1[which(errs1 %in% 3000)] <-  2550
+errs1[which(errs1 %in% 2750)] <-  2515
+
+values(seis_eq_pred) <- preds1
+values(seis_eq_err) <- errs1
+
+## thresholds
 # thresholds for stress angle
 seis_stress_min <- 0.001
 seis_stress_max <- 25
@@ -150,33 +164,37 @@ se_stress_interp_tab5 <- as.matrix(read.xlsx('/Users/calvinwhealton/GitHub/geoth
 se_eq_interp_tab3 <- as.matrix(read.xlsx('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/se_eq_pfvar3.xlsx',1,header=FALSE))
 se_eq_interp_tab5 <- as.matrix(read.xlsx('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/se_eq_pfvar5.xlsx',1,header=FALSE))
 
-# values to interpolate variance
-se_stress_means <- seis_stress_pred@data@values
-se_stress_sds <- seis_stress_err@data@values
+## values to interpolate variance
+se_stress_means <- values(seis_stress_pred)
+se_stress_sds <- values(seis_stress_err)
 
-se_eq_means <- seis_eq_pred@data@values
-se_eq_sds <- seis_eq_err@data@values
+se_stress_means[se_stress_means > 70] <- 70
+se_stress_sds[se_stress_means == 70] <- 0
+
+se_eq_means <- values(seis_eq_pred)
+se_eq_sds <- values(seis_eq_err)
 
 # values used in making the interpolation table
-mean_seSt <- seq(0,70,by=3) # range of means
-std_seSt <- seq(0,260,by=10) # range of standard deviations
+mean_seSt <- seq(0,72,by=3) # range of means
+std_seSt <- seq(0,310,by=10) # range of standard deviations
 
 mean_seEq <- seq(0,26000,by=200) # range of means
-std_seEq <- seq(0,2550,by=100) # range of standard deviations
-
+std_seEq <- seq(0,2600,by=100) # range of standard deviations
 
 # substituting in values for NAs so interpolation algorithm will not crash
-se_stress_means[which(se_stress_means %in% NA)] <- max(mean_seSt)
+se_stress_means[which(se_stress_means %in% NA)] <- min(mean_seSt)
 se_stress_sds[which(se_stress_sds %in% NA)] <- min(std_seSt)
 
-se_eq_means[which(se_eq_means %in% NA)] <- max(mean_seEq)
+se_eq_means[which(se_eq_means %in% NA)] <- min(mean_seEq)
 se_eq_sds[which(se_eq_sds %in% NA)] <- min(std_seEq)
+se_eq_means[which(se_eq_means > 1234566)] <- min(mean_seEq)
+se_eq_sds[which(se_eq_means > 1234566)] <- 0
 
 # for STRESS
 # interpolating for the 3 color scheme
 seStvecPFvar3 <- interp2(x=std_seSt
                        ,y=mean_seSt
-                       ,Z=seSt_interp_tab3
+                       ,Z=se_stress_interp_tab3
                        ,xp=se_stress_sds
                        ,yp=se_stress_means
                        ,method='linear'
@@ -184,7 +202,7 @@ seStvecPFvar3 <- interp2(x=std_seSt
 # interpolating for the 5 color scheme
 seStvecPFvar5 <- interp2(x=std_seSt
                          ,y=mean_seSt
-                         ,Z=seSt_interp_tab5
+                         ,Z=se_stress_interp_tab5
                          ,xp=se_stress_sds
                          ,yp=se_stress_means
                          ,method='linear'
@@ -192,8 +210,11 @@ seStvecPFvar5 <- interp2(x=std_seSt
 
 
 # setting values back to NAs
-seStvecPFvar3[which(seis_stress_pred@data@values %in% NA)] <- NA
-seStvecPFvar5[which(seis_stress_pred@data@values %in% NA)] <- NA
+seStvecPFvar3[which(values(seis_stress_pred)%in% NA)] <- NA
+seStvecPFvar5[which(values(seis_stress_pred) %in% NA)] <- NA
+
+seStvecPFvar3[which(values(seis_stress_pred) %in% 70)] <- 0
+seStvecPFvar5[which(values(seis_stress_pred) %in% 70)] <- 0
 
 # initializing raster for the stored values
 seSt_pfa_var3 <- seis_stress_err
@@ -228,12 +249,35 @@ makeMap (rast=seSt_pfa_var5
          ,sdMap=TRUE)
 
 
+# saving rasters and making maps
+saveRast(rast=calc(seSt_pfa_var3,fun=sqrt)
+         ,wd=wd_raster
+         ,rastnm='seSt_pfa_sd3.tif')
+makeMap (rast=calc(seSt_pfa_var3,fun=sqrt)
+         ,plotnm='seSt_pfa_sd3.png'
+         ,wd=wd_image
+         ,numCol=5
+         ,comTy=NA
+         ,numRF=1
+         ,sdMap=TRUE)
+
+saveRast(rast=calc(seSt_pfa_var5,fun=sqrt)
+         ,wd=wd_raster
+         ,rastnm='seSt_pfa_sd5.tif')
+makeMap (rast=calc(seSt_pfa_var5,fun=sqrt)
+         ,plotnm='seSt_pfa_sd5.png'
+         ,wd=wd_image
+         ,numCol=5
+         ,comTy=NA
+         ,numRF=1
+         ,sdMap=TRUE)
+
 
 # for EARTHQUAKE
 # interpolating for the 3 color scheme
 seEqvecPFvar3 <- interp2(x=std_seEq
                          ,y=mean_seEq
-                         ,Z=seEq_interp_tab3
+                         ,Z=se_eq_interp_tab3
                          ,xp=se_eq_sds
                          ,yp=se_eq_means
                          ,method='linear'
@@ -241,15 +285,15 @@ seEqvecPFvar3 <- interp2(x=std_seEq
 # interpolating for the 5 color scheme
 seEqvecPFvar5 <- interp2(x=std_seEq
                          ,y=mean_seEq
-                         ,Z=seEq_interp_tab5
+                         ,Z=se_eq_interp_tab5
                          ,xp=se_eq_sds
                          ,yp=se_eq_means
                          ,method='linear'
 )
 
 # setting values back to NAs
-seEqvecPFvar3[which(seis_eq_pred@data@values %in% NA)] <- NA
-seEqvecPFvar5[which(seis_eq_pred@data@values %in% NA)] <- NA
+seEqvecPFvar3[which(values(seis_eq_pred) %in% NA)] <- NA
+seEqvecPFvar5[which(values(seis_eq_pred) %in% NA)] <- NA
 
 # initializing raster for the stored values
 seEq_pfa_var3 <- seis_eq_err
@@ -284,24 +328,46 @@ makeMap (rast=seEq_pfa_var5
          ,sdMap=TRUE)
 
 
-# for COMBINED
-sevecPFvar3s <- stack(c(seEqvecPFvar3,seStvecPFvar3))
-sevecPFvar5s <- stack(c(seEqvecPFvar5,seStvecPFvar5))
+# saving rasters and making maps
+saveRast(rast=calc(seEq_pfa_var3,fun=sqrt)
+         ,wd=wd_raster
+         ,rastnm='seEq_pfa_sd3.tif')
+makeMap (rast=calc(seEq_pfa_var3,fun=sqrt)
+         ,plotnm='seEq_pfa_sd3.png'
+         ,wd=wd_image
+         ,numCol=5
+         ,comTy=NA
+         ,numRF=1
+         ,sdMap=TRUE)
 
-sevecPFvar3 <- calc(sevecPFvar3s,fun=sum)
-sevecPFvar5 <- calc(sevecPFvar5s,fun=sum)
+saveRast(rast=calc(seEq_pfa_var5,fun=sd)
+         ,wd=wd_raster
+         ,rastnm='seEq_pfa_sd5.tif')
+makeMap (rast=calc(seEq_pfa_var5,fun=sqrt)
+         ,plotnm='seEq_pfa_sd5.png'
+         ,wd=wd_image
+         ,numCol=5
+         ,comTy=NA
+         ,numRF=1
+         ,sdMap=TRUE)
+
+# for COMBINED
+se_pfa_var3s <- stack(c(seEq_pfa_var3,seSt_pfa_var3))
+se_pfa_var5s <- stack(c(seEq_pfa_var5,seSt_pfa_var5))
+
+se_pfa_var3 <- calc(se_pfa_var3s,fun=sum)
+se_pfa_var5 <- calc(se_pfa_var5s,fun=sum)
 
 # 0.25 because in the averaging of the two each raster is multiplied 
 # by 0.5, so the variance will be multiplied by 0.25
-values(sevecPFvar3) <- sevecPFvar3s@data@values*0.25
-values(sevecPFvar5) <- sevecPFvar5s@data@values*0.25
-
+values(se_pfa_var3) <- values(se_pfa_var3)*0.25
+values(se_pfa_var5) <- values(se_pfa_var5)*0.25
 
 # saving rasters and making maps
-saveRast(rast=sevecPFvar3
+saveRast(rast=se_pfa_var3
          ,wd=wd_raster
          ,rastnm='se_pfa_var3.tif')
-makeMap (rast=sevecPFvar3
+makeMap (rast=se_pfa_var3
          ,plotnm='se_pfa_var3.png'
          ,wd=wd_image
          ,numCol=5
@@ -309,10 +375,10 @@ makeMap (rast=sevecPFvar3
          ,numRF=1
          ,sdMap=TRUE)
 
-saveRast(rast=sevecPFvar5
+saveRast(rast=se_pfa_var5
          ,wd=wd_raster
          ,rastnm='se_pfa_var5.tif')
-makeMap (rast=sevecPFvar5
+makeMap (rast=se_pfa_var5
          ,plotnm='se_pfa_var5.png'
          ,wd=wd_image
          ,numCol=5
@@ -320,3 +386,33 @@ makeMap (rast=sevecPFvar5
          ,numRF=1
          ,sdMap=TRUE)
 
+# saving rasters and making maps
+saveRast(rast=calc(se_pfa_var3,fun=sqrt)
+         ,wd=wd_raster
+         ,rastnm='se_pfa_sd3.tif')
+makeMap (rast=calc(se_pfa_var3,fun=sqrt)
+         ,plotnm='se_pfa_sd3.png'
+         ,wd=wd_image
+         ,numCol=5
+         ,comTy=NA
+         ,numRF=1
+         ,sdMap=TRUE)
+
+saveRast(rast=calc(se_pfa_var5,fun=sqrt)
+         ,wd=wd_raster
+         ,rastnm='se_pfa_sd5.tif')
+makeMap (rast=calc(se_pfa_var5,fun=sqrt)
+         ,plotnm='se_pfa_sd5.png'
+         ,wd=wd_image
+         ,numCol=5
+         ,comTy=NA
+         ,numRF=1
+         ,sdMap=TRUE)
+
+# deleting files
+rm(se_3_0_3_a,se_5_0_5_a,seSt_3_0_3_NA,seSt_5_0_5_NA,seEq_3_0_3_NA,seEq_5_0_5_NA
+   ,se_eq_means,se_eq_sds,se_stress_means,se_stress_sds
+   ,se_pfa_var3,se_pfa_var3s,se_pfa_var5,se_pfa_var5s
+   ,seSt_pfa_var3,seSt_pfa_var5,seEq_pfa_var3,seEq_pfa_var5
+   ,seis_eq_pred,seis_eq_err,seis_stress_pred,seis_stress_err
+   ,sevecPFvar3s,sevecPFvar5s,seStvecPFvar3,seStvecPFvar5)

@@ -89,7 +89,7 @@ for(i in 1:length(mean_seSt)){
 
 ### for seismic distance to earthquake ----
 mean_seEq <- seq(0,26000,by=200) # range of means
-std_seEq <- seq(0,2550,by=100) # range of standard deviations
+std_seEq <- seq(0,2600,by=100) # range of standard deviations
 nMC_seEq <- 100000 # number of monte carlo
 
 set.seed(10) # setting seed
@@ -133,7 +133,7 @@ for(i in 1:length(mean_seEq)){
 
 
 ### for reservoir ----
-mean_re <- seq(-6,6,0.25) # range of means in log-space
+mean_re <- seq(-9.5,6.25,0.25) # range of means in log-space
 cv_re <- seq(0,2,by=0.1) # range of coefficient of variations
 nMC_re <- 100000 # number of monte carlo
 
