@@ -24,3 +24,45 @@ combining_metrics/.Rhistory
 *.adf
 
 *.xml
+
+*.sbx
+
+*.shx
+
+*.prj
+
+*.dbf
+
+*.shp
+
+*.sbn
+
+*.cpg
+
+*.qpj
+
+*.RData
+
+*.xlsx
+
+*.rtf
+
+combining_metrics/parAxisPlot.R
+
+combining_metrics/interpUncerPredPFM.R
+
+combining_metrics/main_script.R
+
+combining_metrics/main_script.R
+
+combining_metrics/main_script.R
+
+combining_metrics/main_script (original).R
+
+combining_metrics/main_script (original 2).R
+
+combining_metrics/main_script.R
+
+combining_metrics/main_script.R
+
+combining_metrics/main_script.R

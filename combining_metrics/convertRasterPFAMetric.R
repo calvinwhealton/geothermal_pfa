@@ -3,33 +3,18 @@
 #     rast        = raster object with values
 #     thresholds  = play fairway thresholds with [min, threshold1,...,threshold2/4, max]
 #     ignore      = numerical value to ignore
-#     log_scale   = whether conversion should be done on a log-scale (thresholds and values on real-scale)
 #     rev_scale   = whether the scale should be reversed (low is good, high is bad)
 
 convRastPFRank <- function(rast               # raster
                            ,thresholds        # thresholds including min and max values
                            ,ignore = -9999    # values to ignore
-                           ,log_scale=FALSE   # whether to convert using log scale
                            ,rev_scale=FALSE   # whether scale is reversed
+                           ,log_scale=FALSE   # whether scale is logarithmic
                            ){
   
-  # initializing raster and thresholds
-  if(log_scale == TRUE){ # case for when log-scale
-    
-    # initialize raster/thresholds as log10 of input raster/thresholds
-    rast_pfa <- calc(rast,fun=function(x){log10(x)}) 
-    thresh <- log10(thresholds)
-  
-  }else if(log_scale == FALSE){ # case for not log-scale
-    
-    # initialize raster/thresholds as input raster/thresholds
-    rast_pfa <- rast
-    thresh <- thresholds
-  
-  }else{ # error message
-    
-    print('Not a valid selection for log_scale')
-  }
+  # initialize raster/thresholds as input raster/thresholds
+  rast_pfa <- rast
+  thresh <- thresholds
   
   # setting number scheme based on number of thresholds
   # thresh includes min, max, and category separation values
@@ -46,15 +31,23 @@ convRastPFRank <- function(rast               # raster
   # looping over intermediate values (between min and max)
   for(i in 1:length(num_cat)){
     
-    # values between the two thresholds are linearly scaled
-    rast_pfa[(rast >= thresh[i])&(rast < thresh[i+1])] <- (rast[(rast >= thresh[i])&(rast < thresh[i+1])] - thresh[i])/(thresh[i+1]-thresh[i]) + i - 1
+    if(log_scale==FALSE){
+      
+      # values between the two thresholds are linearly scaled
+      rast_pfa[(rast >= thresh[i])&(rast < thresh[i+1])] <- (rast[(rast >= thresh[i])&(rast < thresh[i+1])] - thresh[i])/(thresh[i+1]-thresh[i]) + i - 1
+      
+    }else{
+      
+      # case for logarithmic scalse
+      rast_pfa[(rast >= thresh[i])&(rast < thresh[i+1])] <- (log10(rast[(rast >= thresh[i])&(rast < thresh[i+1])]) - log10(thresh[i]))/(log10(thresh[i+1])-log10(thresh[i])) + i - 1
+    }
   }
   
   # returning calculated raster
   if(rev_scale == TRUE){ # case for reversing the scale
     
     # reversing scale by subtracting raster from the maximum value
-    return(calc(rast_pfa,fun=fun(x){num_cat[length(num_cat)]-x}))
+    return(calc(rast_pfa,fun=function(x){num_cat[length(num_cat)]-x}))
     
   }else if(rev_scale == FALSE){ # case for scale not being reversed
     
