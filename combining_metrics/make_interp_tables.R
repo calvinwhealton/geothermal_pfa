@@ -1,6 +1,9 @@
 # script to generate interpolation tables
-# for each risk factor, made a vector of mean and uncertainty
-# created a table for the uncertainty
+# interpolation is of the play fairway metric variacne
+# as a function of two distribution parameters for the risk factor
+
+# settting working directory
+setwd('/Users/calvinwhealton/GitHub/geothermal_pfa/error_interp_tabs')
 
 ### for seismic worm angle to stress ----
 mean_seSt <- seq(0,72,by=3) # range of means
