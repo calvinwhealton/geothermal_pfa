@@ -31,8 +31,11 @@ library(pracma)       # for interpolation in tables
 ##### defining working directories #####
 # need to be changed based on machine
 
-# location to save rasters
-wd_raster <- '/Users/calvinwhealton/GitHub/geotherma_pfa/GISData/Rasters'
+# location to SAVE rasters
+wd_raster_out <- '/Users/calvinwhealton/GitHub/geothermal_pfa/GISData/Rasters_out'
+
+# location to READ rasters
+wd_raster_in <- '/Users/calvinwhealton/GitHub/geothermal_pfa/GISData/Rasters_in'
 
 # location to save images
 wd_image <- '/Users/calvinwhealton/GitHub/geothermal_pfa/combining_metrics/figs'
@@ -82,9 +85,11 @@ poi2 <- spTransform(poi,CRS("+init=epsg:31986"))
 poi2Buf5 <- gBuffer(poi2,width=5000)
 poi2Buf10 <- gBuffer(poi2,width=10000)
 
+# deleting old file
 rm(poi)
 
 ##### user-defined functions #####
+# functions read-in from other R scripts
 setwd(wd_code)
 source('convertRasterPFAMetric.R')
 source('combineRFs.R')
@@ -95,16 +100,18 @@ source('saveRast.R')
 source('plotWeightBuf.R')
 
 ##### THERMAL ######
-# importing rasters
-therm_pred <- raster('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/Thermal/d80p2-')
-therm_err  <- raster('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/Thermal/d80e2-')
+# importing rasters, depth to 80 DegC and standard error of prediction
+therm_pred <- raster(paste(wd_raster_in,'/Thermal/d80p2-',sep=''))
+therm_err  <- raster(paste(wd_raster_in,'/Thermal/d80e2-',sep=''))
 
+# values of -9999 are no data, so replaced with NA
 therm_pred[therm_pred < 0] <- NA
 therm_err[therm_err < 0] <- NA
 
 # setting thresholds
-therm_thresh3 <- rev(c(8750,3000,2000,500))  # thermal (made up)
-therm_thresh5 <- rev(c(8750,4000,3000,2300,1500,500)) # thermal (made up)
+# deep values are less favorable
+therm_thresh3 <- rev(c(8750,3000,2000,500))
+therm_thresh5 <- rev(c(8750,4000,3000,2300,1500,500))
 
 # creating histogram
 setwd(wd_image)
@@ -124,7 +131,7 @@ th_3_0_3_NA <- convRastPFRank(rast=therm_pred
                              ,ignore=-9999
                              ,rev_scale=TRUE)
 saveRast(rast=th_3_0_3_NA
-          ,wd=wd_raster
+          ,wd=wd_raster_out
           ,rastnm='th_3_0_3_NA.tif')
 makeMap (rast=th_3_0_3_NA
          ,plotnm='th_3_0_3_NA.png'
@@ -139,7 +146,7 @@ th_5_0_5_NA <- convRastPFRank(rast=therm_pred
                              ,ignore=-9999
                              ,rev_scale=TRUE)
 saveRast(rast=th_5_0_5_NA
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='th_5_0_5_NA.tif')
 makeMap (rast=th_5_0_5_NA
          ,plotnm='th_5_0_5_NA.png'
