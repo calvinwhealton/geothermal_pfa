@@ -156,14 +156,15 @@ makeMap (rast=th_5_0_5_NA
          ,numRF=1)
 
 # making thermal uncertainty maps
-th_interp_tab3 <- as.matrix(read.xlsx('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/th_d80_pfvar3.xlsx',1,header=FALSE))
-th_interp_tab5 <- as.matrix(read.xlsx('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/th_d80_pfvar5.xlsx',1,header=FALSE))
+th_interp_tab3 <- as.matrix(read.xlsx('/Users/calvinwhealton/GitHub/geothermal_pfa/combining_metrics/th_d80_pfvar3.xlsx',1,header=FALSE))
+th_interp_tab5 <- as.matrix(read.xlsx('/Users/calvinwhealton/GitHub/geothermal_pfa/combining_metrics/th_d80_pfvar5.xlsx',1,header=FALSE))
 
 # values to interpolate variance
 th_means <- values(therm_pred)
 th_ses <- values(therm_err)
 
 # values used in making the interpolation table
+# must check values from make_interp_table.R
 mean_thd80 <- seq(750,6350,by=200) # range of means
 std_thd80 <- seq(40,1740,by=50) # range of standard deviations
 
@@ -204,7 +205,7 @@ values(th_pfa_var5) <- thvecPFvar5
 
 # saving rasters and making maps of variance
 saveRast(rast=th_pfa_var3
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='th_pfa_var3.tif')
 makeMap (rast=th_pfa_var3
          ,plotnm='th_pfa_var3.png'
@@ -215,7 +216,7 @@ makeMap (rast=th_pfa_var3
          ,sdMap=TRUE)
 
 saveRast(rast=th_pfa_var5
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='th_pfa_var5.tif')
 makeMap (rast=th_pfa_var5
          ,plotnm='th_pfa_var5.png'
@@ -227,7 +228,7 @@ makeMap (rast=th_pfa_var5
 
 # saving rasters and making maps of standard deviation
 saveRast(rast=calc(th_pfa_var3,fun=sqrt)
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='th_pfa_sd3.tif')
 makeMap (rast=calc(th_pfa_var3,fun=sqrt)
          ,plotnm='th_pfa_sd3.png'
@@ -238,7 +239,7 @@ makeMap (rast=calc(th_pfa_var3,fun=sqrt)
          ,sdMap=TRUE)
 
 saveRast(rast=calc(th_pfa_var5,fun=sqrt)
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='th_pfa_sd5.tif')
 makeMap (rast=calc(th_pfa_var5,fun=sqrt)
          ,plotnm='th_pfa_sd5.png'
@@ -248,6 +249,7 @@ makeMap (rast=calc(th_pfa_var5,fun=sqrt)
          ,numRF=1
          ,sdMap=TRUE)
 
+# deleting unneeded variables
 rm(th_ses,th_means)
 rm(thvecPFvar3,thvecPFvar5)
 rm(therm_thresh3,therm_thresh5)
