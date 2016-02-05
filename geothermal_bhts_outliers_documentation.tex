@@ -11,16 +11,26 @@
 \author{Calvin A. Whealton (caw324@cornell.edu)}
 \title{Geothermal Play Fairway Analysis Code Documentation}
 
+\renewcommand{\thesection}{}
+\renewcommand{\thesubsection}{}
+
+\setcounter{tocdepth}{5}
+
 \begin{document}
 
 \maketitle
+
+\tableofcontents
+
+\newpage
+
 The following document provides supporting information for codes written by Calvin Whealton for the Geothermal Play Fairway Analysis grant. This is not a comprehensive list of all code written for the project. Section 1 is for bottom-hole temperature corrections, section 2 is for outlier identification, and section 3 is for reservoir ideality. 
 
 \section*{Bottom-hole Temperature Corrections}
 
 These scripts, code, and documents pertain to the bottom-hole temperature correction calculations.
 
-\section*{\textsf{func\_BHT\_NY\_PA\_WV\_corr.R}}
+\subsection*{\textsf{func\_BHT\_NY\_PA\_WV\_corr.R}}
 
 \textbf{Description}: Script with a function to compute bottom-hole temperature corrections for NY, PA, and WV based on the region. Function accepts an R data frame and returns the data frame with two additional columns for the corrected bottom-hole temperature and the error.
 
