@@ -1,42 +1,57 @@
 ##################################################
 # script for combining risk factor rasters (RFs)
 # into the play fairway metric raster
+# and completing additional analysis for some cities
 #
 # steps include:
-# -1. importing functions/libraries
-# 0. importing rasters
-# 1. verifying that the rasters are in the same system
-# 2. converting individual rasters into the play fairway rank
-# 3. combining the RFs using a specified function
-# 4. saving output
+# --importing functions/libraries
+# --importing rasters for each risk factor
+# --converting individual rasters into the play fairway rank (0-3 or 0-5)
+# --combining the RFs using a specified function
+# --saving output
+# --completing more detailed comparisons for specific locations
+#
+# modifications when running on a different machine:
+# -- change all working directories
 
 ##### importing functions/libraries #####
 
 # libraries
-library(sp) # for transforming coordinates
-library(raster) # for raster calcuations
-library(rgdal)
-library(rasterVis)
-library(maps)
-library(maptools)
-library(xlsx) # for reading in xlsx tables
-library(rgeos) # for buffering places of interest
-library(RColorBrewer)
-library(pracma)
+library(sp)           # for transforming coordinates
+library(raster)       # for raster calcuations
+library(rgdal)        # reading in data, readOGR() and writeOGR()
+#library(rasterVis)    # 
+#library(maps)         #
+#library(maptools)     #
+library(xlsx)         # for reading in xlsx tables
+library(rgeos)        # for buffering places of interest
+library(RColorBrewer) # R color brewer palettes for parallel axis plot
+library(pracma)       # for interpolation in tables
 
 ##### defining working directories #####
-wd_raster <- '/Users/calvinwhealton/Dropbox/PFA_Rasters'
-wd_image <- '/Users/calvinwhealton/Desktop/combining_rf'
+# need to be changed based on machine
+
+# location to save rasters
+wd_raster <- '/Users/calvinwhealton/GitHub/geotherma_pfa/GISData/Rasters'
+
+# location to save images
+wd_image <- '/Users/calvinwhealton/GitHub/geothermal_pfa/combining_metrics/figs'
+
+# location of code/scripts are stored
+wd_code <- '/Users/calvinwhealton/GitHub/geothermal_pfa/combining_metrics'
+
+# location of input shapefiles
+wd_shapefiles <- '/Users/calvinwhealton/GitHub/geothermal_pfa/GISData/'
 
 ##### loading-in state/county shapefiles #####
 # states
-States = readOGR(dsn='/Users/calvinwhealton/GitHub/geothermal/combining_metrics/', layer="us_state_WGS", stringsAsFactors=FALSE)
+States = readOGR(dsn=paste(wd_shapefiles,'us_state_WGS',sep=''), layer="us_state_WGS", stringsAsFactors=FALSE)
 NY = States[which(States$STATEFP == "36"),]
 PA = States[which(States$STATEFP == "42"),]
 WV = States[which(States$STATEFP == "54"),]
 
 # counties
-Counties = readOGR(dsn='/Users/calvinwhealton/GitHub/geothermal/combining_metrics/', layer="us_county_WGS84_prj", stringsAsFactors=FALSE)
+Counties = readOGR(dsn=paste(wd_shapefiles,'us_county_WGS84_prj',sep=''), layer="us_county_WGS84_prj", stringsAsFactors=FALSE)
 NY_co = Counties[which(Counties$STATEFP == "36"),]
 PA_co = Counties[which(Counties$STATEFP == "42"),]
 WV_co = Counties[which(Counties$STATEFP == "54"),]
@@ -50,14 +65,15 @@ NY_co2 <- spTransform(NY_co,CRS("+init=epsg:31986"))
 PA_co2 <- spTransform(PA_co,CRS("+init=epsg:31986"))
 WV_co2 <- spTransform(WV_co,CRS("+init=epsg:31986"))
 
-# importing city locations
-cities <- readOGR(dsn='/Users/calvinwhealton/Dropbox/PFA_Rasters/', layer="usCensusPlaces", stringsAsFactors=FALSE)
+# importing city locations, the US Census Places
+cities <- readOGR(dsn=paste(wd_shapefiles,'usCensusPlaces',sep=''), layer="usCensusPlaces", stringsAsFactors=FALSE)
 cities2 <- spTransform(cities,CRS("+init=epsg:31986"))
 
+# removing the untransformed shapefiles
 rm(NY,PA,WV,States,Counties,NY_co,PA_co,WV_co)
 
 ## importing places of interest
-poi <- readOGR(dsn='/Users/calvinwhealton/GitHub/geothermal/combining_metrics/', layer="placesofinterest2", stringsAsFactors=FALSE)
+poi <- readOGR(dsn=paste(wd_shapefiles,'placesofinterest2',sep=''), layer="placesofinterest2", stringsAsFactors=FALSE)
 
 # converting to UTM 17 N system
 poi2 <- spTransform(poi,CRS("+init=epsg:31986"))
@@ -69,7 +85,7 @@ poi2Buf10 <- gBuffer(poi2,width=10000)
 rm(poi)
 
 ##### user-defined functions #####
-setwd('/Users/calvinwhealton/GitHub/geothermal/combining_metrics')
+setwd(wd_code)
 source('convertRasterPFAMetric.R')
 source('combineRFs.R')
 source('makeUtilBuf.R')
@@ -1494,6 +1510,8 @@ trialRun2_df <- trialRun_df[setdiff(seq(1,nrow(trialRun_df),1),intersect(which(t
 
 # points of interest
 points <- as.data.frame(poi2)
+points$x <- points$coords.x1
+points$y <- points$coords.x2
 
 # calculating distance to each of the key points
 for(i in 1:nrow(points)){
