@@ -46,15 +46,22 @@ wd_code <- '/Users/calvinwhealton/GitHub/geothermal_pfa/combining_metrics'
 # location of input shapefiles
 wd_shapefiles <- '/Users/calvinwhealton/GitHub/geothermal_pfa/GISData/'
 
+# location of error interoplation tables
+wd_error_interp <- '/Users/calvinwhealton/GitHub/geothermal_pfa/error_interp_tabs'
+
 ##### loading-in state/county shapefiles #####
 # states
-States = readOGR(dsn=paste(wd_shapefiles,'us_state_WGS',sep=''), layer="us_state_WGS", stringsAsFactors=FALSE)
+States = readOGR(dsn=paste(wd_shapefiles,'us_state_WGS',sep='')
+                 , layer="us_state_WGS"
+                 , stringsAsFactors=FALSE)
 NY = States[which(States$STATEFP == "36"),]
 PA = States[which(States$STATEFP == "42"),]
 WV = States[which(States$STATEFP == "54"),]
 
 # counties
-Counties = readOGR(dsn=paste(wd_shapefiles,'us_county_WGS84_prj',sep=''), layer="us_county_WGS84_prj", stringsAsFactors=FALSE)
+Counties = readOGR(dsn=paste(wd_shapefiles,'us_county_WGS84_prj',sep='')
+                   , layer="us_county_WGS84_prj"
+                   , stringsAsFactors=FALSE)
 NY_co = Counties[which(Counties$STATEFP == "36"),]
 PA_co = Counties[which(Counties$STATEFP == "42"),]
 WV_co = Counties[which(Counties$STATEFP == "54"),]
@@ -69,14 +76,18 @@ PA_co2 <- spTransform(PA_co,CRS("+init=epsg:31986"))
 WV_co2 <- spTransform(WV_co,CRS("+init=epsg:31986"))
 
 # importing city locations, the US Census Places
-cities <- readOGR(dsn=paste(wd_shapefiles,'usCensusPlaces',sep=''), layer="usCensusPlaces", stringsAsFactors=FALSE)
+cities <- readOGR(dsn=paste(wd_shapefiles,'usCensusPlaces',sep='')
+                  , layer="usCensusPlaces"
+                  , stringsAsFactors=FALSE)
 cities2 <- spTransform(cities,CRS("+init=epsg:31986"))
 
 # removing the untransformed shapefiles
 rm(NY,PA,WV,States,Counties,NY_co,PA_co,WV_co)
 
 ## importing places of interest
-poi <- readOGR(dsn=paste(wd_shapefiles,'placesofinterest2',sep=''), layer="placesofinterest2", stringsAsFactors=FALSE)
+poi <- readOGR(dsn=paste(wd_shapefiles,'placesofinterest2',sep='')
+               , layer="placesofinterest2"
+               , stringsAsFactors=FALSE)
 
 # converting to UTM 17 N system
 poi2 <- spTransform(poi,CRS("+init=epsg:31986"))
@@ -156,8 +167,8 @@ makeMap (rast=th_5_0_5_NA
          ,numRF=1)
 
 # making thermal uncertainty maps
-th_interp_tab3 <- as.matrix(read.xlsx('/Users/calvinwhealton/GitHub/geothermal_pfa/combining_metrics/th_d80_pfvar3.xlsx',1,header=FALSE))
-th_interp_tab5 <- as.matrix(read.xlsx('/Users/calvinwhealton/GitHub/geothermal_pfa/combining_metrics/th_d80_pfvar5.xlsx',1,header=FALSE))
+th_interp_tab3 <- as.matrix(read.xlsx(paste(wd_error_interp,'/th_d80_pfvar3.xlsx',sep=''),1,header=FALSE))
+th_interp_tab5 <- as.matrix(read.xlsx(paste(wd_error_interp,'/th_d80_pfvar5.xlsx',sep=''),1,header=FALSE))
 
 # values to interpolate variance
 th_means <- values(therm_pred)
@@ -178,8 +189,7 @@ thvecPFvar3 <- interp2(x=std_thd80
                        ,Z=th_interp_tab3
                        ,xp=th_ses
                        ,yp=th_means
-                       ,method='linear'
-)
+                       ,method='linear')
 
 # interpolating for the 5 color scheme
 thvecPFvar5 <- interp2(x=std_thd80
@@ -187,8 +197,7 @@ thvecPFvar5 <- interp2(x=std_thd80
                        ,Z=th_interp_tab5
                        ,xp=th_ses
                        ,yp=th_means
-                       ,method='linear'
-)
+                       ,method='linear')
 
 # setting values back to NAs
 thvecPFvar3[which(values(therm_pred) %in% NA)] <- NA
@@ -256,36 +265,40 @@ rm(therm_thresh3,therm_thresh5)
 rm(std_thd80,mean_thd80)
 
 ##### RESERVOIR ######
-res_pred_l1000 <- raster('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/Reservoirs/fff_l1000p')
-res_pred_1015 <- raster('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/Reservoirs/fff_1015p2')
-res_pred_1520 <- raster('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/Reservoirs/fff_1520p')
-res_pred_2025 <- raster('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/Reservoirs/fff_2025p')
-res_pred_2530 <- raster('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/Reservoirs/fff_2530p')
-res_pred_3035 <- raster('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/Reservoirs/fff_3035p')
-res_pred_3540 <- raster('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/Reservoirs/fff_3540p')
+# l1000 = less than 1000 m
+# 1015 = 1000 to 1500 m
+# 1520 = 1500 to 2000 m, etc.
+res_pred_l1000 <- raster(paste(wd_raster_in,'/Reservoirs/fff_l1000p',sep=''))
+res_pred_1015 <- raster(paste(wd_raster_in,'/Reservoirs/fff_1015p2',sep=''))
+res_pred_1520 <- raster(paste(wd_raster_in,'/Reservoirs/fff_1520p',sep=''))
+res_pred_2025 <- raster(paste(wd_raster_in,'/Reservoirs/fff_2025p',sep=''))
+res_pred_2530 <- raster(paste(wd_raster_in,'/Reservoirs/fff_2530p',sep=''))
+res_pred_3035 <- raster(paste(wd_raster_in,'/Reservoirs/fff_3035p',sep=''))
+res_pred_3540 <- raster(paste(wd_raster_in,'/Reservoirs/fff_3540p',sep=''))
 
 # reservoir error
-res_err_l1000 <- raster('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/Reservoirs/fff_l1000e')
-res_err_1015 <- raster('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/Reservoirs/fff_1015e')
-res_err_1520 <- raster('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/Reservoirs/fff_1520e')
-res_err_2025 <- raster('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/Reservoirs/fff_2025e')
-res_err_2530 <- raster('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/Reservoirs/fff_2530e')
-res_err_3035 <- raster('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/Reservoirs/fff_3035e')
-res_err_3540 <- raster('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/Reservoirs/fff_3540e')
+res_err_l1000 <- raster(paste(wd_raster_in,'/Reservoirs/fff_l1000e',sep=''))
+res_err_1015 <- raster(paste(wd_raster_in,'/Reservoirs/fff_1015e',sep=''))
+res_err_1520 <- raster(paste(wd_raster_in,'/Reservoirs/fff_1520e',sep=''))
+res_err_2025 <- raster(paste(wd_raster_in,'/Reservoirs/fff_2025e',sep=''))
+res_err_2530 <- raster(paste(wd_raster_in,'/Reservoirs/fff_2530e',sep=''))
+res_err_3035 <- raster(paste(wd_raster_in,'/Reservoirs/fff_3035e',sep=''))
+res_err_3540 <- raster(paste(wd_raster_in,'/Reservoirs/fff_3540e',sep=''))
 
 # stacking rasters and taking maximum, assuming going for highest quality reservoir
-# ignoring reservoirs shallower than 1000 m
+# ignoring reservoirs shallower than 1000 m (the res_pred_l1000 raster)
 res_pred <- stack(c(res_pred_1015,res_pred_1520,res_pred_2025,res_pred_2530,res_pred_3035,res_pred_3540))
 res_pred_max <- calc(res_pred,fun=max,na.rm=TRUE)
 
+# setting values less than zero (-9999) to NA because they have no data
 res_pred_max2 <- res_pred_max
 res_pred_max2[res_pred_max <0] <- NA
 
 # stacking reservoir errors
 res_err <- stack(c(res_err_1015,res_err_1520,res_err_2025,res_err_2530,res_err_3035,res_err_3540))
 
-# making reservoir error term
-# raster of whether the max value is equal to the value in the layer
+## making reservoir error term
+# step 1: raster of whether the max value is equal to the value in the layer
 tf_rast1 <- (res_pred_max == res_pred[[1]])
 tf_rast2 <- (res_pred_max == res_pred[[2]])
 tf_rast3 <- (res_pred_max == res_pred[[3]])
@@ -293,7 +306,9 @@ tf_rast4 <- (res_pred_max == res_pred[[4]])
 tf_rast5 <- (res_pred_max == res_pred[[5]])
 tf_rast6 <- (res_pred_max == res_pred[[6]])
 
-# stacking raster with error raster
+# step 2: stacking raster with error raster
+# product means only values where the max was matched will be assigned a positive value
+# otherwise, it will be 0
 err_tf1 <- calc(stack(c(tf_rast1,res_err[[1]])),fun=prod)
 err_tf2 <- calc(stack(c(tf_rast2,res_err[[2]])),fun=prod)
 err_tf3 <- calc(stack(c(tf_rast3,res_err[[3]])),fun=prod)
@@ -301,22 +316,24 @@ err_tf4 <- calc(stack(c(tf_rast4,res_err[[4]])),fun=prod)
 err_tf5 <- calc(stack(c(tf_rast5,res_err[[5]])),fun=prod)
 err_tf6 <- calc(stack(c(tf_rast6,res_err[[6]])),fun=prod)
 
-# making stacked raster and taking maximum
+# step 3: making stacked raster and taking maximum
+# only values where the raster matched the maximum of the rasters will be used
 res_pred_max_err <- calc(stack(c(err_tf1,err_tf2,err_tf3,err_tf4,err_tf5,err_tf6)),fun=max)
 res_pred_max_err[(res_pred_max_err < 0)] <- NA
 
 # thresholds
-res_min <- 3*10^-5
-res_max <- 301
+res_min <- 3*10^-5 # minimum for reservoir (both 3-color and 5-color)
+res_max <- 301     # maximum for reservoir (both 3-color and 5-color)
 res_thresh3 <- c(res_min,c(0.1,1.0),res_max)
 res_thresh5 <- c(res_min,c(0.01,0.1,1.0,10),res_max)
 
+# deleting unneeded rasters
 rm(tf_rast1,tf_rast2,tf_rast3,tf_rast4,tf_rast5,tf_rast6)
 rm(err_tf1,err_tf2,err_tf3,err_tf4,err_tf5,err_tf6)
 
 # histogram
 setwd(wd_image)
-makeHist(rast=calc(res_pred_max,fun=log10)
+makeHist(rast=calc(res_pred_max2,fun=log10)
          ,thresh3=log10(res_thresh3)
          ,thresh5=log10(res_thresh5)
          ,rev_sc=FALSE
@@ -332,7 +349,7 @@ re_3_0_3_NA <- convRastPFRank(rast=calc(res_pred_max2,fun=log10)
                              ,ignore=-9999
                              ,rev_scale=FALSE)
 saveRast(rast=re_3_0_3_NA
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='re_3_0_3_NA.tif')
 makeMap(rast=re_3_0_3_NA
          ,plotnm='re_3_0_3_NA.png'
@@ -347,7 +364,7 @@ re_5_0_5_NA <- convRastPFRank(rast=calc(res_pred_max2,fun=log10)
                               ,ignore=-9999
                               ,rev_scale=FALSE)
 saveRast(rast=re_5_0_5_NA
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='re_5_0_5_NA.tif')
 makeMap (rast=re_5_0_5_NA
          ,plotnm='re_5_0_5_NA.png'
@@ -358,14 +375,16 @@ makeMap (rast=re_5_0_5_NA
 
 # making uncertainty map
 # reading-in tables for interpolated values
-re_interp_tab3 <- as.matrix(read.xlsx('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/re_pfvar3.xlsx',1,header=FALSE))
-re_interp_tab5 <- as.matrix(read.xlsx('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/re_pfvar5.xlsx',1,header=FALSE))
+re_interp_tab3 <- as.matrix(read.xlsx(paste(wd_error_interp,'/re_pfvar3.xlsx',sep=''),1,header=FALSE))
+re_interp_tab5 <- as.matrix(read.xlsx(paste(wd_error_interp,'/re_pfvar5.xlsx',sep=''),1,header=FALSE))
 
 # making the uncertainty maps
+# values are in base-e (ln) to match calculations in make_interp_tabs
 re_means <- log(values(res_pred_max2))
 re_uncer <- values(res_pred_max_err)
 
 # ranges for mean and cv
+# must check values from make_interp_table.R
 mean_re <- seq(-9.5,6.25,0.25) # range of means
 uncer_re <- seq(0,2,by=0.1) # range of coefficient of variation
 
@@ -382,8 +401,7 @@ revecPFvar3 <- interp2(x=uncer_re
                        ,Z=re_interp_tab3
                        ,xp=re_uncer
                        ,yp=re_means
-                       ,method='linear'
-)
+                       ,method='linear')
 
 # interpolating for the 5 color scheme
 revecPFvar5 <- interp2(x=uncer_re
@@ -391,9 +409,9 @@ revecPFvar5 <- interp2(x=uncer_re
                        ,Z=re_interp_tab5
                        ,xp=re_uncer
                        ,yp=re_means
-                       ,method='linear'
-)
+                       ,method='linear')
 
+# dummy variables
 revecPFvar3_2 <- revecPFvar3
 revecPFvar5_2 <- revecPFvar5
 
@@ -401,6 +419,8 @@ revecPFvar5_2 <- revecPFvar5
 revecPFvar3[which(values(res_pred_max2) %in% NA)] <- NA
 revecPFvar5[which(values(res_pred_max2) %in% NA)] <- NA
 
+# converting any values that were -Inf to zero
+# -Inf result from zero mean value reservoirs
 revecPFvar3[which(re_means %in% -Inf)] <- 0
 revecPFvar5[which(re_means %in% -Inf)] <- 0
 
@@ -413,15 +433,9 @@ re_pfa_var5 <- res_pred_max_err
 values(re_pfa_var3) <- revecPFvar3
 values(re_pfa_var5) <- revecPFvar5
 
-# rm(res_pred,res_err,res_pred_max,res_pred_max2
-#    ,res_pred_1015,res_pred_1520,res_pred_2025,res_pred_2530,res_pred_3035,res_pred_3540
-#    ,res_err_1015,res_err_1520,res_err_2025,res_err_2530,res_err_3035,res_err_3540
-#    ,revecPFvar3,revecPFvar5,re_means,re_uncer)
-# rm(res_pred_l1000,res_pred_max_err,res_max,res_min,res_thresh3,res_thresh5)
-rm(revecPFvar3_2,revecPFvar5_2)
 # saving rasters and making maps
 saveRast(rast=re_pfa_var3
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='re_pfa_var3.tif')
 makeMap (rast=re_pfa_var3
          ,plotnm='re_pfa_var3.png'
@@ -432,7 +446,7 @@ makeMap (rast=re_pfa_var3
          ,sdMap=TRUE)
 
 saveRast(rast=re_pfa_var5
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='re_pfa_var5.tif')
 makeMap (rast=re_pfa_var5
          ,plotnm='re_pfa_var5.png'
@@ -442,11 +456,9 @@ makeMap (rast=re_pfa_var5
          ,numRF=1
          ,sdMap=TRUE)
 
-
-
 # saving rasters and making maps
 saveRast(rast=calc(re_pfa_var3,fun=sqrt)
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='re_pfa_sd3.tif')
 makeMap (rast=calc(re_pfa_var3,fun=sqrt)
          ,plotnm='re_pfa_sd3.png'
@@ -457,7 +469,7 @@ makeMap (rast=calc(re_pfa_var3,fun=sqrt)
          ,sdMap=TRUE)
 
 saveRast(rast=calc(re_pfa_var5,fun=sqrt)
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='re_pfa_sd5.tif')
 makeMap (rast=calc(re_pfa_var5,fun=sqrt)
          ,plotnm='re_pfa_sd5.png'
@@ -466,7 +478,13 @@ makeMap (rast=calc(re_pfa_var5,fun=sqrt)
          ,comTy=NA
          ,numRF=1
          ,sdMap=TRUE)
-rm(uncer_re,mean_re)
+
+# removing unneeded files
+rm(uncer_re,mean_re,re_pfa_var3,re_pfa_var5)
+rm(res_err_3540,res_err_3035,res_err_2530,res_err_1520,res_err_2025,res_err_1015)
+rm(res_pred_l1000,res_pred_3540,res_pred_1520,res_pred_3035,res_pred_2530,res_pred_2025,res_pred_1015)
+rm(res_pred_max,res_pred)
+rm(revecPFvar3,revecPFvar3_2,revecPFvar5,revecPFvar5_2)
 
 ##### UTILIZATION ####
 # utilization prediciton and error
