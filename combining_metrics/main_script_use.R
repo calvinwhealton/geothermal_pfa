@@ -590,25 +590,29 @@ rm(util_max,util_min,util_thresh3,util_thresh5)
 rm(ut0_5_0_5_NA,ut0_3_0_3_NA,util_pred)
 
 ##### SEISMIC ######
-seis_eq_pred <- raster('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/Seismic/EarthquakeBased/eqrisk_2kmp-')
-seis_eq_err <- raster('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/Seismic/EarthquakeBased/eqrisk_2kme-')
+# reading-in the earthquake based risk rasters
+seis_eq_pred <- raster(paste(wd_raster_in,'/Seismic/EarthquakeBased/eqrisk_2kmp-',sep=''))
+seis_eq_err <- raster(paste(wd_raster_in,'/Seismic/EarthquakeBased/eqrisk_2kme-',sep=''))
 
-seis_stress_pred <- raster('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/Seismic/StressFieldBased - Use 2km/stressrisk2p-')
-seis_stress_err <- raster('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/Seismic/StressFieldBased - Use 2km/stressrisk2e-')
+# reading-in the stress field based risk rasters
+seis_stress_pred <- raster(paste(wd_raster_in,'/Seismic/StressFieldBased - Use 2km/stressrisk2p-',sep=''))
+seis_stress_err <- raster(paste(wd_raster_in,'/Seismic/StressFieldBased - Use 2km/stressrisk2e-',sep=''))
 
+# setting no data (-9999) to NA
 seis_eq_pred[(seis_eq_pred %in% -9999)] <- NA
 seis_stress_pred[(seis_stress_pred %in% -9999)] <- NA
 
 seis_eq_err[(seis_eq_err %in% -9999)] <- NA
 seis_stress_err[(seis_stress_err %in% -9999)] <- NA
 
-# thresholds
-seis_stress_min <- 0.001
+# thresholds for stress-based risk
+seis_stress_min <- 0.001 # to avoid problems with numerically zero values
 seis_stress_max <- 25
 seis_stress_thresh3 <- c(seis_stress_min,c(8,16),seis_stress_max)
 seis_stress_thresh5<- c(seis_stress_min,c(5,10,15,20),seis_stress_max)
 
-seis_eq_min <- 0.001
+# thresholds for earthquake-based risk
+seis_eq_min <- 0.001 # to avoid problems with numerically zero values
 seis_eq_max <- 25
 seis_eq_thresh3 <- 10^3*c(seis_eq_min,c(8,16),seis_eq_max)
 seis_eq_thresh5<- 10^3*c(seis_eq_min,c(5,10,15,20),seis_eq_max)
@@ -642,7 +646,7 @@ seEq_3_0_3_NA <- convRastPFRank(rast=seis_eq_pred
                                ,ignore=-9999
                                ,rev_scale=FALSE)
 saveRast(rast=seEq_3_0_3_NA
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='seEq_3_0_3_NA.tif')
 makeMap(rast=seEq_3_0_3_NA
         ,plotnm='seEq_3_0_3_NA.png'
@@ -657,7 +661,7 @@ seEq_5_0_5_NA <- convRastPFRank(rast=seis_eq_pred
                                 ,ignore=-9999
                                 ,rev_scale=FALSE)
 saveRast(rast=seEq_5_0_5_NA
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='seEq_5_0_5_NA.tif')
 makeMap(rast=seEq_5_0_5_NA
         ,plotnm='seEq_5_0_5_NA.png'
@@ -673,7 +677,7 @@ seSt_3_0_3_NA <- convRastPFRank(rast=seis_stress_pred
                                 ,ignore=-9999
                                 ,rev_scale=FALSE)
 saveRast(rast=seSt_3_0_3_NA
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='seSt_3_0_3_NA.tif')
 makeMap(rast=seSt_3_0_3_NA
         ,plotnm='seSt_3_0_3_NA.png'
@@ -688,7 +692,7 @@ seSt_5_0_5_NA <- convRastPFRank(rast=seis_stress_pred
                                 ,ignore=-9999
                                 ,rev_scale=FALSE)
 saveRast(rast=seSt_5_0_5_NA
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='seSt_5_0_5_NA.tif')
 makeMap(rast=seSt_5_0_5_NA
         ,plotnm='seSt_5_0_5_NA.png'
@@ -702,9 +706,9 @@ makeMap(rast=seSt_5_0_5_NA
 se_3_0_3_a <- calc(stack(c(seEq_3_0_3_NA,seSt_3_0_3_NA)),fun=mean)
 se_5_0_5_a  <- calc(stack(c(seEq_5_0_5_NA,seSt_5_0_5_NA)),fun=mean)
 
-
+# writing rasters
 saveRast(rast=se_3_0_3_a 
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='se_3_0_3_a.tif')
 makeMap(rast=se_3_0_3_a
         ,plotnm='se_3_0_3_a.png'
@@ -714,7 +718,7 @@ makeMap(rast=se_3_0_3_a
         ,numRF=1)
 
 saveRast(rast=se_5_0_5_a
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='se_5_0_5_a.tif')
 makeMap(rast=se_5_0_5_a
         ,plotnm='se_5_0_5_a.png'
@@ -725,11 +729,11 @@ makeMap(rast=se_5_0_5_a
 
 ## calcualting uncertainty maps for the play fairway scheme
 # reading-in tables for interpolated values
-se_stress_interp_tab3 <- as.matrix(read.xlsx('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/se_stress_pfvar3.xlsx',1,header=FALSE))
-se_stress_interp_tab5 <- as.matrix(read.xlsx('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/se_stress_pfvar5.xlsx',1,header=FALSE))
+se_stress_interp_tab3 <- as.matrix(read.xlsx(paste(wd_error_interp,'/se_stress_pfvar3.xlsx',sep=''),1,header=FALSE))
+se_stress_interp_tab5 <- as.matrix(read.xlsx(paste(wd_error_interp,'/se_stress_pfvar5.xlsx',sep=''),1,header=FALSE))
 
-se_eq_interp_tab3 <- as.matrix(read.xlsx('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/se_eq_pfvar3.xlsx',1,header=FALSE))
-se_eq_interp_tab5 <- as.matrix(read.xlsx('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/se_eq_pfvar5.xlsx',1,header=FALSE))
+se_eq_interp_tab3 <- as.matrix(read.xlsx(paste(wd_error_interp,'/se_eq_pfvar3.xlsx',sep=''),1,header=FALSE))
+se_eq_interp_tab5 <-  as.matrix(read.xlsx(paste(wd_error_interp,'/se_eq_pfvar5.xlsx',sep=''),1,header=FALSE))
 
 ## values to interpolate variance
 se_stress_means <- values(seis_stress_pred)
@@ -741,10 +745,10 @@ se_stress_sds[se_stress_means == 70] <- 0
 se_eq_means <- values(seis_eq_pred)
 se_eq_sds <- values(seis_eq_err)
 
+# correction because errors were added
+# when whey should have been squared, summed, and then square rooted
 se_eq_sds[which(se_eq_sds%in% 3000)] <-  2550
 se_eq_sds[which(se_eq_sds %in% 2750)] <-  2515
-
-
 
 # values used in making the interpolation table
 mean_seSt <- seq(0,72,by=3) # range of means
@@ -799,7 +803,7 @@ values(seSt_pfa_var5) <- seStvecPFvar5
 
 # saving rasters and making maps
 saveRast(rast=seSt_pfa_var3
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='seSt_pfa_var3.tif')
 makeMap (rast=seSt_pfa_var3
          ,plotnm='seSt_pfa_var3.png'
@@ -810,7 +814,7 @@ makeMap (rast=seSt_pfa_var3
          ,sdMap=TRUE)
 
 saveRast(rast=seSt_pfa_var5
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='seSt_pfa_var5.tif')
 makeMap (rast=seSt_pfa_var5
          ,plotnm='seSt_pfa_var5.png'
@@ -823,7 +827,7 @@ makeMap (rast=seSt_pfa_var5
 
 # saving rasters and making maps
 saveRast(rast=calc(seSt_pfa_var3,fun=sqrt)
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='seSt_pfa_sd3.tif')
 makeMap (rast=calc(seSt_pfa_var3,fun=sqrt)
          ,plotnm='seSt_pfa_sd3.png'
@@ -834,7 +838,7 @@ makeMap (rast=calc(seSt_pfa_var3,fun=sqrt)
          ,sdMap=TRUE)
 
 saveRast(rast=calc(seSt_pfa_var5,fun=sqrt)
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='seSt_pfa_sd5.tif')
 makeMap (rast=calc(seSt_pfa_var5,fun=sqrt)
          ,plotnm='seSt_pfa_sd5.png'
@@ -878,7 +882,7 @@ values(seEq_pfa_var5) <- seEqvecPFvar5
 
 # saving rasters and making maps
 saveRast(rast=seEq_pfa_var3
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='seEq_pfa_var3.tif')
 makeMap (rast=seEq_pfa_var3
          ,plotnm='seEq_pfa_var3.png'
@@ -889,7 +893,7 @@ makeMap (rast=seEq_pfa_var3
          ,sdMap=TRUE)
 
 saveRast(rast=seEq_pfa_var5
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='seEq_pfa_var5.tif')
 makeMap (rast=seEq_pfa_var5
          ,plotnm='seEq_pfa_var5.png'
@@ -902,7 +906,7 @@ makeMap (rast=seEq_pfa_var5
 
 # saving rasters and making maps
 saveRast(rast=calc(seEq_pfa_var3,fun=sqrt)
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='seEq_pfa_sd3.tif')
 makeMap (rast=calc(seEq_pfa_var3,fun=sqrt)
          ,plotnm='seEq_pfa_sd3.png'
@@ -913,7 +917,7 @@ makeMap (rast=calc(seEq_pfa_var3,fun=sqrt)
          ,sdMap=TRUE)
 
 saveRast(rast=calc(seEq_pfa_var5,fun=sqrt)
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='seEq_pfa_sd5.tif')
 makeMap (rast=calc(seEq_pfa_var5,fun=sqrt)
          ,plotnm='seEq_pfa_sd5.png'
@@ -922,13 +926,6 @@ makeMap (rast=calc(seEq_pfa_var5,fun=sqrt)
          ,comTy=NA
          ,numRF=1
          ,sdMap=TRUE)
-
-rm(seis_eq_max,seis_eq_min,seis_eq_thresh5,seis_eq_thresh3)
-rm(seis_stress_max,seis_stress_min,seis_stress_thresh5,seis_stress_thresh3)
-#rm(seis_eq_err,seis_eq_pred,seis_stress_err,seis_stress_pred)
-rm(seEqvecPFvar3,seEqvecPFvar5,seStvecPFvar3,seStvecPFvar5)
-rm(se_stress_sds,se_stress_means,se_eq_means,se_eq_sds)
-rm(mean_seEq,mean_seSt,std_seEq,std_seSt)
 
 # for COMBINED
 se_pfa_var3s <- stack(c(seEq_pfa_var3,seSt_pfa_var3))
@@ -944,7 +941,7 @@ values(se_pfa_var5) <- values(se_pfa_var5)*0.25
 
 # saving rasters and making maps
 saveRast(rast=se_pfa_var3
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='se_pfa_var3.tif')
 makeMap (rast=se_pfa_var3
          ,plotnm='se_pfa_var3.png'
@@ -955,7 +952,7 @@ makeMap (rast=se_pfa_var3
          ,sdMap=TRUE)
 
 saveRast(rast=se_pfa_var5
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='se_pfa_var5.tif')
 makeMap (rast=se_pfa_var5
          ,plotnm='se_pfa_var5.png'
@@ -967,7 +964,7 @@ makeMap (rast=se_pfa_var5
 
 # saving rasters and making maps
 saveRast(rast=calc(se_pfa_var3,fun=sqrt)
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='se_pfa_sd3.tif')
 makeMap (rast=calc(se_pfa_var3,fun=sqrt)
          ,plotnm='se_pfa_sd3.png'
@@ -978,7 +975,7 @@ makeMap (rast=calc(se_pfa_var3,fun=sqrt)
          ,sdMap=TRUE)
 
 saveRast(rast=calc(se_pfa_var5,fun=sqrt)
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='se_pfa_sd5.tif')
 makeMap (rast=calc(se_pfa_var5,fun=sqrt)
          ,plotnm='se_pfa_sd5.png'
@@ -988,6 +985,14 @@ makeMap (rast=calc(se_pfa_var5,fun=sqrt)
          ,numRF=1
          ,sdMap=TRUE)
 
+# removing unneeded files
+rm(seis_eq_max,seis_eq_min,seis_eq_thresh5,seis_eq_thresh3)
+rm(seis_stress_max,seis_stress_min,seis_stress_thresh5,seis_stress_thresh3)
+rm(seis_eq_err,seis_eq_pred,seis_stress_err,seis_stress_pred)
+rm(seEqvecPFvar3,seEqvecPFvar5,seStvecPFvar3,seStvecPFvar5)
+rm(se_stress_sds,se_stress_means,se_eq_means,se_eq_sds)
+rm(mean_seEq,mean_seSt,std_seEq,std_seSt)
+rm(seEq_5_0_5_NA,seEq_3_0_3_NA,seSt_5_0_5_NA,seSt_3_0_3_NA)
 
 ##### making a quick and simple map to compare results #####
 # combining maps
