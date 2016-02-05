@@ -488,8 +488,9 @@ rm(revecPFvar3,revecPFvar3_2,revecPFvar5,revecPFvar5_2)
 
 ##### UTILIZATION ####
 # utilization prediciton and error
-util_pred <- raster('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/Utilization/lch4000p-')
+util_pred <- raster(paste(wd_raster_in,'/Utilization/lch4000p-',sep=''))
 
+# replacing no data (-9999) with NA
 util_pred[(util_pred %in% -9999)] <- NA
 
 # thresholds
@@ -518,7 +519,7 @@ makeHist(rast=util_pred[(util_pred<100)]
          ,plotnm='ut_hist.png'
          ,yloc=-0.025
          ,yshift=0.003
-         ,title='Utilization Surface Cost ($/MMBTU) (only < 100 plotted)')
+         ,title='Utilization Surface Cost ($/MMBTU) (only < 100 $/MMBTU plotted)')
 
 # converting into the play fairway scheme
 # three color
@@ -527,7 +528,7 @@ ut0_3_0_3_NA <- convRastPFRank(rast=util_pred
                               ,ignore=-9999
                               ,rev_scale=TRUE)
 saveRast(rast=ut0_3_0_3_NA 
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='ut0_3_0_3_NA.tif')
 makeMap(rast=ut0_3_0_3_NA 
         ,plotnm='ut0_3_0_3_NA.png'
@@ -542,7 +543,7 @@ ut0_5_0_5_NA <- convRastPFRank(rast=util_pred
                                ,ignore=-9999
                                ,rev_scale=TRUE)
 saveRast(rast=ut0_5_0_5_NA 
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='ut0_5_0_5_NA.tif')
 makeMap(rast=ut0_5_0_5_NA 
         ,plotnm='ut0_5_0_5_NA.png'
@@ -559,7 +560,7 @@ ut5_3_0_3_NA <- focal(ut0_3_0_3_NA
                        ,na.rm=TRUE
                        ,pad=TRUE)
 saveRast(rast=ut5_3_0_3_NA 
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='ut5_3_0_3_NA.tif')
 makeMap(rast=ut5_3_0_3_NA 
         ,plotnm='ut5_3_0_3_NA.png'
@@ -575,7 +576,7 @@ ut5_5_0_5_NA <- focal(ut0_5_0_5_NA
                       ,na.rm=TRUE
                       ,pad=TRUE)
 saveRast(rast=ut5_5_0_5_NA 
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='ut5_5_0_5_NA.tif')
 makeMap(rast=ut5_5_0_5_NA 
         ,plotnm='ut5_5_0_5_NA.png'
@@ -584,8 +585,9 @@ makeMap(rast=ut5_5_0_5_NA
         ,comTy=NA
         ,numRF=1)
 
-
+# deleting unneeded files
 rm(util_max,util_min,util_thresh3,util_thresh5)
+rm(ut0_5_0_5_NA,ut0_3_0_3_NA,util_pred)
 
 ##### SEISMIC ######
 seis_eq_pred <- raster('/Users/calvinwhealton/GitHub/geothermal/combining_metrics/Seismic/EarthquakeBased/eqrisk_2kmp-')
