@@ -68,3 +68,15 @@ combining_metrics/main_script.R
 combining_metrics/main_script.R
 
 *.toc
+
+combining_metrics/figs/.Rhistory
+
+combining_metrics/old_code/main_script (original 2).R
+
+combining_metrics/old_code/main_script (original).R
+
+combining_metrics/old_code/reservoir_calcs.R
+
+combining_metrics/old_code/seismic_calcs.R
+
+combining_metrics/old_code/shapefiles_rasters_general.R
