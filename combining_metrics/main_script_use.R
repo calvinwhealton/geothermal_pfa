@@ -8,9 +8,14 @@
 # --importing rasters for each risk factor
 # --converting individual rasters into the play fairway rank (0-3 or 0-5)
 # --combining the RFs using a specified function
-# --saving output
+# --saving output for the combined output
 # --completing more detailed comparisons for specific locations
-#
+# --parallel axis plot
+# --boxplot with Monte Carlo distributions
+# --violin plot with Monte Carlo distributions
+# --scatterplots of different metrics
+# saving all output
+
 # modifications when running on a different machine:
 # -- change all working directories
 
@@ -20,13 +25,11 @@
 library(sp)           # for transforming coordinates
 library(raster)       # for raster calcuations
 library(rgdal)        # reading in data, readOGR() and writeOGR()
-#library(rasterVis)    # 
-#library(maps)         #
-#library(maptools)     #
 library(xlsx)         # for reading in xlsx tables
 library(rgeos)        # for buffering places of interest
 library(RColorBrewer) # R color brewer palettes for parallel axis plot
 library(pracma)       # for interpolation in tables
+library(vioplot)      # for violin plots
 
 ##### defining working directories #####
 # need to be changed based on machine
@@ -48,6 +51,9 @@ wd_shapefiles <- '/Users/calvinwhealton/GitHub/geothermal_pfa/GISData/'
 
 # location of error interoplation tables
 wd_error_interp <- '/Users/calvinwhealton/GitHub/geothermal_pfa/error_interp_tabs'
+
+# location to save workspace
+wd_workspace <- '/Users/calvinwhealton/GitHub/geothermal_pfa/data'
 
 ##### loading-in state/county shapefiles #####
 # states
@@ -480,11 +486,12 @@ makeMap (rast=calc(re_pfa_var5,fun=sqrt)
          ,sdMap=TRUE)
 
 # removing unneeded files
-rm(uncer_re,mean_re,re_pfa_var3,re_pfa_var5)
+rm(uncer_re,mean_re)
 rm(res_err_3540,res_err_3035,res_err_2530,res_err_1520,res_err_2025,res_err_1015)
 rm(res_pred_l1000,res_pred_3540,res_pred_1520,res_pred_3035,res_pred_2530,res_pred_2025,res_pred_1015)
 rm(res_pred_max,res_pred)
 rm(revecPFvar3,revecPFvar3_2,revecPFvar5,revecPFvar5_2)
+rm(res_err,res_err_l1000,re_means,re_uncer)
 
 ##### UTILIZATION ####
 # utilization prediciton and error
@@ -587,7 +594,7 @@ makeMap(rast=ut5_5_0_5_NA
 
 # deleting unneeded files
 rm(util_max,util_min,util_thresh3,util_thresh5)
-rm(ut0_5_0_5_NA,ut0_3_0_3_NA,util_pred)
+rm(ut0_5_0_5_NA,ut0_3_0_3_NA)
 
 ##### SEISMIC ######
 # reading-in the earthquake based risk rasters
@@ -988,19 +995,17 @@ makeMap (rast=calc(se_pfa_var5,fun=sqrt)
 # removing unneeded files
 rm(seis_eq_max,seis_eq_min,seis_eq_thresh5,seis_eq_thresh3)
 rm(seis_stress_max,seis_stress_min,seis_stress_thresh5,seis_stress_thresh3)
-rm(seis_eq_err,seis_eq_pred,seis_stress_err,seis_stress_pred)
 rm(seEqvecPFvar3,seEqvecPFvar5,seStvecPFvar3,seStvecPFvar5)
 rm(se_stress_sds,se_stress_means,se_eq_means,se_eq_sds)
 rm(mean_seEq,mean_seSt,std_seEq,std_seSt)
-rm(seEq_5_0_5_NA,seEq_3_0_3_NA,seSt_5_0_5_NA,seSt_3_0_3_NA)
 
 ##### making a quick and simple map to compare results #####
-# combining maps
+#### combining maps, all variables ###
 # creating a stacked raster
 comb_pfa3 <- stack(c(re_3_0_3_NA,th_3_0_3_NA,ut5_3_0_3_NA,se_3_0_3_a))
 comb_pfa5 <- stack(c(re_5_0_5_NA,th_5_0_5_NA,ut5_5_0_5_NA,se_5_0_5_a))
 
-# using sums
+## using sums
 co_3_0_12_s <- calc(comb_pfa3,fun=sum,na.rm=FALSE)
 co_5_0_20_s <- calc(comb_pfa5,fun=sum,na.rm=FALSE)
 
@@ -1014,7 +1019,7 @@ makeHist(rast=co_3_0_12_s
          ,yshift=0
          ,title='')
 saveRast(rast=co_3_0_12_s
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='co_3_0_12_s.tif')
 makeMap(rast=co_3_0_12_s
         ,plotnm='co_3_0_12_s.png'
@@ -1022,7 +1027,6 @@ makeMap(rast=co_3_0_12_s
         ,numCol=3
         ,comTy='sum'
         ,numRF=4)
-
 
 setwd(wd_image)
 makeHist(rast=co_5_0_20_s
@@ -1034,7 +1038,7 @@ makeHist(rast=co_5_0_20_s
          ,yshift=0
          ,title='')
 saveRast(rast=co_5_0_20_s
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='co_5_0_20_s.tif')
 makeMap(rast=co_5_0_20_s
         ,plotnm='co_5_0_20_s.png'
@@ -1043,7 +1047,7 @@ makeMap(rast=co_5_0_20_s
         ,comTy='sum'
         ,numRF=4)
 
-# using products
+## using products
 co_3_0_81_p <- calc(comb_pfa3,fun=prod,na.rm=FALSE)
 co_5_0_625_p <- calc(comb_pfa5,fun=prod,na.rm=FALSE)
 
@@ -1057,7 +1061,7 @@ makeHist(rast=co_3_0_81_p
          ,yshift=0
          ,title='')
 saveRast(rast=co_3_0_81_p
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='co_3_0_81_p.tif')
 makeMap(rast=co_3_0_81_p
         ,plotnm='co_3_0_81_p.png'
@@ -1077,7 +1081,7 @@ makeHist(rast=co_5_0_625_p
          ,yshift=0
          ,title='')
 saveRast(rast=co_5_0_625_p
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='co_5_0_625_p.tif')
 makeMap(rast=co_5_0_625_p
         ,plotnm='co_5_0_625_p.png'
@@ -1086,7 +1090,7 @@ makeMap(rast=co_5_0_625_p
         ,comTy='prod'
         ,numRF=4)
 
-# using minimums
+## using minimums
 co_3_0_3_m <- calc(comb_pfa3,fun=min,na.rm=FALSE)
 co_5_0_5_m <- calc(comb_pfa5,fun=min,na.rm=FALSE)
 
@@ -1100,7 +1104,7 @@ makeHist(rast=co_3_0_3_m
          ,yshift=0
          ,title='')
 saveRast(rast=co_3_0_3_m
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='co_3_0_3_m.tif')
 makeMap(rast=co_3_0_3_m
         ,plotnm='co_3_0_3_m.png'
@@ -1120,7 +1124,7 @@ makeHist(rast=co_5_0_5_m
          ,yshift=0
          ,title='')
 saveRast(rast=co_5_0_5_m
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='co_5_0_5_m.tif')
 makeMap(rast=co_5_0_5_m
         ,plotnm='co_5_0_5_m.png'
@@ -1129,12 +1133,11 @@ makeMap(rast=co_5_0_5_m
         ,comTy='sum'
         ,numRF=1)
 
-
-# geologic only
+#### combining maps, geologic variables only ###
 comb_pfa3_geo <- stack(c(re_3_0_3_NA,th_3_0_3_NA,se_3_0_3_a))
 comb_pfa5_geo <- stack(c(re_5_0_5_NA,th_5_0_5_NA,se_5_0_5_a))
 
-# sums
+## sums
 co_3_0_9_s_geo <- calc(comb_pfa3_geo,fun=sum,na.rm=FALSE)
 co_5_0_15_s_geo <- calc(comb_pfa5_geo,fun=sum,na.rm=FALSE)
 
@@ -1148,7 +1151,7 @@ makeHist(rast=co_3_0_9_s_geo
          ,yshift=0
          ,title='')
 saveRast(rast=co_3_0_9_s_geo
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='co_3_0_9_s_geo.tif')
 makeMap(rast=co_3_0_9_s_geo
         ,plotnm='co_3_0_9_s_geo.png'
@@ -1156,7 +1159,6 @@ makeMap(rast=co_3_0_9_s_geo
         ,numCol=3
         ,comTy='sum'
         ,numRF=3)
-
 
 setwd(wd_image)
 makeHist(rast=co_5_0_15_s_geo
@@ -1168,7 +1170,7 @@ makeHist(rast=co_5_0_15_s_geo
          ,yshift=0
          ,title='')
 saveRast(rast=co_5_0_15_s_geo
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='co_5_0_15_s_geo.tif')
 makeMap(rast=co_5_0_15_s_geo
         ,plotnm='co_5_0_15_s_geo.png'
@@ -1177,7 +1179,7 @@ makeMap(rast=co_5_0_15_s_geo
         ,comTy='sum'
         ,numRF=3)
 
-# product
+## product
 co_3_0_27_p_geo <- calc(comb_pfa3_geo,fun=prod,na.rm=FALSE)
 co_5_0_125_p_geo <- calc(comb_pfa5_geo,fun=prod,na.rm=FALSE)
 
@@ -1191,7 +1193,7 @@ makeHist(rast=co_3_0_27_p_geo
          ,yshift=0
          ,title='')
 saveRast(rast=co_3_0_27_p_geo
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='co_3_0_27_p_geo.tif')
 makeMap(rast=co_3_0_27_p_geo
         ,plotnm='co_3_0_27_p_geo.png'
@@ -1199,7 +1201,6 @@ makeMap(rast=co_3_0_27_p_geo
         ,numCol=3
         ,comTy='prod'
         ,numRF=3)
-
 
 setwd(wd_image)
 makeHist(rast=co_5_0_125_p_geo
@@ -1211,7 +1212,7 @@ makeHist(rast=co_5_0_125_p_geo
          ,yshift=0
          ,title='')
 saveRast(rast=co_5_0_125_p_geo
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='co_5_0_125_p_geo.tif')
 makeMap(rast=co_5_0_125_p_geo
         ,plotnm='co_5_0_125_p_geo.png'
@@ -1220,7 +1221,7 @@ makeMap(rast=co_5_0_125_p_geo
         ,comTy='prod'
         ,numRF=3)
 
-# minimum
+## minimum
 co_3_0_3_m_geo <- calc(comb_pfa3_geo,fun=min,na.rm=FALSE)
 co_5_0_5_m_geo <- calc(comb_pfa5_geo,fun=min,na.rm=FALSE)
 
@@ -1234,7 +1235,7 @@ makeHist(rast=co_3_0_3_m_geo
          ,yshift=0
          ,title='')
 saveRast(rast=co_3_0_3_m_geo
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='co_3_0_3_m_geo.tif')
 makeMap(rast=co_3_0_3_m_geo
         ,plotnm='co_3_0_3_m_geo.png'
@@ -1242,7 +1243,6 @@ makeMap(rast=co_3_0_3_m_geo
         ,numCol=3
         ,comTy='min'
         ,numRF=3)
-
 
 setwd(wd_image)
 makeHist(rast=co_5_0_5_m_geo
@@ -1254,7 +1254,7 @@ makeHist(rast=co_5_0_5_m_geo
          ,yshift=0
          ,title='')
 saveRast(rast=co_5_0_5_m_geo
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='co_5_0_5_m_geo.tif')
 makeMap(rast=co_5_0_5_m_geo
         ,plotnm='co_5_0_5_m_geo.png'
@@ -1269,7 +1269,7 @@ co_uncer_geo_s5 <- stack(re_pfa_var5,th_pfa_var5,se_pfa_var5)
 
 co_pfa_var3_s_geo <- calc(co_uncer_geo_s3,fun=sum)
 saveRast(rast=co_pfa_var3_s_geo
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='co_pfa_var3_s_geo.tif')
 makeMap(rast=co_pfa_var3_s_geo
         ,plotnm='co_pfa_var3_s_geo.png'
@@ -1279,7 +1279,7 @@ makeMap(rast=co_pfa_var3_s_geo
         ,numRF=3
         ,sdMap=TRUE)
 saveRast(rast=calc(co_pfa_var3_s_geo,fun=sqrt)
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='co_pfa_sd3_s_geo.tif')
 makeMap(rast=calc(co_pfa_var3_s_geo,fun=sqrt)
         ,plotnm='co_pfa_sd3_s_geo.png'
@@ -1289,10 +1289,9 @@ makeMap(rast=calc(co_pfa_var3_s_geo,fun=sqrt)
         ,numRF=3
         ,sdMap=TRUE)
 
-
 co_pfa_var5_s_geo <- calc(co_uncer_geo_s5,fun=sum)
 saveRast(rast=co_pfa_var5_s_geo
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='co_pfa_var5_s_geo.tif')
 makeMap(rast=co_pfa_var5_s_geo
         ,plotnm='co_pfa_var5_s_geo.png'
@@ -1302,7 +1301,7 @@ makeMap(rast=co_pfa_var5_s_geo
         ,numRF=3
         ,sdMap=TRUE)
 saveRast(rast=calc(co_pfa_var5_s_geo,fun=sqrt)
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='co_pfa_sd5_s_geo.tif')
 makeMap(rast=calc(co_pfa_var5_s_geo,fun=sqrt)
         ,plotnm='co_pfa_sd5_s_geo.png'
@@ -1325,7 +1324,7 @@ co_uncer_geo_pt5_3 <- calc(stack(c(re_pfa_var5,th_5_0_5_NA,th_5_0_5_NA,se_5_0_5_
 co_pfa_var5_p_geo <- calc(stack(c(co_uncer_geo_pt5_1,co_uncer_geo_pt5_2,co_uncer_geo_pt5_3)),fun=sum)
 
 saveRast(rast=co_pfa_var3_p_geo
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='co_pfa_var3_p_geo.tif')
 makeMap(rast=co_pfa_var3_p_geo
         ,plotnm='co_pfa_var3_p_geo.png'
@@ -1335,7 +1334,7 @@ makeMap(rast=co_pfa_var3_p_geo
         ,numRF=3
         ,sdMap=TRUE)
 saveRast(rast=calc(co_pfa_var3_p_geo,fun=sqrt)
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='co_pfa_sd3_p_geo.tif')
 makeMap(rast=calc(co_pfa_var3_p_geo,fun=sqrt)
         ,plotnm='co_pfa_sd3_p_geo.png'
@@ -1345,9 +1344,8 @@ makeMap(rast=calc(co_pfa_var3_p_geo,fun=sqrt)
         ,numRF=3
         ,sdMap=TRUE)
 
-
 saveRast(rast=co_pfa_var5_p_geo
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='co_pfa_var5_p_geo.tif')
 makeMap(rast=co_pfa_var5_p_geo
         ,plotnm='co_pfa_var5_p_geo.png'
@@ -1357,7 +1355,7 @@ makeMap(rast=co_pfa_var5_p_geo
         ,numRF=3
         ,sdMap=TRUE)
 saveRast(rast=calc(co_pfa_var5_p_geo,fun=sqrt)
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='co_pfa_sd5_p_geo.tif')
 makeMap(rast=calc(co_pfa_var5_p_geo,fun=sqrt)
         ,plotnm='co_pfa_sd5_p_geo.png'
@@ -1367,11 +1365,11 @@ makeMap(rast=calc(co_pfa_var5_p_geo,fun=sqrt)
         ,numRF=3
         ,sdMap=TRUE)
 
-# no reservoirs
+### combined variables, no reservoirs ###
 comb_pfa3_egs <- stack(c(ut5_3_0_3_NA,th_3_0_3_NA,se_3_0_3_a))
 comb_pfa5_egs <- stack(c(ut5_5_0_5_NA,th_5_0_5_NA,se_5_0_5_a))
 
-# sums
+## sums
 co_3_0_9_s_egs <- calc(comb_pfa3_egs,fun=sum,na.rm=FALSE)
 co_5_0_15_s_egs <- calc(comb_pfa5_egs,fun=sum,na.rm=FALSE)
 
@@ -1385,7 +1383,7 @@ makeHist(rast=co_3_0_9_s_egs
          ,yshift=0
          ,title='')
 saveRast(rast=co_3_0_9_s_egs
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='co_3_0_9_s_egs.tif')
 makeMap(rast=co_3_0_9_s_egs
         ,plotnm='co_3_0_9_s_egs.png'
@@ -1393,7 +1391,6 @@ makeMap(rast=co_3_0_9_s_egs
         ,numCol=3
         ,comTy='sum'
         ,numRF=3)
-
 
 setwd(wd_image)
 makeHist(rast=co_5_0_15_s_egs
@@ -1405,7 +1402,7 @@ makeHist(rast=co_5_0_15_s_egs
          ,yshift=0
          ,title='')
 saveRast(rast=co_5_0_15_s_egs
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='co_5_0_15_s_egs.tif')
 makeMap(rast=co_5_0_15_s_egs
         ,plotnm='co_5_0_15_s_egs.png'
@@ -1414,7 +1411,7 @@ makeMap(rast=co_5_0_15_s_egs
         ,comTy='sum'
         ,numRF=3)
 
-# product
+## product
 co_3_0_27_p_egs <- calc(comb_pfa3_egs,fun=prod,na.rm=FALSE)
 co_5_0_125_p_egs <- calc(comb_pfa5_egs,fun=prod,na.rm=FALSE)
 
@@ -1428,7 +1425,7 @@ makeHist(rast=co_3_0_27_p_egs
          ,yshift=0
          ,title='')
 saveRast(rast=co_3_0_27_p_egs
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='co_3_0_27_p_egs.tif')
 makeMap(rast=co_3_0_27_p_egs
         ,plotnm='co_3_0_27_p_egs.png'
@@ -1436,7 +1433,6 @@ makeMap(rast=co_3_0_27_p_egs
         ,numCol=3
         ,comTy='prod'
         ,numRF=3)
-
 
 setwd(wd_image)
 makeHist(rast=co_5_0_125_p_egs
@@ -1448,7 +1444,7 @@ makeHist(rast=co_5_0_125_p_egs
          ,yshift=0
          ,title='')
 saveRast(rast=co_5_0_125_p_egs
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='co_5_0_125_p_egs.tif')
 makeMap(rast=co_5_0_125_p_egs
         ,plotnm='co_5_0_125_p_egs.png'
@@ -1457,7 +1453,7 @@ makeMap(rast=co_5_0_125_p_egs
         ,comTy='prod'
         ,numRF=3)
 
-# minimum
+## minimum
 co_3_0_3_m_egs <- calc(comb_pfa3_egs,fun=min,na.rm=FALSE)
 co_5_0_5_m_egs <- calc(comb_pfa5_egs,fun=min,na.rm=FALSE)
 
@@ -1471,7 +1467,7 @@ makeHist(rast=co_3_0_3_m_egs
          ,yshift=0
          ,title='')
 saveRast(rast=co_3_0_3_m_egs
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='co_3_0_3_m_egs.tif')
 makeMap(rast=co_3_0_3_m_egs
         ,plotnm='co_3_0_3_m_egs.png'
@@ -1479,7 +1475,6 @@ makeMap(rast=co_3_0_3_m_egs
         ,numCol=3
         ,comTy='min'
         ,numRF=3)
-
 
 setwd(wd_image)
 makeHist(rast=co_5_0_5_m_egs
@@ -1491,7 +1486,7 @@ makeHist(rast=co_5_0_5_m_egs
          ,yshift=0
          ,title='')
 saveRast(rast=co_5_0_5_m_egs
-         ,wd=wd_raster
+         ,wd=wd_raster_out
          ,rastnm='co_5_0_5_m_egs.tif')
 makeMap(rast=co_5_0_5_m_geo
         ,plotnm='co_5_0_5_m_egs.png'
@@ -1503,18 +1498,23 @@ makeMap(rast=co_5_0_5_m_geo
 
 ########################
 # extracting values of layers for cities
-reservoir <- raster('/Users/calvinwhealton/Dropbox/PFA_Rasters/re_5_0_5_NA.tif')
+# reading-in the scaled rasters
+# note that scaled rasters are in the wd_raster_out
+# because they were output from the first part of the code
+reservoir <- raster(paste(wd_raster_out,'/re_5_0_5_NA.tif',sep=''))
 reservoir[reservoir < 0] <- NA
 
-thermal <- raster('/Users/calvinwhealton/Dropbox/PFA_Rasters/th_5_0_5_NA.tif')
+thermal <- raster(paste(wd_raster_out,'/th_5_0_5_NA.tif',sep=''))
 thermal[thermal < 0] <- NA
 
-seismic <- raster('/Users/calvinwhealton/Dropbox/PFA_Rasters/se_5_0_5_a.tif')
+seismic <- raster(paste(wd_raster_out,'/se_5_0_5_a.tif',sep=''))
 seismic[seismic  < 0] <- NA
 
-utilization <- raster('/Users/calvinwhealton/Dropbox/PFA_Rasters/ut5_5_0_5_NA.tif')
+utilization <- raster(paste(wd_raster_out,'/ut5_5_0_5_NA.tif',sep=''))
 utilization[utilization  < 0] <- NA
 
+# stacking rasters that will have their values
+# extracted at points
 comb_extract <- stack(c(reservoir,thermal,seismic,utilization
                         ,re_pfa_var5,th_pfa_var5,se_pfa_var5
                         ,res_pred_max2,res_pred_max_err
@@ -1524,6 +1524,7 @@ comb_extract <- stack(c(reservoir,thermal,seismic,utilization
                         ,co_5_0_20_s,co_5_0_625_p,co_5_0_5_m
                         ,co_5_0_15_s_geo,co_5_0_125_p_geo,co_5_0_5_m_geo))
 
+# names for each layer in the raster stack
 comb_names <- c('reservoir','thermal','seismic','utilization'
                 ,'re_pfa_var5','th_pfa_var5','se_pfa_var5'
                 ,'res_pred_max2','res_pred_max_err'
@@ -1533,46 +1534,45 @@ comb_names <- c('reservoir','thermal','seismic','utilization'
                 ,'co_5_0_20_s','co_5_0_625_p','co_5_0_5_m'
                 ,'co_5_0_15_s_geo','co_5_0_125_p_geo','co_5_0_5_m_geo')
 
-trialRun <- rasterToPoints(comb_extract,spatial=TRUE)
-trialRun_df <- as.data.frame(trialRun)
+extracted <- rasterToPoints(comb_extract,spatial=TRUE)
+extracted_df <- as.data.frame(extracted)
 
 # renaming the columns
-names(trialRun_df) <- c('x','y',comb_names)
+names(extracted_df) <- c(comb_names,'x','y')
 
 # dropping points that are NA for geology or all four risk factors
-trialRun2_df <- trialRun_df[setdiff(seq(1,nrow(trialRun_df),1),intersect(which(trialRun_df$co_5_0_125_p %in% NA),which(trialRun_df$co_5_0_625_p %in% NA))),]
+extracted2_df <- extracted_df[setdiff(seq(1,nrow(extracted_df),1),intersect(which(extracted_df$co_5_0_125_p_geo%in% NA),which(extracted_df$co_5_0_625_p %in% NA))),]
 
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
 points$y <- points$coords.x2
+points[comb_names] <- NA
 
 # calculating distance to each of the key points
 for(i in 1:nrow(points)){
   nm <- paste('dist',i,sep='')
-  trialRun2_df[nm] <- sqrt((trialRun2_df$x-points$x[i])^2 + (trialRun2_df$y-points$y[i])^2)
+  extracted2_df[nm] <- sqrt((extracted2_df$x-points$x[i])^2 + (extracted2_df$y-points$y[i])^2)
 }
 
-points[c('x2','y2',comb_names)] <- NA
 
-# extracting the balues corresponding to the maximum
+# extracting the values corresponding to the maximum
 for(i in 1:nrow(points)){
   nm <- paste('dist',i,sep='')
-  inds <- which(trialRun2_df[nm] < 10000)
+  inds <- which(extracted2_df[nm] < 10000)
   
   if(length(inds) != 0){
-    ind_max <- which(trialRun2_df$co_5_0_20_s[inds] %in% max(trialRun2_df$co_5_0_20_s[inds]))
+    ind_max <- which(extracted2_df$co_5_0_20_s[inds] %in% max(extracted2_df$co_5_0_20_s[inds]))
     
-    points[i,c('x','y',comb_names)] <- trialRun2_df[inds[ind_max],seq(1,length(c('x','y',comb_names)),1)]
-    
+    points[i,c(comb_names,'x','y')] <- extracted2_df[inds[ind_max],seq(1,length(c(comb_names,'x','y')),1)]
   }
-  
 }
 
-# making parallel axis plot
+## making parallel axis plot
 # setting exporting parameters
-cols <- brewer.pal(10,'Set1')
+cols <- c(brewer.pal(9,'Set1'))
 
+# setting working directory and name
 setwd(wd_image)
 png('parallel_axis.png'
     ,height=5
@@ -1590,26 +1590,31 @@ plot(NA,NA
      ,ylab='Play Fairway Metric'
      ,xlab=''
      ,xaxt='n')
-
+# making vertical lines for the middle objectives
 lines(c(1,1)
      ,c(0,5)
      ,col='black')
 lines(c(2,2)
       ,c(0,5)
       ,col='black')
-j=1
+
 names <- NULL
 points$names <- c('Corning, NY', 'Elmira, NY', 'Ithaca, NY', 'Jamestown, NY'
                   ,'Mansfield, PA', 'Meadville, PA','Sayre, PA'
                   ,'Charleston, WV', 'Morgantown, WV', 'Pineville, WV')
 
-for(i in 1:nrow(points)){
+# initializing counter variable
+j  <- 1
+
+# loop to add lines to plots
+for(i in 1:nrow(points2)){
   
+  # check for NA values
   check <- c(points$reservoir[i]
              ,points$thermal[i]
              ,points$seismic[i]
              ,points$utilization[i])
-  
+  # condition for no NAs
   if(sum(is.na(check)) == 0){
     
     lines(seq(0,3,1)
@@ -1647,26 +1652,34 @@ par(xpd=FALSE)
 dev.off()
 
 ## making boxplots/violin plots for distriutions from MC
+# ignoring 3 because it corresponds to Ithaca, which was not defined
 ind_use <- c(1,2,4,5,6,7,8,9,10)
 
-dists <- matrix(0,10000,9)
+# number of replicates
+rps <- 10000
+
+# initialzing matrices
+dists <- matrix(0,rps,9)
 dist_vars <- matrix(0,4,9)
 
+# loop for Monte Carlo
 for(i in 1:length(ind_use)){
   
+  # setting seed
   set.seed(10)
   
-  mat_mc <- matrix(0,10000,4)
+  # initializing matrix
+  mat_mc <- matrix(0,rps,4)
   
   # reservoir MC
-  pfm5 <- rep(0,10000)
+  pfm5 <- rep(0,rps)
   
   res_mean <- log(points$res_pred_max2[ind_use[i]])
   res_cv <- points$res_pred_max_err[ind_use[i]]
   
   sigma2 <- log(res_cv^2 + 1)
   mu <- res_mean- sigma2/2
-  rand <- rnorm(10000,mu,sqrt(sigma2))
+  rand <- rnorm(rps,mu,sqrt(sigma2))
 
   pfm5[rand < log(3*10^-5)] <-5
   pfm5[rand > log(301)] <- 0
@@ -1683,12 +1696,12 @@ for(i in 1:length(ind_use)){
   dist_vars[1,i] <- var(pfm5)
   
   # thermal MC
-  pfm5 <- rep(0,10000)
+  pfm5 <- rep(0,rps)
   
   th_mean <- points$therm_pred[ind_use[i]]
   th_se <- points$therm_err[ind_use[i]]
   
-  rand <- rnorm(10000,th_mean,th_se)
+  rand <- rnorm(rps,th_mean,th_se)
   
   pfm5[rand < 500] <- 5
   pfm5[rand > 8750] <- 0
@@ -1703,12 +1716,12 @@ for(i in 1:length(ind_use)){
   dist_vars[2,i] <- var(pfm5)
   
   # seismic earthquake MC
-  pfm5 <- rep(0,10000)
+  pfm5 <- rep(0,rps)
   
   se_eq_mean <- points$seis_eq_pred[ind_use[i]]
   se_eq_se <- points$seis_eq_err[ind_use[i]]
   
-  rand <- rnorm(10000,se_eq_mean,se_eq_se)
+  rand <- rnorm(rps,se_eq_mean,se_eq_se)
   
   pfm5[rand < 1] <-5
   pfm5[rand > 25000] <-0
@@ -1724,12 +1737,12 @@ for(i in 1:length(ind_use)){
   dist_vars[3,i] <- var(pfm5)
   
   # seismic stress angle MC
-  pfm5 <- rep(0,10000)
+  pfm5 <- rep(0,rps)
   
   se_st_mean <- points$seis_stress_pred[ind_use[i]]
   se_st_se <- points$seis_stress_err[ind_use[i]]
   
-  rand <- abs(rnorm(10000,se_st_mean,se_st_se))
+  rand <- abs(rnorm(rps,se_st_mean,se_st_se))
   
   rand[intersect(which(rand > 65.2),which(rand < 2*65.2))] <- 2*65.2 - rand[intersect(which(rand > 65.2),which(rand < 2*65.2))]
   rand[which(rand > 2*65.2)] <- rand[which(rand > 2*65.2)] - 2*65.2
@@ -1836,7 +1849,6 @@ dev.off()
 
 
 # making violin plots
-library(vioplot)
 dists2 <- as.data.frame(dists)
 
 setwd(wd_image)
@@ -1880,9 +1892,7 @@ text(-1
 axis(2,at=seq(0,14,2))
 par(xpd=FALSE)
 
-
 dev.off()
-
 
 
 # extracting values of layers for cities
@@ -1966,3 +1976,7 @@ plot(extract_pts3$co_p_5[inds_gtr0]
 )
 dev.off()
 
+# saving workspace
+setwd(wd_workspace)
+filename <- paste('geotherma_pfa_analysis_',Sys.Date(),'.RData',sep='')
+save.image(file=filename)
