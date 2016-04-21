@@ -1,6 +1,11 @@
 #geothermal_pfa
 
-The code, scripts, and data files in this repository are related to geothermal research. Most code was developed as part of the geothermal play fairway analysis project at Cornell University (see Acknowledgment and Disclaimer below, Principal Investigator Teresa Jordan, report submitted Oct. 2015). The sub-repositories are for bottom-hole temperature corrections, outliers, and reservoir ideality. The document geothermal_bhts_outliers_documentation.tex provides more detailed information on the scripts, codes, and data. This code is provided under the MIT License (see LICENSE.md).
+The code, scripts, and data files in this repository are related to geothermal research. Most code was developed as part of the geothermal play fairway analysis project at Cornell University (see Acknowledgment and Disclaimer below, Principal Investigator Teresa Jordan, report submitted Oct. 2015). The sub-repositories are for bottom-hole temperature corrections, outliers, and reservoir ideality. The document geothermal_bhts_outliers_documentation.tex provides more detailed information on the scripts, codes, and data.
+
+**This code is offered under the MIT License. See LICENSE.md for more details.Please cite this repository as (year of latest commit, commit ID, and date retrieved should be substituted into the format):**
+
+Whealton, C.A. and J.D. Smith (\<year>). "geothermal_pfa-Code related to geothermal research". GitHub repository. https://github.com/calvinwhealton/geothermal_pfa \<commit ID>, retrieved \<date>.
+
 
 #Bottom-hole Temperature Corrections
 General code used to "correct" bottom-hole temperatures based on depth of the well and location within the Appalachian Basin. Inputs are depth in meters.
