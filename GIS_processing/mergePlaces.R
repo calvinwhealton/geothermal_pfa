@@ -19,11 +19,11 @@ library(rgdal)        # reading in data, readOGR() and writeOGR()
 library(spdep)        # other spatial processing
 library(rgeos)        # for buffering places of interest and finding intersections
 library(maptools)
-
+library(xlsx)
 # reading-in shapefile with US Census "places" clipped to states and region
-setwd('/Users/calvinwhealton/Documents/GIS Projects/COSUNA_Paper/cb_2015_us_state_500k_copy_clipAppSt')
-places <- readOGR(dsn='/Users/calvinwhealton/Documents/GIS Projects/COSUNA_Paper/cb_2015_us_state_500k_copy_clipAppSt'
-                 ,layer='clipped_appBas_st')
+setwd('/Users/calvinwhealton/Documents/GIS Projects/COSUNA_Paper/Utilization')
+places <- readOGR(dsn='/Users/calvinwhealton/Documents/GIS Projects/COSUNA_Paper/Utilization/mergedplaces_join.shp'
+                 ,layer='mergedplaces_join')
 
 # transforming to UTM 17N
 # units in this projection are in meters
@@ -131,10 +131,10 @@ placesTransContTemp <- gIntersects(placesTransBufTemp
 popGoal <- 10000
 
 # creating a sorted vector for population
-popCheck <- placesTrans[['DP0010001']]
-areaLandCheck <- placesTrans[['ALAND10']]
-areaWaterCheck <- placesTrans[['AWATER10']]
-houseHoldsCheck <- placesTrans[['DP0130001']]
+popCheck <- placesTrans$pop
+areaLandCheck <- placesTrans[['ALAND']]
+areaWaterCheck <- placesTrans[['AWATER']]
+houseHoldsCheck <- placesTrans[['GeoID_1']]
 
 # creating list with the population sorted (smallest to largest)
 # and the index of the value
@@ -252,6 +252,7 @@ while(merging){
   if(popCheckSortTemp$pop[counter+1] >= popGoal){
     merging <- F
   }
+  print(sum(popCheckSortTemp$pop,na.rm=T))
 }
 
 # assigning the merge ID to the places that did not merge and pop > popGoal
@@ -266,8 +267,115 @@ placesTrans$pop <- popCheckSortTemp$pop[popCheckSortTemp$mergeID]
 placesTrans$areaLand <- popCheckSortTemp$areaLand[popCheckSortTemp$mergeID]
 placesTrans$areaWater <- popCheckSortTemp$areaWater[popCheckSortTemp$mergeID]
 placesTrans$houseHolds <- popCheckSortTemp$houseHolds[popCheckSortTemp$mergeID]
+placesTrans$Tave_annual <- NA
+placesTrans$Tmin_jan <- NA
+placesTrans$Tabs_min_est <- NA
+placesTrans$sfRes <- NA
+placesTrans$sfAFS <- NA
+placesTrans$sfASW <- NA
+placesTrans$sfAER <- NA
+placesTrans$sfEdu <- NA
+placesTrans$sfHCSA <- NA
+placesTrans$sfInf <- NA
+placesTrans$sfMfg <- NA
+placesTrans$sfPST <- NA
+placesTrans$sfRERL <- NA
+placesTrans$sfRet <- NA
+placesTrans$sfWhsl <- NA
+placesTrans$sfOth <- NA
+placesTrans$L_network <- NA
+placesTrans$GradLocal <- NA
 
-writeOGR(placesTrans,dsn="placesTrans",layer="placesTrans5",driver="ESRI Shapefile")
+placesTrans$Res_Bldgs <- NA
+placesTrans$Res_Units <- NA
+placesTrans$Com_Bldgs <- NA
+placesTrans$Com_Units <- NA
+
+placesTrans$Detached <- NA
+placesTrans$Attached <- NA
+placesTrans$twoto4 <- NA
+placesTrans$fiveto19 <- NA
+placesTrans$twentyto49 <- NA
+placesTrans$fiftyplus <- NA
+placesTrans$SqFtUnit <- NA
+placesTrans$Tmean_jan <- NA
+
+# assigning values to locations
+for(i in 1:length(placesTrans)){
+  
+  ind1 <- which(placesTrans$merger %in% placesTrans$merger[i])
+  ind2 <- placesTrans$GEOID[ind1]
+  inds <- which(zachData$Place.Geo.Id2 %in% ind2)
+  
+  
+  placesTrans$Tave_annual[i] <- mean(zachData$Tave_annual[inds])
+  placesTrans$Tmin_jan[i] <- mean(zachData$Tmin_jan[inds])
+  placesTrans$Tabs_min_est[i] <-  mean(zachData$Tabs_min_est[inds])
+  placesTrans$sfRes[i] <- sum(zachData$sfRes[inds])
+  placesTrans$sfAFS[i] <- sum(zachData$sfAFS[inds])
+  placesTrans$sfASW[i] <- sum(zachData$sfASW[inds])
+  placesTrans$sfAER[i] <- sum(zachData$sfAER[inds])
+  placesTrans$sfEdu[i] <- sum(zachData$sfEdu[inds])
+  placesTrans$sfHCSA[i] <- sum(zachData$sfHCSA[inds])
+  placesTrans$sfInf[i] <- sum(zachData$sfInf[inds])
+  placesTrans$sfMfg[i] <- sum(zachData$sfMfg[inds])
+  placesTrans$sfPST[i] <- sum(zachData$sfPST[inds])
+  placesTrans$sfRERL[i] <- sum(zachData$sfRERL[inds])
+  placesTrans$sfRet[i] <- sum(zachData$sfRet[inds])
+  placesTrans$sfWhsl[i] <- sum(zachData$sfWhsl[inds])
+  placesTrans$sfOth[i] <- sum(zachData$sfOth[inds])
+  placesTrans$L_network[i] <- sum(zachData$L_network[inds])
+  placesTrans$GradLocal[i] <- mean(zachData$GradLocal[inds])
+  
+  placesTrans$Res_Bldgs[i] <- sum(zachData$Res_Bldgs[inds])
+  placesTrans$Res_Units[i] <- sum(zachData$Res_Units[inds])
+  placesTrans$Com_Bldgs[i] <-  sum(zachData$Com_Bldgs[inds])
+  placesTrans$Com_Units[i] <- sum(zachData$Com_Units[inds])
+  
+  placesTrans$Detached[i] <- sum(zachData$Detached[inds])
+  placesTrans$Attached[i] <- sum(zachData$Attached[inds])
+  placesTrans$twoto4[i] <- sum(zachData$twoto4[inds])
+  placesTrans$fiveto19[i] <- sum(zachData$fiveto19[inds])
+  placesTrans$twentyto49[i] <- sum(zachData$twentyto49[inds])
+  placesTrans$fiftyplus[i] <- sum(zachData$fiftyplus[inds])
+  placesTrans$SqFtUnit[i] <- sum(zachData$SqFtUnit[inds])
+  placesTrans$Tmean_jan[i] <- mean(zachData$Tmean_jan[inds])
+  
+}
+
+writeOGR(placesTrans,dsn="placesTrans",layer="placesTrans7",driver="ESRI Shapefile")
+
+
+
+
+
+# loading-in an excel file with other information for calculations
+setwd('/Users/calvinwhealton/Documents/GIS Projects/COSUNA_Paper')
+
+# loading in the previously used data
+zachData <- read.xlsx('INPUT_TABLE_STATIC_NY_PA_WV.xlsx'
+                      ,header=T
+                      ,sheetName='Sheet1')
+
+length(intersect(zachData$Place.Geo.Id2,placesTrans$GEOID10))
+
+
+
+
+
+
+
+
+
+
+
+for(i in 1:length(placesTrans)){
+  
+  
+  
+  
+}
+
 
 placesTransUnion <- unionSpatialPolygons(placesTrans, placesTrans$merger)
 
