@@ -8,7 +8,7 @@ setwd('/Users/calvinwhealton/GitHub/geothermal_pfa/error_interp_tabs')
 ### for seismic worm angle to stress ----
 mean_seSt <- seq(0,72,by=3) # range of means
 std_seSt <- seq(0,310,by=10) # range of standard deviations
-nMC_seSt <- 100000 # number of monte carlo
+nMC_seSt <- 100000 # number of monte carlo replicates
 
 set.seed(10) # setting seed
 
@@ -226,3 +226,47 @@ for(i in 1:length(mean_thd80)){
 
 
 
+
+### for utilization----
+mean_util <- c(seq(5,65,by=2),900,1100) # range of means
+std_util_pct <- seq(1,10,by=0.5) # range of standard deviations
+nMC_util<- 100000 # number of monte carlo
+
+set.seed(10) # setting seed
+
+# initializing matrices
+util_var3 <- matrix(0,length(mean_util),length(std_util_pct))
+util_var5 <- matrix(0,length(mean_util),length(std_util_pct))
+
+# looping over to fill-in matrices
+for(i in 1:length(mean_util)){
+  for(j in 1:length(std_util_pct)){
+    
+    # generating random values
+    rand <- rnorm(nMC_util,mean_util[i],mean_util[i]*std_util_pct[j]/100)
+    
+    # play fairway 3
+    pfm3 <- rep(0,nMC_util)
+    pfm3[rand < 5] <- 3
+    pfm3[rand > 25] <- 0
+    pfm3[intersect(which(rand >= 5),which(rand < 13.5))] <- 3 - (rand[intersect(which(rand >= 5),which(rand < 13.5))] - 5)/(13.5-5)
+    pfm3[intersect(which(rand >= 13.5),which(rand < 16))] <- 2- (rand[intersect(which(rand >= 13.5),which(rand < 16))] - 13.5)/(16-13.5)
+    pfm3[intersect(which(rand >= 16),which(rand < 25))] <- 1- (rand[intersect(which(rand >= 16),which(rand < 25))] - 16)/(25-16)
+    
+    # play fairway 5
+    pfm5 <- rep(0,nMC_util)
+    pfm5[rand < 5] <- 5
+    pfm5[rand > 25] <- 0
+    pfm5[intersect(which(rand >= 5),which(rand < 12))] <- 5 - (rand[intersect(which(rand >= 5),which(rand < 12))] - 5)/(12-5)
+    pfm5[intersect(which(rand >= 12),which(rand < 13.5))] <- 4- (rand[intersect(which(rand >= 12),which(rand < 13.5))] - 12)/(13.5-12)
+    pfm5[intersect(which(rand >= 13.5),which(rand < 16))] <- 3- (rand[intersect(which(rand >= 13.5),which(rand < 16))] - 13.5)/(16-13.5)
+    pfm5[intersect(which(rand >= 16),which(rand < 20))] <- 2- (rand[intersect(which(rand >= 16),which(rand < 20))] - 16)/(20-16)
+    pfm5[intersect(which(rand >= 20),which(rand < 25))] <- 1- (rand[intersect(which(rand >= 20),which(rand < 25))] - 20)/(25-20)
+    
+    util_var3[i,j] <- var(pfm3)
+    util_var5[i,j] <- var(pfm5)
+  }
+}
+setwd('/Users/calvinwhealton/GitHub/geothermal_pfa/error_interp_tabs')
+write.xlsx(pfm3,'ut_slcoh3.xlsx')
+write.xlsx(pfm5,'ut_slcoh5.xlsx')
