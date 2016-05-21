@@ -84,3 +84,5 @@ combining_metrics/old_code/shapefiles_rasters_general.R
 data/.Rhistory
 
 combining_metrics/.Rapp.history
+
+*.ovr
