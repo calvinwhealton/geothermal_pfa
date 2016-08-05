@@ -73,6 +73,8 @@ for(i in 1:length(mean_seSt)){
     pfm3[intersect(which(rand >= 8),which(rand < 16))] <- 2- (rand[intersect(which(rand >= 8),which(rand < 16))] - 8)/8
     pfm3[intersect(which(rand >= 16),which(rand < 25))] <- 1- (rand[intersect(which(rand >= 16),which(rand < 25))] - 16)/(25-16)
     
+    pfm3 <- 3 - pfm3
+    
     # calculating play fairway 5
     pfm5 <- rep(0,nMC_seSt)
     pfm5[rand < 0.01] <-5
@@ -82,13 +84,14 @@ for(i in 1:length(mean_seSt)){
     pfm5[intersect(which(rand >= 15),which(rand < 20))] <- 2- (rand[intersect(which(rand >= 15),which(rand < 20))] - 15)/5
     pfm5[intersect(which(rand >= 20),which(rand < 25))] <- 1- (rand[intersect(which(rand >= 20),which(rand < 25))] - 20)/5
     
-    pfm5 <- 5- pfm5
-    pfm3 <- 3 - pfm3
+    pfm5 <- 5 - pfm5
+    
+    pfm5[which(pfm5 < 0.2)] <- 0.2
+    pfm3[which(pfm3 < 0.2)] <- 0.2
     
     # adding values to matrix
-    seSt_var3[i,j] <- var(pfm3)
-    seSt_var5[i,j] <- var(pfm5)
-    
+    seSt_var3[i,j] <- var(log(pfm3))
+    seSt_var5[i,j] <- var(log(pfm5))
   }
 }
 
@@ -120,6 +123,9 @@ for(i in 1:length(mean_seEq)){
     pfm3[intersect(which(rand >= 8000),which(rand < 16000))] <- 2- (rand[intersect(which(rand >= 8000),which(rand < 16000))] - 8000)/8000
     pfm3[intersect(which(rand >= 16000),which(rand < 25000))] <- 1- (rand[intersect(which(rand >= 16000),which(rand < 25000))] - 16000)/(25000-16000)
     
+    pfm3 <- 3-pfm3
+    
+    
     # calculating play fairway 5
     pfm5 <- rep(0,nMC_seSt)
     pfm5[rand < 1] <-5
@@ -130,13 +136,14 @@ for(i in 1:length(mean_seEq)){
     pfm5[intersect(which(rand >= 15000),which(rand < 20000))] <- 2- (rand[intersect(which(rand >= 15000),which(rand < 20000))] - 15000)/5000
     pfm5[intersect(which(rand >= 20000),which(rand < 25000))] <- 1- (rand[intersect(which(rand >= 20000),which(rand < 25000))] - 20000)/5000
     
+    pfm3 <- 5-pfm5
     
-    pfm5 <- 5- pfm5
-    pfm3 <- 3 - pfm3
+    pfm3[which(pfm3 < 0.2)] <- 0.2
+    pfm5[which(pfm5 < 0.2)] <- 0.2
     
     # adding values to matrix
-    seEq_var3[i,j] <- var(pfm3)
-    seEq_var5[i,j] <- var(pfm5)
+    seEq_var3[i,j] <- var(log(pfm3))
+    seEq_var5[i,j] <- var(log(pfm5))
     
   }
 }
@@ -173,7 +180,7 @@ for(i in 1:length(mean_re)){
     
     # calculating play fairway 5
     pfm5 <- rep(0,nMC_re)
-    pfm5[rand < log(3*10^-5)] <-5
+    pfm5[rand < log(3*10^-5)] <- 5
     pfm5[rand > log(301)] <- 0
     pfm5[intersect(which(rand >= log(3*10^-5)),which(rand < log(0.01)))] <- 5- (rand[intersect(which(rand >= log(3*10^-5)),which(rand < log(0.01)))] - log(3*10^-5))/(log(0.01)-log(3*10^-5))
     pfm5[intersect(which(rand >= log(0.01)),which(rand < log(0.1)))] <- 4- (rand[intersect(which(rand >= log(0.01)),which(rand < log(0.1)))] - log(0.01))/(log(0.1)-log(0.01))
@@ -181,13 +188,15 @@ for(i in 1:length(mean_re)){
     pfm5[intersect(which(rand >= log(1)),which(rand < log(10)))] <- 2- (rand[intersect(which(rand >= log(1)),which(rand < log(10)))] - log(1))/(log(10)-log(1))
     pfm5[intersect(which(rand >= log(10)),which(rand < log(301)))] <- 1- (rand[intersect(which(rand >= log(10)),which(rand < log(301)))] - log(10))/(log(301)-log(10))
     
+    pfm5 <- 5-pfm5
+    pfm3 <- 3-pfm3
     
-    pfm5 <- 5- pfm5
-    pfm3 <- 3 - pfm3
+    pfm5[which(pfm5 < 0.2)] <- 0.2
+    pfm3[which(pfm3 < 0.2)] <- 0.2
     
     # adding values to matrix
-    re_var3[i,j] <- var(pfm3)
-    re_var5[i,j] <- var(pfm5)
+    re_var3[i,j] <- var(log(pfm3))
+    re_var5[i,j] <- var(log(pfm5))
     
   }
 }
@@ -230,8 +239,11 @@ for(i in 1:length(mean_thd80)){
     pfm5[intersect(which(rand >= 3000),which(rand < 4000))] <- 2- (rand[intersect(which(rand >= 3000),which(rand < 4000))] - 3000)/(4000-3000)
     pfm5[intersect(which(rand >= 4000),which(rand < 8750))] <- 1- (rand[intersect(which(rand >= 4000),which(rand < 8750))] - 4000)/(8750-3000)
 
-    thd80_var3[i,j] <- var(pfm3)
-    thd80_var5[i,j] <- var(pfm5)
+    pfm3[which(pfm3 < 0.2)] <- 0.2
+    pfm5[which(pfm5 < 0.2)] <- 0.2
+    
+    thd80_var3[i,j] <- var(log(pfm3))
+    thd80_var5[i,j] <- var(log(pfm5))
   }
 }
 
@@ -274,56 +286,60 @@ for(i in 1:length(mean_util)){
     pfm5[intersect(which(rand >= 16),which(rand < 20))] <- 2- (rand[intersect(which(rand >= 16),which(rand < 20))] - 16)/(20-16)
     pfm5[intersect(which(rand >= 20),which(rand < 25))] <- 1- (rand[intersect(which(rand >= 20),which(rand < 25))] - 20)/(25-20)
     
-    util_var3[i,j] <- var(pfm3)
-    util_var5[i,j] <- var(pfm5)
+    pfm3[which(pfm3 < 0.2)] <- 0.2
+    pfm5[which(pfm5 < 0.2)] <- 0.2
+    
+    util_var3[i,j] <- var(log(pfm3))
+    util_var5[i,j] <- var(log(pfm5))
   }
 }
 setwd('/Users/calvinwhealton/GitHub/geothermal_pfa/error_interp_tabs')
 write.xlsx(util_var3
-           ,'ut_slcoh_pfvar3.xlsx'
+           ,'ut_slcoh_pfvar3_ls.xlsx'
            ,col.names=F
            ,row.names=F)
 write.xlsx(util_var5
-           ,'ut_slcoh_pfvar5.xlsx'
+           ,'ut_slcoh_pfvar5_ls.xlsx'
            ,col.names=F
            ,row.names=F)
 
+
 setwd('/Users/calvinwhealton/GitHub/geothermal_pfa/error_interp_tabs')
 write.xlsx(re_var3
-           ,'re_pfvar3.xlsx'
+           ,'re_pfvar3_ls.xlsx'
            ,col.names=F
            ,row.names=F)
 write.xlsx(re_var5
-           ,'re_pfvar5.xlsx'
+           ,'re_pfvar5_ls.xlsx'
            ,col.names=F
            ,row.names=F)
 
 setwd('/Users/calvinwhealton/GitHub/geothermal_pfa/error_interp_tabs')
 write.xlsx(seSt_var3
-           ,'seSt_pfvar3.xlsx'
+           ,'seSt_pfvar3_ls.xlsx'
            ,col.names=F
            ,row.names=F)
 write.xlsx(seSt_var5
-           ,'seSt_pfvar5.xlsx'
+           ,'seSt_pfvar5_ls.xlsx'
            ,col.names=F
            ,row.names=F)
 
 setwd('/Users/calvinwhealton/GitHub/geothermal_pfa/error_interp_tabs')
 write.xlsx(seEq_var3
-           ,'seEq_pfvar3.xlsx'
+           ,'seEq_pfvar3_ls.xlsx'
            ,col.names=F
            ,row.names=F)
 write.xlsx(seEq_var5
-           ,'seEq_pfvar5.xlsx'
+           ,'seEq_pfvar5_ls.xlsx'
            ,col.names=F
            ,row.names=F)
 
 setwd('/Users/calvinwhealton/GitHub/geothermal_pfa/error_interp_tabs')
 write.xlsx(thd80_var3
-           ,'th_pfvar3.xlsx'
+           ,'th_pfvar3_ls.xlsx'
            ,col.names=F
            ,row.names=F)
 write.xlsx(thd80_var5
-           ,'th_pfvar5.xlsx'
+           ,'th_pfvar5_ls.xlsx'
            ,col.names=F
            ,row.names=F)

@@ -86,3 +86,5 @@ data/.Rhistory
 combining_metrics/.Rapp.history
 
 *.ovr
+
+combining_metrics/figs_paper/.Rhistory
