@@ -56,7 +56,10 @@ makeMap <- function(rast    # raster
   
   if(sdMap == TRUE){
     cols <- rev(brewer.pal(9,'GnBu')[seq(3,9)])
-    breaks <- round(seq(0,max(values(rast),na.rm=T),length.out=length(cols)+1),digits=2)
+    breaks <- round(seq(0,max(values(rast),na.rm=T),length.out=length(cols)+1),digits=3)
+    if (breaks[length(breaks)] < max(values(rast),na.rm=T)){
+      breaks[length(breaks)] <- round(max(values(rast),na.rm=T), digits=3)+0.001
+    }
   }
   
   # setting exporting parameters
@@ -68,31 +71,30 @@ makeMap <- function(rast    # raster
       ,width=6
       ,units='in'
       ,res=300
-  )
+      )
   
   if(sdMap == TRUE){
-    raster:plot(rast
-                ,breaks=breaks
-                ,col=cols # colors
-                #,legend=leg # include legend
-                #,xaxt='n' # no x axis
-                #,yaxt='n' # no y axis
-                ,ext=extent(380000,1050000,4100000,4850000)
-                #,ylim=c(4150000,4850000)
-                #,xlim=c(400000,1000000)
-                #,axes=F
-            
-)
+    plot(rast
+         ,breaks=breaks
+         ,col=cols # colors
+        #,legend=leg # include legend
+        #,xaxt='n' # no x axis
+        #,yaxt='n' # no y axis
+         ,ext=extent(350000,1050000,4100000,4850000)
+        #,ylim=c(4150000,4850000)
+        #,xlim=c(400000,1000000)
+        #,axes=F
+        )
   }else{
     
     # plotting raster
-    raster:plot(rast
+    plot(rast
          ,breaks=breaks
          ,col=cols # colors
          #,legend=leg # include legend
          #,xaxt='n' # no x axis
          #,yaxt='n' # no y axis
-         ,ext=extent(380000,1050000,4100000,4850000)
+         ,ext=extent(350000,1050000,4100000,4850000)
          #,ylim=c(4150000,4850000)
          #,xlim=c(400000,1000000)
          #,axes=F
