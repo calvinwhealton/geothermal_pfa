@@ -201,15 +201,14 @@ res_rfc_max <- 10000 # maximum for reservoir (both 3-color and 5-color)
 res_rfc_thresh3 <- c(res_rfc_min,c(10,100),res_rfc_max)
 res_rfc_thresh5 <- c(res_rfc_min,c(1,10,100,1000),res_rfc_max)
 
-res_RPIw_min <- 0.000001 # minimum for reservoir (both 3-color and 5-color)
-res_RPIw_max <- 15    # maximum for reservoir (both 3-color and 5-color)
-res_RPIw_thresh3 <- c(res_RPIw_min,c(0.1,1.0),res_RPIw_max)
-res_RPIw_thresh5 <- c(res_RPIw_min,c(0.01,0.1,1,10),res_RPIw_max)
+#The old min and max were 0.000001 and 15.
+res_RPIw_min <- 0.0001 # minimum for reservoir (both 3-color and 5-color)
+res_RPIw_max <- 10    # maximum for reservoir (both 3-color and 5-color)
+res_RPIw_thresh3 <- c(res_RPIw_min,c(0.01,1.0),res_RPIw_max)
+res_RPIw_thresh5 <- c(res_RPIw_min,c(0.001,0.01,0.1,1.0),res_RPIw_max)
 
-res_RPIg_min <- 0.000001 # minimum for reservoir (both 3-color and 5-color)
-res_RPIg_max <- 15     # maximum for reservoir (both 3-color and 5-color)
-res_RPIg_thresh3 <- c(res_RPIg_min,c(0.1,1.0),res_RPIg_max)
-res_RPIg_thresh5 <- c(res_RPIg_min,c(0.01,0.1,1,10),res_RPIg_max)
+res_RPIg_thresh3 <- res_RPIw_thresh3
+res_RPIg_thresh5 <- res_RPIw_thresh5
 
 
 # loops to fill-in matrix
@@ -558,38 +557,38 @@ write.xlsx(re_rfc_var5_ls
            ,row.names=F)
 
 write.xlsx(re_RPIw_var3
-           ,'re_RPIw_pfvar3.xlsx'
+           ,'re_RPIw_pfvar3_NewThresh.xlsx'
            ,col.names=F
            ,row.names=F)
 write.xlsx(re_RPIw_var5
-           ,'re_RPIw_pfvar5.xlsx'
+           ,'re_RPIw_pfvar5_NewThresh.xlsx'
            ,col.names=F
            ,row.names=F)
 
 write.xlsx(re_RPIw_var3_ls
-           ,'re_RPIw_pfvar3_ls.xlsx'
+           ,'re_RPIw_pfvar3_ls_NewThresh.xlsx'
            ,col.names=F
            ,row.names=F)
 write.xlsx(re_RPIw_var5_ls
-           ,'re_RPIw_pfvar5_ls.xlsx'
+           ,'re_RPIw_pfvar5_ls_NewThresh.xlsx'
            ,col.names=F
            ,row.names=F)
 
 write.xlsx(re_RPIg_var3
-           ,'re_RPIg_pfvar3.xlsx'
+           ,'re_RPIg_pfvar3_NewThresh.xlsx'
            ,col.names=F
            ,row.names=F)
 write.xlsx(re_RPIg_var5
-           ,'re_RPIg_pfvar5.xlsx'
+           ,'re_RPIg_pfvar5_NewThresh.xlsx'
            ,col.names=F
            ,row.names=F)
 
 write.xlsx(re_RPIg_var3_ls
-           ,'re_RPIg_pfvar3_ls.xlsx'
+           ,'re_RPIg_pfvar3_ls_NewThresh.xlsx'
            ,col.names=F
            ,row.names=F)
 write.xlsx(re_RPIg_var5_ls
-           ,'re_RPIg_pfvar5_ls.xlsx'
+           ,'re_RPIg_pfvar5_ls_NewThresh.xlsx'
            ,col.names=F
            ,row.names=F)
 
