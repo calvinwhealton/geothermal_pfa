@@ -15727,7 +15727,7 @@ png('parallel_axis_5_rfc_geo_a.png'
 par(xpd=FALSE)
 par(mar=c(3,5,1,12))
 plot(NA,NA
-     ,xlim=c(0,3)
+     ,xlim=c(0,2)
      ,ylim=c(0,5)
      ,xaxs='i'
      ,yaxs='i'
@@ -15736,9 +15736,6 @@ plot(NA,NA
      ,xaxt='n')
 # making vertical lines for the middle objectives
 lines(c(1,1)
-      ,c(0,5)
-      ,col='black')
-lines(c(2,2)
       ,c(0,5)
       ,col='black')
 
@@ -15756,12 +15753,11 @@ for(i in 1:nrow(points)){
   # check for NA values
   check <- c(points$reservoir_rfc[i]
              ,points$thermal[i]
-             ,points$seismic[i]
-             ,points$utilization[i])
+             ,points$seismic[i])
   # plot lines only if there are no NAs
   if(sum(is.na(check)) == 0){
     
-    lines(seq(0,3,1)
+    lines(seq(0,2,1)
           ,check
           ,lwd=3
           ,col=cols[i])
@@ -15775,21 +15771,21 @@ for(i in 1:nrow(points)){
 rm(check)
 
 par(xpd=TRUE)
-text(c(0,1,2,3)
+text(c(0,1,2)
      ,c(-0.3)
-     ,c('Reservoir','Thermal','Seismic','Utilization')
+     ,c('Reservoir','Thermal','Seismic')
      ,adj=0.5)
-text(-0.35,5
+text(-0.25,5
      ,'Better'
      ,adj=1
      ,col='darkgreen'
      ,font=2)
-text(-0.35,0
+text(-0.25,0
      ,'Worse'
      ,adj=1
      ,col='firebrick'
      ,font=2)
-legend(x=3.2,y=5
+legend(x=2.0,y=5
        ,legend=names
        ,col=cols[-which(IndNA == 1)]
        ,lwd=3
@@ -16721,7 +16717,7 @@ png('parallel_axis_5_rfc_geo_g.png'
 par(xpd=FALSE)
 par(mar=c(3,5,1,12))
 plot(NA,NA
-     ,xlim=c(0,3)
+     ,xlim=c(0,2)
      ,ylim=c(0,5)
      ,xaxs='i'
      ,yaxs='i'
@@ -16730,9 +16726,6 @@ plot(NA,NA
      ,xaxt='n')
 # making vertical lines for the middle objectives
 lines(c(1,1)
-      ,c(0,5)
-      ,col='black')
-lines(c(2,2)
       ,c(0,5)
       ,col='black')
 
@@ -16750,12 +16743,11 @@ for(i in 1:nrow(points)){
   # check for NA values
   check <- c(points$reservoir_rfc[i]
              ,points$thermal[i]
-             ,points$seismic[i]
-             ,points$utilization[i])
+             ,points$seismic[i])
   # plot lines only if there are no NAs
   if(sum(is.na(check)) == 0){
     
-    lines(seq(0,3,1)
+    lines(seq(0,2,1)
           ,check
           ,lwd=3
           ,col=cols[i])
@@ -16769,21 +16761,21 @@ for(i in 1:nrow(points)){
 rm(check)
 
 par(xpd=TRUE)
-text(c(0,1,2,3)
+text(c(0,1,2)
      ,c(-0.3)
-     ,c('Reservoir','Thermal','Seismic','Utilization')
+     ,c('Reservoir','Thermal','Seismic')
      ,adj=0.5)
-text(-0.35,5
+text(-0.25,5
      ,'Better'
      ,adj=1
      ,col='darkgreen'
      ,font=2)
-text(-0.35,0
+text(-0.25,0
      ,'Worse'
      ,adj=1
      ,col='firebrick'
      ,font=2)
-legend(x=3.2,y=5
+legend(x=2.0,y=5
        ,legend=names
        ,col=cols[-which(IndNA == 1)]
        ,lwd=3
@@ -17716,7 +17708,7 @@ png('parallel_axis_5_rfc_geo_m.png'
 par(xpd=FALSE)
 par(mar=c(3,5,1,12))
 plot(NA,NA
-     ,xlim=c(0,3)
+     ,xlim=c(0,2)
      ,ylim=c(0,5)
      ,xaxs='i'
      ,yaxs='i'
@@ -17725,9 +17717,6 @@ plot(NA,NA
      ,xaxt='n')
 # making vertical lines for the middle objectives
 lines(c(1,1)
-      ,c(0,5)
-      ,col='black')
-lines(c(2,2)
       ,c(0,5)
       ,col='black')
 
@@ -17745,12 +17734,11 @@ for(i in 1:nrow(points)){
   # check for NA values
   check <- c(points$reservoir_rfc[i]
              ,points$thermal[i]
-             ,points$seismic[i]
-             ,points$utilization[i])
+             ,points$seismic[i])
   # plot lines only if there are no NAs
   if(sum(is.na(check)) == 0){
     
-    lines(seq(0,3,1)
+    lines(seq(0,2,1)
           ,check
           ,lwd=3
           ,col=cols[i])
@@ -17764,21 +17752,21 @@ for(i in 1:nrow(points)){
 rm(check)
 
 par(xpd=TRUE)
-text(c(0,1,2,3)
+text(c(0,1,2)
      ,c(-0.3)
-     ,c('Reservoir','Thermal','Seismic','Utilization')
+     ,c('Reservoir','Thermal','Seismic')
      ,adj=0.5)
-text(-0.35,5
+text(-0.25,5
      ,'Better'
      ,adj=1
      ,col='darkgreen'
      ,font=2)
-text(-0.35,0
+text(-0.25,0
      ,'Worse'
      ,adj=1
      ,col='firebrick'
      ,font=2)
-legend(x=3.2,y=5
+legend(x=2.0,y=5
        ,legend=names
        ,col=cols[-which(IndNA == 1)]
        ,lwd=3
@@ -18714,7 +18702,7 @@ png('parallel_axis_5_RPIw_geo_a.png'
 par(xpd=FALSE)
 par(mar=c(3,5,1,12))
 plot(NA,NA
-     ,xlim=c(0,3)
+     ,xlim=c(0,2)
      ,ylim=c(0,5)
      ,xaxs='i'
      ,yaxs='i'
@@ -18723,9 +18711,6 @@ plot(NA,NA
      ,xaxt='n')
 # making vertical lines for the middle objectives
 lines(c(1,1)
-      ,c(0,5)
-      ,col='black')
-lines(c(2,2)
       ,c(0,5)
       ,col='black')
 
@@ -18743,12 +18728,11 @@ for(i in 1:nrow(points)){
   # check for NA values
   check <- c(points$reservoir_RPIw[i]
              ,points$thermal[i]
-             ,points$seismic[i]
-             ,points$utilization[i])
+             ,points$seismic[i])
   # plot lines only if there are no NAs
   if(sum(is.na(check)) == 0){
     
-    lines(seq(0,3,1)
+    lines(seq(0,2,1)
           ,check
           ,lwd=3
           ,col=cols[i])
@@ -18762,21 +18746,21 @@ for(i in 1:nrow(points)){
 rm(check)
 
 par(xpd=TRUE)
-text(c(0,1,2,3)
+text(c(0,1,2)
      ,c(-0.3)
-     ,c('Reservoir','Thermal','Seismic','Utilization')
+     ,c('Reservoir','Thermal','Seismic')
      ,adj=0.5)
-text(-0.35,5
+text(-0.25,5
      ,'Better'
      ,adj=1
      ,col='darkgreen'
      ,font=2)
-text(-0.35,0
+text(-0.25,0
      ,'Worse'
      ,adj=1
      ,col='firebrick'
      ,font=2)
-legend(x=3.2,y=5
+legend(x=2.0,y=5
        ,legend=names
        ,col=cols[-which(IndNA == 1)]
        ,lwd=3
@@ -19712,7 +19696,7 @@ png('parallel_axis_5_RPIw_geo_g.png'
 par(xpd=FALSE)
 par(mar=c(3,5,1,12))
 plot(NA,NA
-     ,xlim=c(0,3)
+     ,xlim=c(0,2)
      ,ylim=c(0,5)
      ,xaxs='i'
      ,yaxs='i'
@@ -19721,9 +19705,6 @@ plot(NA,NA
      ,xaxt='n')
 # making vertical lines for the middle objectives
 lines(c(1,1)
-      ,c(0,5)
-      ,col='black')
-lines(c(2,2)
       ,c(0,5)
       ,col='black')
 
@@ -19741,12 +19722,11 @@ for(i in 1:nrow(points)){
   # check for NA values
   check <- c(points$reservoir_RPIw[i]
              ,points$thermal[i]
-             ,points$seismic[i]
-             ,points$utilization[i])
+             ,points$seismic[i])
   # plot lines only if there are no NAs
   if(sum(is.na(check)) == 0){
     
-    lines(seq(0,3,1)
+    lines(seq(0,2,1)
           ,check
           ,lwd=3
           ,col=cols[i])
@@ -19760,21 +19740,21 @@ for(i in 1:nrow(points)){
 rm(check)
 
 par(xpd=TRUE)
-text(c(0,1,2,3)
+text(c(0,1,2)
      ,c(-0.3)
-     ,c('Reservoir','Thermal','Seismic','Utilization')
+     ,c('Reservoir','Thermal','Seismic')
      ,adj=0.5)
-text(-0.35,5
+text(-0.25,5
      ,'Better'
      ,adj=1
      ,col='darkgreen'
      ,font=2)
-text(-0.35,0
+text(-0.25,0
      ,'Worse'
      ,adj=1
      ,col='firebrick'
      ,font=2)
-legend(x=3.2,y=5
+legend(x=2.0,y=5
        ,legend=names
        ,col=cols[-which(IndNA == 1)]
        ,lwd=3
@@ -20707,7 +20687,7 @@ png('parallel_axis_5_RPIw_geo_m.png'
 par(xpd=FALSE)
 par(mar=c(3,5,1,12))
 plot(NA,NA
-     ,xlim=c(0,3)
+     ,xlim=c(0,2)
      ,ylim=c(0,5)
      ,xaxs='i'
      ,yaxs='i'
@@ -20716,9 +20696,6 @@ plot(NA,NA
      ,xaxt='n')
 # making vertical lines for the middle objectives
 lines(c(1,1)
-      ,c(0,5)
-      ,col='black')
-lines(c(2,2)
       ,c(0,5)
       ,col='black')
 
@@ -20736,12 +20713,11 @@ for(i in 1:nrow(points)){
   # check for NA values
   check <- c(points$reservoir_RPIw[i]
              ,points$thermal[i]
-             ,points$seismic[i]
-             ,points$utilization[i])
+             ,points$seismic[i])
   # plot lines only if there are no NAs
   if(sum(is.na(check)) == 0){
     
-    lines(seq(0,3,1)
+    lines(seq(0,2,1)
           ,check
           ,lwd=3
           ,col=cols[i])
@@ -20755,21 +20731,21 @@ for(i in 1:nrow(points)){
 rm(check)
 
 par(xpd=TRUE)
-text(c(0,1,2,3)
+text(c(0,1,2)
      ,c(-0.3)
-     ,c('Reservoir','Thermal','Seismic','Utilization')
+     ,c('Reservoir','Thermal','Seismic')
      ,adj=0.5)
-text(-0.35,5
+text(-0.25,5
      ,'Better'
      ,adj=1
      ,col='darkgreen'
      ,font=2)
-text(-0.35,0
+text(-0.25,0
      ,'Worse'
      ,adj=1
      ,col='firebrick'
      ,font=2)
-legend(x=3.2,y=5
+legend(x=2.0,y=5
        ,legend=names
        ,col=cols[-which(IndNA == 1)]
        ,lwd=3
@@ -21705,7 +21681,7 @@ png('parallel_axis_5_RPIg_geo_a.png'
 par(xpd=FALSE)
 par(mar=c(3,5,1,12))
 plot(NA,NA
-     ,xlim=c(0,3)
+     ,xlim=c(0,2)
      ,ylim=c(0,5)
      ,xaxs='i'
      ,yaxs='i'
@@ -21714,9 +21690,6 @@ plot(NA,NA
      ,xaxt='n')
 # making vertical lines for the middle objectives
 lines(c(1,1)
-      ,c(0,5)
-      ,col='black')
-lines(c(2,2)
       ,c(0,5)
       ,col='black')
 
@@ -21734,12 +21707,11 @@ for(i in 1:nrow(points)){
   # check for NA values
   check <- c(points$reservoir_RPIg[i]
              ,points$thermal[i]
-             ,points$seismic[i]
-             ,points$utilization[i])
+             ,points$seismic[i])
   # plot lines only if there are no NAs
   if(sum(is.na(check)) == 0){
     
-    lines(seq(0,3,1)
+    lines(seq(0,2,1)
           ,check
           ,lwd=3
           ,col=cols[i])
@@ -21753,21 +21725,21 @@ for(i in 1:nrow(points)){
 rm(check)
 
 par(xpd=TRUE)
-text(c(0,1,2,3)
+text(c(0,1,2)
      ,c(-0.3)
-     ,c('Reservoir','Thermal','Seismic','Utilization')
+     ,c('Reservoir','Thermal','Seismic')
      ,adj=0.5)
-text(-0.35,5
+text(-0.25,5
      ,'Better'
      ,adj=1
      ,col='darkgreen'
      ,font=2)
-text(-0.35,0
+text(-0.25,0
      ,'Worse'
      ,adj=1
      ,col='firebrick'
      ,font=2)
-legend(x=3.2,y=5
+legend(x=2.0,y=5
        ,legend=names
        ,col=cols[-which(IndNA == 1)]
        ,lwd=3
@@ -22703,7 +22675,7 @@ png('parallel_axis_5_RPIg_geo_g.png'
 par(xpd=FALSE)
 par(mar=c(3,5,1,12))
 plot(NA,NA
-     ,xlim=c(0,3)
+     ,xlim=c(0,2)
      ,ylim=c(0,5)
      ,xaxs='i'
      ,yaxs='i'
@@ -22712,9 +22684,6 @@ plot(NA,NA
      ,xaxt='n')
 # making vertical lines for the middle objectives
 lines(c(1,1)
-      ,c(0,5)
-      ,col='black')
-lines(c(2,2)
       ,c(0,5)
       ,col='black')
 
@@ -22732,12 +22701,11 @@ for(i in 1:nrow(points)){
   # check for NA values
   check <- c(points$reservoir_RPIg[i]
              ,points$thermal[i]
-             ,points$seismic[i]
-             ,points$utilization[i])
+             ,points$seismic[i])
   # plot lines only if there are no NAs
   if(sum(is.na(check)) == 0){
     
-    lines(seq(0,3,1)
+    lines(seq(0,2,1)
           ,check
           ,lwd=3
           ,col=cols[i])
@@ -22751,21 +22719,21 @@ for(i in 1:nrow(points)){
 rm(check)
 
 par(xpd=TRUE)
-text(c(0,1,2,3)
+text(c(0,1,2)
      ,c(-0.3)
-     ,c('Reservoir','Thermal','Seismic','Utilization')
+     ,c('Reservoir','Thermal','Seismic')
      ,adj=0.5)
-text(-0.35,5
+text(-0.25,5
      ,'Better'
      ,adj=1
      ,col='darkgreen'
      ,font=2)
-text(-0.35,0
+text(-0.25,0
      ,'Worse'
      ,adj=1
      ,col='firebrick'
      ,font=2)
-legend(x=3.2,y=5
+legend(x=2.0,y=5
        ,legend=names
        ,col=cols[-which(IndNA == 1)]
        ,lwd=3
@@ -23697,7 +23665,7 @@ png('parallel_axis_5_RPIg_geo_m.png'
 par(xpd=FALSE)
 par(mar=c(3,5,1,12))
 plot(NA,NA
-     ,xlim=c(0,3)
+     ,xlim=c(0,2)
      ,ylim=c(0,5)
      ,xaxs='i'
      ,yaxs='i'
@@ -23706,9 +23674,6 @@ plot(NA,NA
      ,xaxt='n')
 # making vertical lines for the middle objectives
 lines(c(1,1)
-      ,c(0,5)
-      ,col='black')
-lines(c(2,2)
       ,c(0,5)
       ,col='black')
 
@@ -23726,12 +23691,11 @@ for(i in 1:nrow(points)){
   # check for NA values
   check <- c(points$reservoir_RPIg[i]
              ,points$thermal[i]
-             ,points$seismic[i]
-             ,points$utilization[i])
+             ,points$seismic[i])
   # plot lines only if there are no NAs
   if(sum(is.na(check)) == 0){
     
-    lines(seq(0,3,1)
+    lines(seq(0,2,1)
           ,check
           ,lwd=3
           ,col=cols[i])
@@ -23745,21 +23709,21 @@ for(i in 1:nrow(points)){
 rm(check)
 
 par(xpd=TRUE)
-text(c(0,1,2,3)
+text(c(0,1,2)
      ,c(-0.3)
-     ,c('Reservoir','Thermal','Seismic','Utilization')
+     ,c('Reservoir','Thermal','Seismic')
      ,adj=0.5)
-text(-0.35,5
+text(-0.25,5
      ,'Better'
      ,adj=1
      ,col='darkgreen'
      ,font=2)
-text(-0.35,0
+text(-0.25,0
      ,'Worse'
      ,adj=1
      ,col='firebrick'
      ,font=2)
-legend(x=3.2,y=5
+legend(x=2.0,y=5
        ,legend=names
        ,col=cols[-which(IndNA == 1)]
        ,lwd=3
@@ -25511,9 +25475,6 @@ rps <- 10000
 #All RFs
 distsmin <- matrix(0,rps,nrow(extracted2_df_5_RPIg_m))
 
-#Geology only
-distsmin_g <- matrix(0,rps,length(ind_use))
-
 # RPIg Minimum Monte Carlo
 #Change for each different extracted2 variable.
 points = extracted2_df_5_RPIg_m
@@ -25882,3 +25843,1156 @@ makeMap(rast=MinSd_test
         ,comTy='min'
         ,numRF=4
         ,sdMap=TRUE)
+
+
+# RPIw Minimum Monte Carlo Geologic Risk Factors
+#Change for each different extracted2 variable.
+points = as.data.frame(extracted2_df_5_RPIw_geo_m)
+
+#Geology only
+distsmin_g <- matrix(0,rps,nrow(points))
+
+# loop for Monte Carlo
+for(i in 1:nrow(points)){
+  
+  # setting seed
+  set.seed(10)
+  
+  # initializing matrix
+  mat_mc <- matrix(0,rps,5) #5 is for the number of RFs, considering that seismic has 2 (stress and angle)
+  
+  # reservoir RPIw MC
+  pfm5 <- rep(0,rps)
+  
+  res_mean <- log(points$res_pred_RPIw_max2[i])
+  res_cv <- points$res_pred_RPIw_max_err[i]
+  
+  sigma2 <- log(res_cv^2 + 1)
+  mu <- res_mean- sigma2/2
+  rand <- rnorm(rps,mu,sqrt(sigma2))
+  rm(mu)
+  
+  pfm5[rand < log(res_RPIw_thresh5[1])] <-5
+  pfm5[rand > log(res_RPIw_thresh5[6])] <- 0
+  pfm5[intersect(which(rand >= log(res_RPIw_thresh5[1])),which(rand < log(res_RPIw_thresh5[2])))] <- 5- (rand[intersect(which(rand >= log(res_RPIw_thresh5[1])),which(rand < log(res_RPIw_thresh5[2])))] - log(res_RPIw_thresh5[1]))/(log(res_RPIw_thresh5[2])-log(res_RPIw_thresh5[1]))
+  pfm5[intersect(which(rand >= log(res_RPIw_thresh5[2])),which(rand < log(res_RPIw_thresh5[3])))] <- 4- (rand[intersect(which(rand >= log(res_RPIw_thresh5[2])),which(rand < log(res_RPIw_thresh5[3])))] - log(res_RPIw_thresh5[2]))/(log(res_RPIw_thresh5[3])-log(res_RPIw_thresh5[2]))
+  pfm5[intersect(which(rand >= log(res_RPIw_thresh5[3])),which(rand < log(res_RPIw_thresh5[4])))] <- 3- (rand[intersect(which(rand >= log(res_RPIw_thresh5[3])),which(rand < log(res_RPIw_thresh5[4])))] - log(res_RPIw_thresh5[3]))/(log(res_RPIw_thresh5[4])-log(res_RPIw_thresh5[3]))
+  pfm5[intersect(which(rand >= log(res_RPIw_thresh5[4])),which(rand < log(res_RPIw_thresh5[5])))] <- 2- (rand[intersect(which(rand >= log(res_RPIw_thresh5[4])),which(rand < log(res_RPIw_thresh5[5])))] - log(res_RPIw_thresh5[4]))/(log(res_RPIw_thresh5[5])-log(res_RPIw_thresh5[4]))
+  pfm5[intersect(which(rand >= log(res_RPIw_thresh5[5])),which(rand < log(res_RPIw_thresh5[6])))] <- 1- (rand[intersect(which(rand >= log(res_RPIw_thresh5[5])),which(rand < log(res_RPIw_thresh5[6])))] - log(res_RPIw_thresh5[5]))/(log(res_RPIw_thresh5[6])-log(res_RPIw_thresh5[5]))
+  
+  #Because the values are reversed, switch them.
+  pfm5 <- 5-pfm5
+  
+  mat_mc[,1] <- pfm5
+  
+  
+  # thermal new thresholds MC
+  pfm5 <- rep(0,rps)
+  
+  th_mean <- points$therm_pred[i]
+  th_se <- points$therm_err[i]
+  
+  rand <- rnorm(rps,th_mean,th_se)
+  
+  pfm5[rand < therm_thresh5[1]] <- 5
+  pfm5[rand > therm_thresh5[6]] <- 0
+  pfm5[intersect(which(rand >= therm_thresh5[1]),which(rand < therm_thresh5[2]))] <- 5 - (rand[intersect(which(rand >= therm_thresh5[1]),which(rand < therm_thresh5[2]))] - therm_thresh5[1])/(therm_thresh5[2]-therm_thresh5[1])
+  pfm5[intersect(which(rand >= therm_thresh5[2]),which(rand < therm_thresh5[3]))] <- 4- (rand[intersect(which(rand >= therm_thresh5[2]),which(rand < therm_thresh5[3]))] - therm_thresh5[2])/(therm_thresh5[3]-therm_thresh5[2])
+  pfm5[intersect(which(rand >= therm_thresh5[3]),which(rand < therm_thresh5[4]))] <- 3- (rand[intersect(which(rand >= therm_thresh5[3]),which(rand < therm_thresh5[4]))] - therm_thresh5[3])/(therm_thresh5[4]-therm_thresh5[3])
+  pfm5[intersect(which(rand >= therm_thresh5[4]),which(rand < therm_thresh5[5]))] <- 2- (rand[intersect(which(rand >= therm_thresh5[4]),which(rand < therm_thresh5[5]))] - therm_thresh5[4])/(therm_thresh5[5]-therm_thresh5[4])
+  pfm5[intersect(which(rand >= therm_thresh5[5]),which(rand < therm_thresh5[6]))] <- 1- (rand[intersect(which(rand >= therm_thresh5[5]),which(rand < therm_thresh5[6]))] - therm_thresh5[5])/(therm_thresh5[6]-therm_thresh5[5])
+  
+  mat_mc[,2] <- pfm5
+  
+  
+  # seismic earthquake MC
+  pfm5 <- rep(0,rps)
+  
+  se_eq_mean <- points$seis_eq_pred[i]
+  se_eq_se <- points$seis_eq_err[i]
+  
+  rand <- rnorm(rps,se_eq_mean,se_eq_se)
+  
+  pfm5[rand < seis_eq_thresh5[1]] <-5
+  pfm5[rand > seis_eq_thresh5[6]] <-0
+  pfm5[intersect(which(rand >= seis_eq_thresh5[1]),which(rand < seis_eq_thresh5[2]))] <- 5- (rand[intersect(which(rand >= seis_eq_thresh5[1]),which(rand < seis_eq_thresh5[2]))] - seis_eq_thresh5[1])/(seis_eq_thresh5[2]-seis_eq_thresh5[1])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[2]),which(rand < seis_eq_thresh5[3]))] <- 4- (rand[intersect(which(rand >= seis_eq_thresh5[2]),which(rand < seis_eq_thresh5[3]))] - seis_eq_thresh5[2])/(seis_eq_thresh5[3]-seis_eq_thresh5[2])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[3]),which(rand < seis_eq_thresh5[4]))] <- 3- (rand[intersect(which(rand >= seis_eq_thresh5[3]),which(rand < seis_eq_thresh5[4]))] - seis_eq_thresh5[3])/(seis_eq_thresh5[4]-seis_eq_thresh5[3])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[4]),which(rand < seis_eq_thresh5[5]))] <- 2- (rand[intersect(which(rand >= seis_eq_thresh5[4]),which(rand < seis_eq_thresh5[5]))] - seis_eq_thresh5[4])/(seis_eq_thresh5[5]-seis_eq_thresh5[4])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[5]),which(rand < seis_eq_thresh5[6]))] <- 1- (rand[intersect(which(rand >= seis_eq_thresh5[5]),which(rand < seis_eq_thresh5[6]))] - seis_eq_thresh5[5])/(seis_eq_thresh5[6]-seis_eq_thresh5[5])
+  
+  #Because the values are reversed, switch them back here.
+  pfm5 <- 5-pfm5
+  
+  mat_mc[,3] <- pfm5
+  
+  
+  # seismic stress angle MC
+  pfm5 <- rep(0,rps)
+  
+  se_st_mean <- points$NormAngs[i]
+  se_st_se <- points$seis_stress_err[i]
+  
+  rand <- rnorm(rps,se_st_mean,se_st_se)
+  
+  # New Method:
+  # Find the values that are negative and add 360 degrees to them until they are all positive.
+  while (length(rand[which(rand < 0)]) != 0){
+    rand[which(rand < 0)] = rand[which(rand < 0)] + 360
+  }
+  # Now convert all values to [0,180]
+  while (length(rand[which(rand > 180)]) != 0){
+    rand[which(rand > 180)] = rand[which(rand > 180)] - 180
+  }
+  # Now take all angles and convert them to a risk angle
+  a1 = abs(rand - critical_ang1)
+  a2 = abs(rand - critical_ang2)
+  # Bind them
+  b = rbind(a1, a2)
+  # Assign the minimum value (most risky) to those points
+  rand = apply(b, 2, min)
+  rm(b,a1,a2)
+  
+  pfm5[rand < seis_stress_thresh5[1]] <- 5
+  pfm5[intersect(which(rand >= seis_stress_thresh5[1]),which(rand < seis_stress_thresh5[2]))] <- 5- (rand[intersect(which(rand >= seis_stress_thresh5[1]),which(rand < seis_stress_thresh5[2]))] - seis_stress_thresh5[1])/(seis_stress_thresh5[2]-seis_stress_thresh5[1])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[2]),which(rand < seis_stress_thresh5[3]))] <- 4- (rand[intersect(which(rand >= seis_stress_thresh5[2]),which(rand < seis_stress_thresh5[3]))] - seis_stress_thresh5[2])/(seis_stress_thresh5[3]-seis_stress_thresh5[2])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[3]),which(rand < seis_stress_thresh5[4]))] <- 3- (rand[intersect(which(rand >= seis_stress_thresh5[3]),which(rand < seis_stress_thresh5[4]))] - seis_stress_thresh5[3])/(seis_stress_thresh5[4]-seis_stress_thresh5[3])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[4]),which(rand < seis_stress_thresh5[5]))] <- 2- (rand[intersect(which(rand >= seis_stress_thresh5[4]),which(rand < seis_stress_thresh5[5]))] - seis_stress_thresh5[4])/(seis_stress_thresh5[5]-seis_stress_thresh5[4])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[5]),which(rand < seis_stress_thresh5[6]))] <- 1- (rand[intersect(which(rand >= seis_stress_thresh5[5]),which(rand < seis_stress_thresh5[6]))] - seis_stress_thresh5[5])/(seis_stress_thresh5[6]-seis_stress_thresh5[5])
+  
+  #Because the values are reversed, switch them back
+  pfm5 <- 5-pfm5
+  
+  mat_mc[,4] <- pfm5
+  
+  # calcuating overall distribution
+  #distsmin[,i] <- apply(cbind(mat_mc[,1],mat_mc[,2],0.5*mat_mc[,3]+0.5*mat_mc[,4],mat_mc[,5]),1,min)
+  
+  #Geologic
+  distsmin_g[,i] <- apply(cbind(mat_mc[,1],mat_mc[,2],0.5*mat_mc[,3]+0.5*mat_mc[,4]),1,min)
+}
+rm(rand, pfm5, i, th_mean, th_se, sigma2, res_mean, res_cv, se_eq_mean, se_eq_se, se_st_se, se_st_mean, mat_mc, points)
+
+#Add the mean and the standard deviation of the minimum to the dataset
+mean_test = apply(distsmin_g, 2, mean)
+sd_test = apply(distsmin_g, 2, sd)
+rm(distsmin_g)
+extracted2_df_5_RPIw_geo_m$Min = mean_test
+extracted2_df_5_RPIw_geo_m$MinSd = sd_test
+
+
+#Make it a spatial dataset
+coordinates(extracted2_df_5_RPIw_geo_m) = c('x','y')
+proj4string(extracted2_df_5_RPIw_geo_m) = CRS("+init=epsg:26917")
+
+#Add data back to the full region grid, which is stored in extracted_df_5_RPIg for all variables.
+dummy = extracted_df_5_RPIg
+#Add the rownames to each database for joining purposes
+extracted2_df_5_RPIw_geo_m$key = as.numeric(rownames(as.data.frame(extracted2_df_5_RPIw_geo_m)))
+dummy$key = as.numeric(rownames(as.data.frame(dummy)))
+
+#Merge the data based on the key. Only bring over the Min, MinSd, and key columns.
+test = merge(dummy, extracted2_df_5_RPIw_geo_m[,(ncol(extracted2_df_5_RPIw_geo_m)-2):ncol(extracted2_df_5_RPIw_geo_m)], by = 'key')
+rm(dummy)
+
+#Save only the results in case it needs to be remade.
+extracted2_df_5_RPIw_geo_m = as.data.frame(extracted2_df_5_RPIw_geo_m[,(ncol(extracted2_df_5_RPIw_geo_m)-2):ncol(extracted2_df_5_RPIw_geo_m)])
+
+#Make a raster
+Min_test = raster(test, layer = 'Min')
+MinSd_test = raster(test, layer = 'MinSd')
+rm(test)
+
+#Save the raster
+saveRast(rast=Min_test
+         ,wd=wd_raster_out
+         ,rastnm='co_5_0_5_m_RPIw_geo.tif')
+makeMap(rast=Min_test
+        ,plotnm='co_5_0_5_m_RPIw_geo.png'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min'
+        ,numRF=4
+        ,sdMap=FALSE)
+
+saveRast(rast=MinSd_test
+         ,wd=wd_raster_out
+         ,rastnm='co_pfa_sd5_min_RPIw_geo.tif')
+makeMap(rast=MinSd_test
+        ,plotnm='co_pfa_sd5_min_RPIw_geo.png'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min'
+        ,numRF=4
+        ,sdMap=TRUE)
+
+#remove files for space
+rm(Min_test, MinSd_test)
+
+
+
+
+# RPIg Minimum Monte Carlo Geologic Risk Factors
+#Change for each different extracted2 variable.
+points = as.data.frame(extracted2_df_5_RPIg_geo_m)
+
+#Geology only
+distsmin_g <- matrix(0,rps,nrow(points))
+
+# loop for Monte Carlo
+for(i in 1:nrow(points)){
+  
+  # setting seed
+  set.seed(10)
+  
+  # initializing matrix
+  mat_mc <- matrix(0,rps,5) #5 is for the number of RFs, considering that seismic has 2 (stress and angle)
+  
+  # reservoir RPIw MC
+  pfm5 <- rep(0,rps)
+  
+  res_mean <- log(points$res_pred_RPIg_max2[i])
+  res_cv <- points$res_pred_RPIg_max_err[i]
+  
+  sigma2 <- log(res_cv^2 + 1)
+  mu <- res_mean- sigma2/2
+  rand <- rnorm(rps,mu,sqrt(sigma2))
+  rm(mu)
+  
+  pfm5[rand < log(res_RPIg_thresh5[1])] <-5
+  pfm5[rand > log(res_RPIg_thresh5[6])] <- 0
+  pfm5[intersect(which(rand >= log(res_RPIg_thresh5[1])),which(rand < log(res_RPIg_thresh5[2])))] <- 5- (rand[intersect(which(rand >= log(res_RPIg_thresh5[1])),which(rand < log(res_RPIg_thresh5[2])))] - log(res_RPIg_thresh5[1]))/(log(res_RPIg_thresh5[2])-log(res_RPIg_thresh5[1]))
+  pfm5[intersect(which(rand >= log(res_RPIg_thresh5[2])),which(rand < log(res_RPIg_thresh5[3])))] <- 4- (rand[intersect(which(rand >= log(res_RPIg_thresh5[2])),which(rand < log(res_RPIg_thresh5[3])))] - log(res_RPIg_thresh5[2]))/(log(res_RPIg_thresh5[3])-log(res_RPIg_thresh5[2]))
+  pfm5[intersect(which(rand >= log(res_RPIg_thresh5[3])),which(rand < log(res_RPIg_thresh5[4])))] <- 3- (rand[intersect(which(rand >= log(res_RPIg_thresh5[3])),which(rand < log(res_RPIg_thresh5[4])))] - log(res_RPIg_thresh5[3]))/(log(res_RPIg_thresh5[4])-log(res_RPIg_thresh5[3]))
+  pfm5[intersect(which(rand >= log(res_RPIg_thresh5[4])),which(rand < log(res_RPIg_thresh5[5])))] <- 2- (rand[intersect(which(rand >= log(res_RPIg_thresh5[4])),which(rand < log(res_RPIg_thresh5[5])))] - log(res_RPIg_thresh5[4]))/(log(res_RPIg_thresh5[5])-log(res_RPIg_thresh5[4]))
+  pfm5[intersect(which(rand >= log(res_RPIg_thresh5[5])),which(rand < log(res_RPIg_thresh5[6])))] <- 1- (rand[intersect(which(rand >= log(res_RPIg_thresh5[5])),which(rand < log(res_RPIg_thresh5[6])))] - log(res_RPIg_thresh5[5]))/(log(res_RPIg_thresh5[6])-log(res_RPIg_thresh5[5]))
+  
+  #Because the values are reversed, switch them.
+  pfm5 <- 5-pfm5
+  
+  mat_mc[,1] <- pfm5
+  
+  
+  # thermal new thresholds MC
+  pfm5 <- rep(0,rps)
+  
+  th_mean <- points$therm_pred[i]
+  th_se <- points$therm_err[i]
+  
+  rand <- rnorm(rps,th_mean,th_se)
+  
+  pfm5[rand < therm_thresh5[1]] <- 5
+  pfm5[rand > therm_thresh5[6]] <- 0
+  pfm5[intersect(which(rand >= therm_thresh5[1]),which(rand < therm_thresh5[2]))] <- 5 - (rand[intersect(which(rand >= therm_thresh5[1]),which(rand < therm_thresh5[2]))] - therm_thresh5[1])/(therm_thresh5[2]-therm_thresh5[1])
+  pfm5[intersect(which(rand >= therm_thresh5[2]),which(rand < therm_thresh5[3]))] <- 4- (rand[intersect(which(rand >= therm_thresh5[2]),which(rand < therm_thresh5[3]))] - therm_thresh5[2])/(therm_thresh5[3]-therm_thresh5[2])
+  pfm5[intersect(which(rand >= therm_thresh5[3]),which(rand < therm_thresh5[4]))] <- 3- (rand[intersect(which(rand >= therm_thresh5[3]),which(rand < therm_thresh5[4]))] - therm_thresh5[3])/(therm_thresh5[4]-therm_thresh5[3])
+  pfm5[intersect(which(rand >= therm_thresh5[4]),which(rand < therm_thresh5[5]))] <- 2- (rand[intersect(which(rand >= therm_thresh5[4]),which(rand < therm_thresh5[5]))] - therm_thresh5[4])/(therm_thresh5[5]-therm_thresh5[4])
+  pfm5[intersect(which(rand >= therm_thresh5[5]),which(rand < therm_thresh5[6]))] <- 1- (rand[intersect(which(rand >= therm_thresh5[5]),which(rand < therm_thresh5[6]))] - therm_thresh5[5])/(therm_thresh5[6]-therm_thresh5[5])
+  
+  mat_mc[,2] <- pfm5
+  
+  
+  # seismic earthquake MC
+  pfm5 <- rep(0,rps)
+  
+  se_eq_mean <- points$seis_eq_pred[i]
+  se_eq_se <- points$seis_eq_err[i]
+  
+  rand <- rnorm(rps,se_eq_mean,se_eq_se)
+  
+  pfm5[rand < seis_eq_thresh5[1]] <-5
+  pfm5[rand > seis_eq_thresh5[6]] <-0
+  pfm5[intersect(which(rand >= seis_eq_thresh5[1]),which(rand < seis_eq_thresh5[2]))] <- 5- (rand[intersect(which(rand >= seis_eq_thresh5[1]),which(rand < seis_eq_thresh5[2]))] - seis_eq_thresh5[1])/(seis_eq_thresh5[2]-seis_eq_thresh5[1])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[2]),which(rand < seis_eq_thresh5[3]))] <- 4- (rand[intersect(which(rand >= seis_eq_thresh5[2]),which(rand < seis_eq_thresh5[3]))] - seis_eq_thresh5[2])/(seis_eq_thresh5[3]-seis_eq_thresh5[2])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[3]),which(rand < seis_eq_thresh5[4]))] <- 3- (rand[intersect(which(rand >= seis_eq_thresh5[3]),which(rand < seis_eq_thresh5[4]))] - seis_eq_thresh5[3])/(seis_eq_thresh5[4]-seis_eq_thresh5[3])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[4]),which(rand < seis_eq_thresh5[5]))] <- 2- (rand[intersect(which(rand >= seis_eq_thresh5[4]),which(rand < seis_eq_thresh5[5]))] - seis_eq_thresh5[4])/(seis_eq_thresh5[5]-seis_eq_thresh5[4])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[5]),which(rand < seis_eq_thresh5[6]))] <- 1- (rand[intersect(which(rand >= seis_eq_thresh5[5]),which(rand < seis_eq_thresh5[6]))] - seis_eq_thresh5[5])/(seis_eq_thresh5[6]-seis_eq_thresh5[5])
+  
+  #Because the values are reversed, switch them back here.
+  pfm5 <- 5-pfm5
+  
+  mat_mc[,3] <- pfm5
+  
+  
+  # seismic stress angle MC
+  pfm5 <- rep(0,rps)
+  
+  se_st_mean <- points$NormAngs[i]
+  se_st_se <- points$seis_stress_err[i]
+  
+  rand <- rnorm(rps,se_st_mean,se_st_se)
+  
+  # New Method:
+  # Find the values that are negative and add 360 degrees to them until they are all positive.
+  while (length(rand[which(rand < 0)]) != 0){
+    rand[which(rand < 0)] = rand[which(rand < 0)] + 360
+  }
+  # Now convert all values to [0,180]
+  while (length(rand[which(rand > 180)]) != 0){
+    rand[which(rand > 180)] = rand[which(rand > 180)] - 180
+  }
+  # Now take all angles and convert them to a risk angle
+  a1 = abs(rand - critical_ang1)
+  a2 = abs(rand - critical_ang2)
+  # Bind them
+  b = rbind(a1, a2)
+  # Assign the minimum value (most risky) to those points
+  rand = apply(b, 2, min)
+  rm(b,a1,a2)
+  
+  pfm5[rand < seis_stress_thresh5[1]] <- 5
+  pfm5[intersect(which(rand >= seis_stress_thresh5[1]),which(rand < seis_stress_thresh5[2]))] <- 5- (rand[intersect(which(rand >= seis_stress_thresh5[1]),which(rand < seis_stress_thresh5[2]))] - seis_stress_thresh5[1])/(seis_stress_thresh5[2]-seis_stress_thresh5[1])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[2]),which(rand < seis_stress_thresh5[3]))] <- 4- (rand[intersect(which(rand >= seis_stress_thresh5[2]),which(rand < seis_stress_thresh5[3]))] - seis_stress_thresh5[2])/(seis_stress_thresh5[3]-seis_stress_thresh5[2])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[3]),which(rand < seis_stress_thresh5[4]))] <- 3- (rand[intersect(which(rand >= seis_stress_thresh5[3]),which(rand < seis_stress_thresh5[4]))] - seis_stress_thresh5[3])/(seis_stress_thresh5[4]-seis_stress_thresh5[3])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[4]),which(rand < seis_stress_thresh5[5]))] <- 2- (rand[intersect(which(rand >= seis_stress_thresh5[4]),which(rand < seis_stress_thresh5[5]))] - seis_stress_thresh5[4])/(seis_stress_thresh5[5]-seis_stress_thresh5[4])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[5]),which(rand < seis_stress_thresh5[6]))] <- 1- (rand[intersect(which(rand >= seis_stress_thresh5[5]),which(rand < seis_stress_thresh5[6]))] - seis_stress_thresh5[5])/(seis_stress_thresh5[6]-seis_stress_thresh5[5])
+  
+  #Because the values are reversed, switch them back
+  pfm5 <- 5-pfm5
+  
+  mat_mc[,4] <- pfm5
+  
+  # calcuating overall distribution
+  #distsmin[,i] <- apply(cbind(mat_mc[,1],mat_mc[,2],0.5*mat_mc[,3]+0.5*mat_mc[,4],mat_mc[,5]),1,min)
+  
+  #Geologic
+  distsmin_g[,i] <- apply(cbind(mat_mc[,1],mat_mc[,2],0.5*mat_mc[,3]+0.5*mat_mc[,4]),1,min)
+}
+rm(rand, pfm5, i, th_mean, th_se, sigma2, res_mean, res_cv, se_eq_mean, se_eq_se, se_st_se, se_st_mean, mat_mc, points)
+
+#Add the mean and the standard deviation of the minimum to the dataset
+mean_test = apply(distsmin_g, 2, mean)
+sd_test = apply(distsmin_g, 2, sd)
+rm(distsmin_g)
+extracted2_df_5_RPIg_geo_m$Min = mean_test
+extracted2_df_5_RPIg_geo_m$MinSd = sd_test
+rm(mean_test, sd_test)
+
+#Make it a spatial dataset
+coordinates(extracted2_df_5_RPIg_geo_m) = c('x','y')
+proj4string(extracted2_df_5_RPIg_geo_m) = CRS("+init=epsg:26917")
+
+#Add data back to the full region grid, which is stored in extracted_df_5_RPIg for all variables.
+dummy = extracted_df_5_RPIg
+#Add the rownames to each database for joining purposes
+extracted2_df_5_RPIg_geo_m$key = as.numeric(rownames(as.data.frame(extracted2_df_5_RPIg_geo_m)))
+dummy$key = as.numeric(rownames(as.data.frame(dummy)))
+
+#Merge the data based on the key. Only bring over the Min, MinSd, and key columns.
+test = merge(dummy, extracted2_df_5_RPIg_geo_m[,(ncol(extracted2_df_5_RPIg_geo_m)-2):ncol(extracted2_df_5_RPIg_geo_m)], by = 'key')
+rm(dummy)
+
+#Save only the results in case it needs to be remade.
+extracted2_df_5_RPIg_geo_m = as.data.frame(extracted2_df_5_RPIg_geo_m[,(ncol(extracted2_df_5_RPIg_geo_m)-2):ncol(extracted2_df_5_RPIg_geo_m)])
+
+#Make a raster
+Min_test = raster(test, layer = 'Min')
+MinSd_test = raster(test, layer = 'MinSd')
+rm(test)
+
+#Save the raster
+saveRast(rast=Min_test
+         ,wd=wd_raster_out
+         ,rastnm='co_5_0_5_m_RPIg_geo.tif')
+makeMap(rast=Min_test
+        ,plotnm='co_5_0_5_m_RPIg_geo.png'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min'
+        ,numRF=4
+        ,sdMap=FALSE)
+
+saveRast(rast=MinSd_test
+         ,wd=wd_raster_out
+         ,rastnm='co_pfa_sd5_min_RPIg_geo.tif')
+makeMap(rast=MinSd_test
+        ,plotnm='co_pfa_sd5_min_RPIg_geo.png'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min'
+        ,numRF=4
+        ,sdMap=TRUE)
+
+#remove files for space
+rm(Min_test, MinSd_test)
+
+
+# RFC Minimum Monte Carlo Geologic Risk Factors
+#Change for each different extracted2 variable.
+points = as.data.frame(extracted2_df_5_rfc_geo_m)
+
+#Geology only
+distsmin_g <- matrix(0,rps,nrow(points))
+
+# loop for Monte Carlo
+for(i in 1:nrow(points)){
+  
+  # setting seed
+  set.seed(10)
+  
+  # initializing matrix
+  mat_mc <- matrix(0,rps,5) #5 is for the number of RFs, considering that seismic has 2 (stress and angle)
+  
+  # reservoir RPIw MC
+  pfm5 <- rep(0,rps)
+  
+  res_mean <- log(points$res_pred_rfc_max2[i])
+  res_cv <- points$res_pred_rfc_max_err[i]
+  
+  sigma2 <- log(res_cv^2 + 1)
+  mu <- res_mean- sigma2/2
+  rand <- rnorm(rps,mu,sqrt(sigma2))
+  rm(mu)
+  
+  pfm5[rand < log(res_rfc_thresh5[1])] <-5
+  pfm5[rand > log(res_rfc_thresh5[6])] <- 0
+  pfm5[intersect(which(rand >= log(res_rfc_thresh5[1])),which(rand < log(res_rfc_thresh5[2])))] <- 5- (rand[intersect(which(rand >= log(res_rfc_thresh5[1])),which(rand < log(res_rfc_thresh5[2])))] - log(res_rfc_thresh5[1]))/(log(res_rfc_thresh5[2])-log(res_rfc_thresh5[1]))
+  pfm5[intersect(which(rand >= log(res_rfc_thresh5[2])),which(rand < log(res_rfc_thresh5[3])))] <- 4- (rand[intersect(which(rand >= log(res_rfc_thresh5[2])),which(rand < log(res_rfc_thresh5[3])))] - log(res_rfc_thresh5[2]))/(log(res_rfc_thresh5[3])-log(res_rfc_thresh5[2]))
+  pfm5[intersect(which(rand >= log(res_rfc_thresh5[3])),which(rand < log(res_rfc_thresh5[4])))] <- 3- (rand[intersect(which(rand >= log(res_rfc_thresh5[3])),which(rand < log(res_rfc_thresh5[4])))] - log(res_rfc_thresh5[3]))/(log(res_rfc_thresh5[4])-log(res_rfc_thresh5[3]))
+  pfm5[intersect(which(rand >= log(res_rfc_thresh5[4])),which(rand < log(res_rfc_thresh5[5])))] <- 2- (rand[intersect(which(rand >= log(res_rfc_thresh5[4])),which(rand < log(res_rfc_thresh5[5])))] - log(res_rfc_thresh5[4]))/(log(res_rfc_thresh5[5])-log(res_rfc_thresh5[4]))
+  pfm5[intersect(which(rand >= log(res_rfc_thresh5[5])),which(rand < log(res_rfc_thresh5[6])))] <- 1- (rand[intersect(which(rand >= log(res_rfc_thresh5[5])),which(rand < log(res_rfc_thresh5[6])))] - log(res_rfc_thresh5[5]))/(log(res_rfc_thresh5[6])-log(res_rfc_thresh5[5]))
+  
+  #Because the values are reversed, switch them.
+  pfm5 <- 5-pfm5
+  
+  mat_mc[,1] <- pfm5
+  
+  
+  # thermal new thresholds MC
+  pfm5 <- rep(0,rps)
+  
+  th_mean <- points$therm_pred[i]
+  th_se <- points$therm_err[i]
+  
+  rand <- rnorm(rps,th_mean,th_se)
+  
+  pfm5[rand < therm_thresh5[1]] <- 5
+  pfm5[rand > therm_thresh5[6]] <- 0
+  pfm5[intersect(which(rand >= therm_thresh5[1]),which(rand < therm_thresh5[2]))] <- 5 - (rand[intersect(which(rand >= therm_thresh5[1]),which(rand < therm_thresh5[2]))] - therm_thresh5[1])/(therm_thresh5[2]-therm_thresh5[1])
+  pfm5[intersect(which(rand >= therm_thresh5[2]),which(rand < therm_thresh5[3]))] <- 4- (rand[intersect(which(rand >= therm_thresh5[2]),which(rand < therm_thresh5[3]))] - therm_thresh5[2])/(therm_thresh5[3]-therm_thresh5[2])
+  pfm5[intersect(which(rand >= therm_thresh5[3]),which(rand < therm_thresh5[4]))] <- 3- (rand[intersect(which(rand >= therm_thresh5[3]),which(rand < therm_thresh5[4]))] - therm_thresh5[3])/(therm_thresh5[4]-therm_thresh5[3])
+  pfm5[intersect(which(rand >= therm_thresh5[4]),which(rand < therm_thresh5[5]))] <- 2- (rand[intersect(which(rand >= therm_thresh5[4]),which(rand < therm_thresh5[5]))] - therm_thresh5[4])/(therm_thresh5[5]-therm_thresh5[4])
+  pfm5[intersect(which(rand >= therm_thresh5[5]),which(rand < therm_thresh5[6]))] <- 1- (rand[intersect(which(rand >= therm_thresh5[5]),which(rand < therm_thresh5[6]))] - therm_thresh5[5])/(therm_thresh5[6]-therm_thresh5[5])
+  
+  mat_mc[,2] <- pfm5
+  
+  
+  # seismic earthquake MC
+  pfm5 <- rep(0,rps)
+  
+  se_eq_mean <- points$seis_eq_pred[i]
+  se_eq_se <- points$seis_eq_err[i]
+  
+  rand <- rnorm(rps,se_eq_mean,se_eq_se)
+  
+  pfm5[rand < seis_eq_thresh5[1]] <-5
+  pfm5[rand > seis_eq_thresh5[6]] <-0
+  pfm5[intersect(which(rand >= seis_eq_thresh5[1]),which(rand < seis_eq_thresh5[2]))] <- 5- (rand[intersect(which(rand >= seis_eq_thresh5[1]),which(rand < seis_eq_thresh5[2]))] - seis_eq_thresh5[1])/(seis_eq_thresh5[2]-seis_eq_thresh5[1])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[2]),which(rand < seis_eq_thresh5[3]))] <- 4- (rand[intersect(which(rand >= seis_eq_thresh5[2]),which(rand < seis_eq_thresh5[3]))] - seis_eq_thresh5[2])/(seis_eq_thresh5[3]-seis_eq_thresh5[2])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[3]),which(rand < seis_eq_thresh5[4]))] <- 3- (rand[intersect(which(rand >= seis_eq_thresh5[3]),which(rand < seis_eq_thresh5[4]))] - seis_eq_thresh5[3])/(seis_eq_thresh5[4]-seis_eq_thresh5[3])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[4]),which(rand < seis_eq_thresh5[5]))] <- 2- (rand[intersect(which(rand >= seis_eq_thresh5[4]),which(rand < seis_eq_thresh5[5]))] - seis_eq_thresh5[4])/(seis_eq_thresh5[5]-seis_eq_thresh5[4])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[5]),which(rand < seis_eq_thresh5[6]))] <- 1- (rand[intersect(which(rand >= seis_eq_thresh5[5]),which(rand < seis_eq_thresh5[6]))] - seis_eq_thresh5[5])/(seis_eq_thresh5[6]-seis_eq_thresh5[5])
+  
+  #Because the values are reversed, switch them back here.
+  pfm5 <- 5-pfm5
+  
+  mat_mc[,3] <- pfm5
+  
+  
+  # seismic stress angle MC
+  pfm5 <- rep(0,rps)
+  
+  se_st_mean <- points$NormAngs[i]
+  se_st_se <- points$seis_stress_err[i]
+  
+  rand <- rnorm(rps,se_st_mean,se_st_se)
+  
+  # New Method:
+  # Find the values that are negative and add 360 degrees to them until they are all positive.
+  while (length(rand[which(rand < 0)]) != 0){
+    rand[which(rand < 0)] = rand[which(rand < 0)] + 360
+  }
+  # Now convert all values to [0,180]
+  while (length(rand[which(rand > 180)]) != 0){
+    rand[which(rand > 180)] = rand[which(rand > 180)] - 180
+  }
+  # Now take all angles and convert them to a risk angle
+  a1 = abs(rand - critical_ang1)
+  a2 = abs(rand - critical_ang2)
+  # Bind them
+  b = rbind(a1, a2)
+  # Assign the minimum value (most risky) to those points
+  rand = apply(b, 2, min)
+  rm(b,a1,a2)
+  
+  pfm5[rand < seis_stress_thresh5[1]] <- 5
+  pfm5[intersect(which(rand >= seis_stress_thresh5[1]),which(rand < seis_stress_thresh5[2]))] <- 5- (rand[intersect(which(rand >= seis_stress_thresh5[1]),which(rand < seis_stress_thresh5[2]))] - seis_stress_thresh5[1])/(seis_stress_thresh5[2]-seis_stress_thresh5[1])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[2]),which(rand < seis_stress_thresh5[3]))] <- 4- (rand[intersect(which(rand >= seis_stress_thresh5[2]),which(rand < seis_stress_thresh5[3]))] - seis_stress_thresh5[2])/(seis_stress_thresh5[3]-seis_stress_thresh5[2])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[3]),which(rand < seis_stress_thresh5[4]))] <- 3- (rand[intersect(which(rand >= seis_stress_thresh5[3]),which(rand < seis_stress_thresh5[4]))] - seis_stress_thresh5[3])/(seis_stress_thresh5[4]-seis_stress_thresh5[3])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[4]),which(rand < seis_stress_thresh5[5]))] <- 2- (rand[intersect(which(rand >= seis_stress_thresh5[4]),which(rand < seis_stress_thresh5[5]))] - seis_stress_thresh5[4])/(seis_stress_thresh5[5]-seis_stress_thresh5[4])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[5]),which(rand < seis_stress_thresh5[6]))] <- 1- (rand[intersect(which(rand >= seis_stress_thresh5[5]),which(rand < seis_stress_thresh5[6]))] - seis_stress_thresh5[5])/(seis_stress_thresh5[6]-seis_stress_thresh5[5])
+  
+  #Because the values are reversed, switch them back
+  pfm5 <- 5-pfm5
+  
+  mat_mc[,4] <- pfm5
+  
+  # calcuating overall distribution
+  #distsmin[,i] <- apply(cbind(mat_mc[,1],mat_mc[,2],0.5*mat_mc[,3]+0.5*mat_mc[,4],mat_mc[,5]),1,min)
+  
+  #Geologic
+  distsmin_g[,i] <- apply(cbind(mat_mc[,1],mat_mc[,2],0.5*mat_mc[,3]+0.5*mat_mc[,4]),1,min)
+}
+rm(rand, pfm5, i, th_mean, th_se, sigma2, res_mean, res_cv, se_eq_mean, se_eq_se, se_st_se, se_st_mean, mat_mc, points)
+
+#Add the mean and the standard deviation of the minimum to the dataset
+mean_test = apply(distsmin_g, 2, mean)
+sd_test = apply(distsmin_g, 2, sd)
+rm(distsmin_g)
+extracted2_df_5_rfc_geo_m$Min = mean_test
+extracted2_df_5_rfc_geo_m$MinSd = sd_test
+rm(mean_test, sd_test)
+
+#Make it a spatial dataset
+coordinates(extracted2_df_5_rfc_geo_m) = c('x','y')
+proj4string(extracted2_df_5_rfc_geo_m) = CRS("+init=epsg:26917")
+
+#Add data back to the full region grid, which is stored in extracted_df_5_RPIg for all variables.
+dummy = extracted_df_5_RPIg
+#Add the rownames to each database for joining purposes
+extracted2_df_5_rfc_geo_m$key = as.numeric(rownames(as.data.frame(extracted2_df_5_rfc_geo_m)))
+dummy$key = as.numeric(rownames(as.data.frame(dummy)))
+
+#Merge the data based on the key. Only bring over the Min, MinSd, and key columns.
+test = merge(dummy, extracted2_df_5_rfc_geo_m[,(ncol(extracted2_df_5_rfc_geo_m)-2):ncol(extracted2_df_5_rfc_geo_m)], by = 'key')
+rm(dummy)
+
+#Save only the results in case it needs to be remade.
+extracted2_df_5_rfc_geo_m = as.data.frame(extracted2_df_5_rfc_geo_m[,(ncol(extracted2_df_5_rfc_geo_m)-2):ncol(extracted2_df_5_rfc_geo_m)])
+
+#Make a raster
+Min_test = raster(test, layer = 'Min')
+MinSd_test = raster(test, layer = 'MinSd')
+rm(test)
+
+#Save the raster
+saveRast(rast=Min_test
+         ,wd=wd_raster_out
+         ,rastnm='co_5_0_5_m_rfc_geo.tif')
+makeMap(rast=Min_test
+        ,plotnm='co_5_0_5_m_rfc_geo.png'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min'
+        ,numRF=4
+        ,sdMap=FALSE)
+
+saveRast(rast=MinSd_test
+         ,wd=wd_raster_out
+         ,rastnm='co_pfa_sd5_min_rfc_geo.tif')
+makeMap(rast=MinSd_test
+        ,plotnm='co_pfa_sd5_min_rfc_geo.png'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min'
+        ,numRF=4
+        ,sdMap=TRUE)
+
+#remove files for space
+rm(Min_test, MinSd_test)
+
+
+# RPIw Minimum Monte Carlo All Risk Factors
+#Change for each different extracted2 variable.
+points = as.data.frame(extracted2_df_5_RPIw_m)
+
+#All RFs
+distsmin <- matrix(0,rps,nrow(points))
+
+# loop for Monte Carlo
+for(i in 1:nrow(points)){
+  
+  # setting seed
+  set.seed(10)
+  
+  # initializing matrix
+  mat_mc <- matrix(0,rps,5) #5 is for the number of RFs, considering that seismic has 2 (stress and angle)
+  
+  # reservoir RPIw MC
+  pfm5 <- rep(0,rps)
+  
+  res_mean <- log(points$res_pred_RPIw_max2[i])
+  res_cv <- points$res_pred_RPIw_max_err[i]
+  
+  sigma2 <- log(res_cv^2 + 1)
+  mu <- res_mean- sigma2/2
+  rand <- rnorm(rps,mu,sqrt(sigma2))
+  rm(mu)
+  
+  pfm5[rand < log(res_RPIw_thresh5[1])] <-5
+  pfm5[rand > log(res_RPIw_thresh5[6])] <- 0
+  pfm5[intersect(which(rand >= log(res_RPIw_thresh5[1])),which(rand < log(res_RPIw_thresh5[2])))] <- 5- (rand[intersect(which(rand >= log(res_RPIw_thresh5[1])),which(rand < log(res_RPIw_thresh5[2])))] - log(res_RPIw_thresh5[1]))/(log(res_RPIw_thresh5[2])-log(res_RPIw_thresh5[1]))
+  pfm5[intersect(which(rand >= log(res_RPIw_thresh5[2])),which(rand < log(res_RPIw_thresh5[3])))] <- 4- (rand[intersect(which(rand >= log(res_RPIw_thresh5[2])),which(rand < log(res_RPIw_thresh5[3])))] - log(res_RPIw_thresh5[2]))/(log(res_RPIw_thresh5[3])-log(res_RPIw_thresh5[2]))
+  pfm5[intersect(which(rand >= log(res_RPIw_thresh5[3])),which(rand < log(res_RPIw_thresh5[4])))] <- 3- (rand[intersect(which(rand >= log(res_RPIw_thresh5[3])),which(rand < log(res_RPIw_thresh5[4])))] - log(res_RPIw_thresh5[3]))/(log(res_RPIw_thresh5[4])-log(res_RPIw_thresh5[3]))
+  pfm5[intersect(which(rand >= log(res_RPIw_thresh5[4])),which(rand < log(res_RPIw_thresh5[5])))] <- 2- (rand[intersect(which(rand >= log(res_RPIw_thresh5[4])),which(rand < log(res_RPIw_thresh5[5])))] - log(res_RPIw_thresh5[4]))/(log(res_RPIw_thresh5[5])-log(res_RPIw_thresh5[4]))
+  pfm5[intersect(which(rand >= log(res_RPIw_thresh5[5])),which(rand < log(res_RPIw_thresh5[6])))] <- 1- (rand[intersect(which(rand >= log(res_RPIw_thresh5[5])),which(rand < log(res_RPIw_thresh5[6])))] - log(res_RPIw_thresh5[5]))/(log(res_RPIw_thresh5[6])-log(res_RPIw_thresh5[5]))
+  
+  #Because the values are reversed, switch them.
+  pfm5 <- 5-pfm5
+  
+  mat_mc[,1] <- pfm5
+  
+  
+  # thermal new thresholds MC
+  pfm5 <- rep(0,rps)
+  
+  th_mean <- points$therm_pred[i]
+  th_se <- points$therm_err[i]
+  
+  rand <- rnorm(rps,th_mean,th_se)
+  
+  pfm5[rand < therm_thresh5[1]] <- 5
+  pfm5[rand > therm_thresh5[6]] <- 0
+  pfm5[intersect(which(rand >= therm_thresh5[1]),which(rand < therm_thresh5[2]))] <- 5 - (rand[intersect(which(rand >= therm_thresh5[1]),which(rand < therm_thresh5[2]))] - therm_thresh5[1])/(therm_thresh5[2]-therm_thresh5[1])
+  pfm5[intersect(which(rand >= therm_thresh5[2]),which(rand < therm_thresh5[3]))] <- 4- (rand[intersect(which(rand >= therm_thresh5[2]),which(rand < therm_thresh5[3]))] - therm_thresh5[2])/(therm_thresh5[3]-therm_thresh5[2])
+  pfm5[intersect(which(rand >= therm_thresh5[3]),which(rand < therm_thresh5[4]))] <- 3- (rand[intersect(which(rand >= therm_thresh5[3]),which(rand < therm_thresh5[4]))] - therm_thresh5[3])/(therm_thresh5[4]-therm_thresh5[3])
+  pfm5[intersect(which(rand >= therm_thresh5[4]),which(rand < therm_thresh5[5]))] <- 2- (rand[intersect(which(rand >= therm_thresh5[4]),which(rand < therm_thresh5[5]))] - therm_thresh5[4])/(therm_thresh5[5]-therm_thresh5[4])
+  pfm5[intersect(which(rand >= therm_thresh5[5]),which(rand < therm_thresh5[6]))] <- 1- (rand[intersect(which(rand >= therm_thresh5[5]),which(rand < therm_thresh5[6]))] - therm_thresh5[5])/(therm_thresh5[6]-therm_thresh5[5])
+  
+  mat_mc[,2] <- pfm5
+  
+  
+  # seismic earthquake MC
+  pfm5 <- rep(0,rps)
+  
+  se_eq_mean <- points$seis_eq_pred[i]
+  se_eq_se <- points$seis_eq_err[i]
+  
+  rand <- rnorm(rps,se_eq_mean,se_eq_se)
+  
+  pfm5[rand < seis_eq_thresh5[1]] <-5
+  pfm5[rand > seis_eq_thresh5[6]] <-0
+  pfm5[intersect(which(rand >= seis_eq_thresh5[1]),which(rand < seis_eq_thresh5[2]))] <- 5- (rand[intersect(which(rand >= seis_eq_thresh5[1]),which(rand < seis_eq_thresh5[2]))] - seis_eq_thresh5[1])/(seis_eq_thresh5[2]-seis_eq_thresh5[1])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[2]),which(rand < seis_eq_thresh5[3]))] <- 4- (rand[intersect(which(rand >= seis_eq_thresh5[2]),which(rand < seis_eq_thresh5[3]))] - seis_eq_thresh5[2])/(seis_eq_thresh5[3]-seis_eq_thresh5[2])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[3]),which(rand < seis_eq_thresh5[4]))] <- 3- (rand[intersect(which(rand >= seis_eq_thresh5[3]),which(rand < seis_eq_thresh5[4]))] - seis_eq_thresh5[3])/(seis_eq_thresh5[4]-seis_eq_thresh5[3])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[4]),which(rand < seis_eq_thresh5[5]))] <- 2- (rand[intersect(which(rand >= seis_eq_thresh5[4]),which(rand < seis_eq_thresh5[5]))] - seis_eq_thresh5[4])/(seis_eq_thresh5[5]-seis_eq_thresh5[4])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[5]),which(rand < seis_eq_thresh5[6]))] <- 1- (rand[intersect(which(rand >= seis_eq_thresh5[5]),which(rand < seis_eq_thresh5[6]))] - seis_eq_thresh5[5])/(seis_eq_thresh5[6]-seis_eq_thresh5[5])
+  
+  #Because the values are reversed, switch them back here.
+  pfm5 <- 5-pfm5
+  
+  mat_mc[,3] <- pfm5
+  
+  
+  # seismic stress angle MC
+  pfm5 <- rep(0,rps)
+  
+  se_st_mean <- points$NormAngs[i]
+  se_st_se <- points$seis_stress_err[i]
+  
+  rand <- rnorm(rps,se_st_mean,se_st_se)
+  
+  # New Method:
+  # Find the values that are negative and add 360 degrees to them until they are all positive.
+  while (length(rand[which(rand < 0)]) != 0){
+    rand[which(rand < 0)] = rand[which(rand < 0)] + 360
+  }
+  # Now convert all values to [0,180]
+  while (length(rand[which(rand > 180)]) != 0){
+    rand[which(rand > 180)] = rand[which(rand > 180)] - 180
+  }
+  # Now take all angles and convert them to a risk angle
+  a1 = abs(rand - critical_ang1)
+  a2 = abs(rand - critical_ang2)
+  # Bind them
+  b = rbind(a1, a2)
+  # Assign the minimum value (most risky) to those points
+  rand = apply(b, 2, min)
+  rm(b,a1,a2)
+  
+  pfm5[rand < seis_stress_thresh5[1]] <- 5
+  pfm5[intersect(which(rand >= seis_stress_thresh5[1]),which(rand < seis_stress_thresh5[2]))] <- 5- (rand[intersect(which(rand >= seis_stress_thresh5[1]),which(rand < seis_stress_thresh5[2]))] - seis_stress_thresh5[1])/(seis_stress_thresh5[2]-seis_stress_thresh5[1])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[2]),which(rand < seis_stress_thresh5[3]))] <- 4- (rand[intersect(which(rand >= seis_stress_thresh5[2]),which(rand < seis_stress_thresh5[3]))] - seis_stress_thresh5[2])/(seis_stress_thresh5[3]-seis_stress_thresh5[2])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[3]),which(rand < seis_stress_thresh5[4]))] <- 3- (rand[intersect(which(rand >= seis_stress_thresh5[3]),which(rand < seis_stress_thresh5[4]))] - seis_stress_thresh5[3])/(seis_stress_thresh5[4]-seis_stress_thresh5[3])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[4]),which(rand < seis_stress_thresh5[5]))] <- 2- (rand[intersect(which(rand >= seis_stress_thresh5[4]),which(rand < seis_stress_thresh5[5]))] - seis_stress_thresh5[4])/(seis_stress_thresh5[5]-seis_stress_thresh5[4])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[5]),which(rand < seis_stress_thresh5[6]))] <- 1- (rand[intersect(which(rand >= seis_stress_thresh5[5]),which(rand < seis_stress_thresh5[6]))] - seis_stress_thresh5[5])/(seis_stress_thresh5[6]-seis_stress_thresh5[5])
+  
+  #Because the values are reversed, switch them back
+  pfm5 <- 5-pfm5
+  
+  mat_mc[,4] <- pfm5
+  
+  #Utilization:
+  # generating random values
+  rand <- rnorm(rps,points$util_pred[i],points$util_pred[i]*5/100) #5/100 is the 5% uncertainty that is assumed for utilization.
+  
+  # play fairway 5
+  pfm5 <- rep(0,rps)
+  pfm5[rand < util_thresh5[1]] <- 5
+  pfm5[rand > util_thresh5[6]] <- 0
+  pfm5[intersect(which(rand >= util_thresh5[1]),which(rand < util_thresh5[2]))] <- 5 - (rand[intersect(which(rand >= util_thresh5[1]),which(rand < util_thresh5[2]))] - util_thresh5[1])/(util_thresh5[2]-util_thresh5[1])
+  pfm5[intersect(which(rand >= util_thresh5[2]),which(rand < util_thresh5[3]))] <- 4 - (rand[intersect(which(rand >= util_thresh5[2]),which(rand < util_thresh5[3]))] - util_thresh5[2])/(util_thresh5[3]-util_thresh5[2])
+  pfm5[intersect(which(rand >= util_thresh5[3]),which(rand < util_thresh5[4]))] <- 3 - (rand[intersect(which(rand >= util_thresh5[3]),which(rand < util_thresh5[4]))] - util_thresh5[3])/(util_thresh5[4]-util_thresh5[3])
+  pfm5[intersect(which(rand >= util_thresh5[4]),which(rand < util_thresh5[5]))] <- 2 - (rand[intersect(which(rand >= util_thresh5[4]),which(rand < util_thresh5[5]))] - util_thresh5[4])/(util_thresh5[5]-util_thresh5[4])
+  pfm5[intersect(which(rand >= util_thresh5[5]),which(rand < util_thresh5[6]))] <- 1 - (rand[intersect(which(rand >= util_thresh5[5]),which(rand < util_thresh5[6]))] - util_thresh5[5])/(util_thresh5[6]-util_thresh5[5])
+  
+  mat_mc[,5] <- pfm5
+  
+  # calcuating overall distribution
+  distsmin[,i] <- apply(cbind(mat_mc[,1],mat_mc[,2],0.5*mat_mc[,3]+0.5*mat_mc[,4],mat_mc[,5]),1,min)
+}
+rm(rand, pfm5, i, th_mean, th_se, sigma2, res_mean, res_cv, se_eq_mean, se_eq_se, se_st_se, se_st_mean, mat_mc, points)
+
+#Add the mean and the standard deviation of the minimum to the dataset
+mean_test = apply(distsmin, 2, mean)
+sd_test = apply(distsmin, 2, sd)
+rm(distsmin)
+extracted2_df_5_RPIw_m$Min = mean_test
+extracted2_df_5_RPIw_m$MinSd = sd_test
+
+
+#Make it a spatial dataset
+coordinates(extracted2_df_5_RPIw_m) = c('x','y')
+proj4string(extracted2_df_5_RPIw_m) = CRS("+init=epsg:26917")
+
+#Add data back to the full region grid, which is stored in extracted_df_5_RPIg for all variables.
+dummy = extracted_df_5_RPIg
+#Add the rownames to each database for joining purposes
+extracted2_df_5_RPIw_m$key = as.numeric(rownames(as.data.frame(extracted2_df_5_RPIw_m)))
+dummy$key = as.numeric(rownames(as.data.frame(dummy)))
+
+#Merge the data based on the key. Only bring over the Min, MinSd, and key columns.
+test = merge(dummy, extracted2_df_5_RPIw_m[,(ncol(extracted2_df_5_RPIw_m)-2):ncol(extracted2_df_5_RPIw_m)], by = 'key')
+rm(dummy)
+
+#Save only the results in case it needs to be remade.
+extracted2_df_5_RPIw_m = as.data.frame(extracted2_df_5_RPIw_m[,(ncol(extracted2_df_5_RPIw_m)-2):ncol(extracted2_df_5_RPIw_m)])
+
+#Make a raster
+Min_test = raster(test, layer = 'Min')
+MinSd_test = raster(test, layer = 'MinSd')
+rm(test)
+
+#Save the raster
+saveRast(rast=Min_test
+         ,wd=wd_raster_out
+         ,rastnm='co_5_0_5_m_RPIw.tif')
+makeMap(rast=Min_test
+        ,plotnm='co_5_0_5_m_RPIw.png'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min'
+        ,numRF=4
+        ,sdMap=FALSE)
+
+saveRast(rast=MinSd_test
+         ,wd=wd_raster_out
+         ,rastnm='co_pfa_sd5_min_RPIw.tif')
+makeMap(rast=MinSd_test
+        ,plotnm='co_pfa_sd5_min_RPIw.png'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min'
+        ,numRF=4
+        ,sdMap=TRUE)
+
+#remove files for space
+rm(Min_test, MinSd_test)
+
+
+
+
+# RPIg Minimum Monte Carlo All Risk Factors
+#Change for each different extracted2 variable.
+points = as.data.frame(extracted2_df_5_RPIg_m)
+
+#All RFs
+distsmin <- matrix(0,rps,nrow(points))
+
+# loop for Monte Carlo
+for(i in 1:nrow(points)){
+  
+  # setting seed
+  set.seed(10)
+  
+  # initializing matrix
+  mat_mc <- matrix(0,rps,5) #5 is for the number of RFs, considering that seismic has 2 (stress and angle)
+  
+  # reservoir RPIw MC
+  pfm5 <- rep(0,rps)
+  
+  res_mean <- log(points$res_pred_RPIg_max2[i])
+  res_cv <- points$res_pred_RPIg_max_err[i]
+  
+  sigma2 <- log(res_cv^2 + 1)
+  mu <- res_mean- sigma2/2
+  rand <- rnorm(rps,mu,sqrt(sigma2))
+  rm(mu)
+  
+  pfm5[rand < log(res_RPIg_thresh5[1])] <-5
+  pfm5[rand > log(res_RPIg_thresh5[6])] <- 0
+  pfm5[intersect(which(rand >= log(res_RPIg_thresh5[1])),which(rand < log(res_RPIg_thresh5[2])))] <- 5- (rand[intersect(which(rand >= log(res_RPIg_thresh5[1])),which(rand < log(res_RPIg_thresh5[2])))] - log(res_RPIg_thresh5[1]))/(log(res_RPIg_thresh5[2])-log(res_RPIg_thresh5[1]))
+  pfm5[intersect(which(rand >= log(res_RPIg_thresh5[2])),which(rand < log(res_RPIg_thresh5[3])))] <- 4- (rand[intersect(which(rand >= log(res_RPIg_thresh5[2])),which(rand < log(res_RPIg_thresh5[3])))] - log(res_RPIg_thresh5[2]))/(log(res_RPIg_thresh5[3])-log(res_RPIg_thresh5[2]))
+  pfm5[intersect(which(rand >= log(res_RPIg_thresh5[3])),which(rand < log(res_RPIg_thresh5[4])))] <- 3- (rand[intersect(which(rand >= log(res_RPIg_thresh5[3])),which(rand < log(res_RPIg_thresh5[4])))] - log(res_RPIg_thresh5[3]))/(log(res_RPIg_thresh5[4])-log(res_RPIg_thresh5[3]))
+  pfm5[intersect(which(rand >= log(res_RPIg_thresh5[4])),which(rand < log(res_RPIg_thresh5[5])))] <- 2- (rand[intersect(which(rand >= log(res_RPIg_thresh5[4])),which(rand < log(res_RPIg_thresh5[5])))] - log(res_RPIg_thresh5[4]))/(log(res_RPIg_thresh5[5])-log(res_RPIg_thresh5[4]))
+  pfm5[intersect(which(rand >= log(res_RPIg_thresh5[5])),which(rand < log(res_RPIg_thresh5[6])))] <- 1- (rand[intersect(which(rand >= log(res_RPIg_thresh5[5])),which(rand < log(res_RPIg_thresh5[6])))] - log(res_RPIg_thresh5[5]))/(log(res_RPIg_thresh5[6])-log(res_RPIg_thresh5[5]))
+  
+  #Because the values are reversed, switch them.
+  pfm5 <- 5-pfm5
+  
+  mat_mc[,1] <- pfm5
+  
+  
+  # thermal new thresholds MC
+  pfm5 <- rep(0,rps)
+  
+  th_mean <- points$therm_pred[i]
+  th_se <- points$therm_err[i]
+  
+  rand <- rnorm(rps,th_mean,th_se)
+  
+  pfm5[rand < therm_thresh5[1]] <- 5
+  pfm5[rand > therm_thresh5[6]] <- 0
+  pfm5[intersect(which(rand >= therm_thresh5[1]),which(rand < therm_thresh5[2]))] <- 5 - (rand[intersect(which(rand >= therm_thresh5[1]),which(rand < therm_thresh5[2]))] - therm_thresh5[1])/(therm_thresh5[2]-therm_thresh5[1])
+  pfm5[intersect(which(rand >= therm_thresh5[2]),which(rand < therm_thresh5[3]))] <- 4- (rand[intersect(which(rand >= therm_thresh5[2]),which(rand < therm_thresh5[3]))] - therm_thresh5[2])/(therm_thresh5[3]-therm_thresh5[2])
+  pfm5[intersect(which(rand >= therm_thresh5[3]),which(rand < therm_thresh5[4]))] <- 3- (rand[intersect(which(rand >= therm_thresh5[3]),which(rand < therm_thresh5[4]))] - therm_thresh5[3])/(therm_thresh5[4]-therm_thresh5[3])
+  pfm5[intersect(which(rand >= therm_thresh5[4]),which(rand < therm_thresh5[5]))] <- 2- (rand[intersect(which(rand >= therm_thresh5[4]),which(rand < therm_thresh5[5]))] - therm_thresh5[4])/(therm_thresh5[5]-therm_thresh5[4])
+  pfm5[intersect(which(rand >= therm_thresh5[5]),which(rand < therm_thresh5[6]))] <- 1- (rand[intersect(which(rand >= therm_thresh5[5]),which(rand < therm_thresh5[6]))] - therm_thresh5[5])/(therm_thresh5[6]-therm_thresh5[5])
+  
+  mat_mc[,2] <- pfm5
+  
+  
+  # seismic earthquake MC
+  pfm5 <- rep(0,rps)
+  
+  se_eq_mean <- points$seis_eq_pred[i]
+  se_eq_se <- points$seis_eq_err[i]
+  
+  rand <- rnorm(rps,se_eq_mean,se_eq_se)
+  
+  pfm5[rand < seis_eq_thresh5[1]] <-5
+  pfm5[rand > seis_eq_thresh5[6]] <-0
+  pfm5[intersect(which(rand >= seis_eq_thresh5[1]),which(rand < seis_eq_thresh5[2]))] <- 5- (rand[intersect(which(rand >= seis_eq_thresh5[1]),which(rand < seis_eq_thresh5[2]))] - seis_eq_thresh5[1])/(seis_eq_thresh5[2]-seis_eq_thresh5[1])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[2]),which(rand < seis_eq_thresh5[3]))] <- 4- (rand[intersect(which(rand >= seis_eq_thresh5[2]),which(rand < seis_eq_thresh5[3]))] - seis_eq_thresh5[2])/(seis_eq_thresh5[3]-seis_eq_thresh5[2])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[3]),which(rand < seis_eq_thresh5[4]))] <- 3- (rand[intersect(which(rand >= seis_eq_thresh5[3]),which(rand < seis_eq_thresh5[4]))] - seis_eq_thresh5[3])/(seis_eq_thresh5[4]-seis_eq_thresh5[3])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[4]),which(rand < seis_eq_thresh5[5]))] <- 2- (rand[intersect(which(rand >= seis_eq_thresh5[4]),which(rand < seis_eq_thresh5[5]))] - seis_eq_thresh5[4])/(seis_eq_thresh5[5]-seis_eq_thresh5[4])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[5]),which(rand < seis_eq_thresh5[6]))] <- 1- (rand[intersect(which(rand >= seis_eq_thresh5[5]),which(rand < seis_eq_thresh5[6]))] - seis_eq_thresh5[5])/(seis_eq_thresh5[6]-seis_eq_thresh5[5])
+  
+  #Because the values are reversed, switch them back here.
+  pfm5 <- 5-pfm5
+  
+  mat_mc[,3] <- pfm5
+  
+  
+  # seismic stress angle MC
+  pfm5 <- rep(0,rps)
+  
+  se_st_mean <- points$NormAngs[i]
+  se_st_se <- points$seis_stress_err[i]
+  
+  rand <- rnorm(rps,se_st_mean,se_st_se)
+  
+  # New Method:
+  # Find the values that are negative and add 360 degrees to them until they are all positive.
+  while (length(rand[which(rand < 0)]) != 0){
+    rand[which(rand < 0)] = rand[which(rand < 0)] + 360
+  }
+  # Now convert all values to [0,180]
+  while (length(rand[which(rand > 180)]) != 0){
+    rand[which(rand > 180)] = rand[which(rand > 180)] - 180
+  }
+  # Now take all angles and convert them to a risk angle
+  a1 = abs(rand - critical_ang1)
+  a2 = abs(rand - critical_ang2)
+  # Bind them
+  b = rbind(a1, a2)
+  # Assign the minimum value (most risky) to those points
+  rand = apply(b, 2, min)
+  rm(b,a1,a2)
+  
+  pfm5[rand < seis_stress_thresh5[1]] <- 5
+  pfm5[intersect(which(rand >= seis_stress_thresh5[1]),which(rand < seis_stress_thresh5[2]))] <- 5- (rand[intersect(which(rand >= seis_stress_thresh5[1]),which(rand < seis_stress_thresh5[2]))] - seis_stress_thresh5[1])/(seis_stress_thresh5[2]-seis_stress_thresh5[1])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[2]),which(rand < seis_stress_thresh5[3]))] <- 4- (rand[intersect(which(rand >= seis_stress_thresh5[2]),which(rand < seis_stress_thresh5[3]))] - seis_stress_thresh5[2])/(seis_stress_thresh5[3]-seis_stress_thresh5[2])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[3]),which(rand < seis_stress_thresh5[4]))] <- 3- (rand[intersect(which(rand >= seis_stress_thresh5[3]),which(rand < seis_stress_thresh5[4]))] - seis_stress_thresh5[3])/(seis_stress_thresh5[4]-seis_stress_thresh5[3])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[4]),which(rand < seis_stress_thresh5[5]))] <- 2- (rand[intersect(which(rand >= seis_stress_thresh5[4]),which(rand < seis_stress_thresh5[5]))] - seis_stress_thresh5[4])/(seis_stress_thresh5[5]-seis_stress_thresh5[4])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[5]),which(rand < seis_stress_thresh5[6]))] <- 1- (rand[intersect(which(rand >= seis_stress_thresh5[5]),which(rand < seis_stress_thresh5[6]))] - seis_stress_thresh5[5])/(seis_stress_thresh5[6]-seis_stress_thresh5[5])
+  
+  #Because the values are reversed, switch them back
+  pfm5 <- 5-pfm5
+  
+  mat_mc[,4] <- pfm5
+  
+  #Utilization:
+  # generating random values
+  rand <- rnorm(rps,points$util_pred[i],points$util_pred[i]*5/100) #5/100 is the 5% uncertainty that is assumed for utilization.
+  
+  # play fairway 5
+  pfm5 <- rep(0,rps)
+  pfm5[rand < util_thresh5[1]] <- 5
+  pfm5[rand > util_thresh5[6]] <- 0
+  pfm5[intersect(which(rand >= util_thresh5[1]),which(rand < util_thresh5[2]))] <- 5 - (rand[intersect(which(rand >= util_thresh5[1]),which(rand < util_thresh5[2]))] - util_thresh5[1])/(util_thresh5[2]-util_thresh5[1])
+  pfm5[intersect(which(rand >= util_thresh5[2]),which(rand < util_thresh5[3]))] <- 4 - (rand[intersect(which(rand >= util_thresh5[2]),which(rand < util_thresh5[3]))] - util_thresh5[2])/(util_thresh5[3]-util_thresh5[2])
+  pfm5[intersect(which(rand >= util_thresh5[3]),which(rand < util_thresh5[4]))] <- 3 - (rand[intersect(which(rand >= util_thresh5[3]),which(rand < util_thresh5[4]))] - util_thresh5[3])/(util_thresh5[4]-util_thresh5[3])
+  pfm5[intersect(which(rand >= util_thresh5[4]),which(rand < util_thresh5[5]))] <- 2 - (rand[intersect(which(rand >= util_thresh5[4]),which(rand < util_thresh5[5]))] - util_thresh5[4])/(util_thresh5[5]-util_thresh5[4])
+  pfm5[intersect(which(rand >= util_thresh5[5]),which(rand < util_thresh5[6]))] <- 1 - (rand[intersect(which(rand >= util_thresh5[5]),which(rand < util_thresh5[6]))] - util_thresh5[5])/(util_thresh5[6]-util_thresh5[5])
+  
+  mat_mc[,5] <- pfm5
+  
+  # calcuating overall distribution
+  distsmin[,i] <- apply(cbind(mat_mc[,1],mat_mc[,2],0.5*mat_mc[,3]+0.5*mat_mc[,4],mat_mc[,5]),1,min)
+}
+rm(rand, pfm5, i, th_mean, th_se, sigma2, res_mean, res_cv, se_eq_mean, se_eq_se, se_st_se, se_st_mean, mat_mc, points)
+
+#Add the mean and the standard deviation of the minimum to the dataset
+mean_test = apply(distsmin, 2, mean)
+sd_test = apply(distsmin, 2, sd)
+rm(distsmin)
+extracted2_df_5_RPIg_m$Min = mean_test
+extracted2_df_5_RPIg_m$MinSd = sd_test
+
+
+#Make it a spatial dataset
+coordinates(extracted2_df_5_RPIg_m) = c('x','y')
+proj4string(extracted2_df_5_RPIg_m) = CRS("+init=epsg:26917")
+
+#Add data back to the full region grid, which is stored in extracted_df_5_RPIg for all variables.
+dummy = extracted_df_5_RPIg
+#Add the rownames to each database for joining purposes
+extracted2_df_5_RPIg_m$key = as.numeric(rownames(as.data.frame(extracted2_df_5_RPIg_m)))
+dummy$key = as.numeric(rownames(as.data.frame(dummy)))
+
+#Merge the data based on the key. Only bring over the Min, MinSd, and key columns.
+test = merge(dummy, extracted2_df_5_RPIg_m[,(ncol(extracted2_df_5_RPIg_m)-2):ncol(extracted2_df_5_RPIg_m)], by = 'key')
+rm(dummy)
+
+#Save only the results in case it needs to be remade.
+extracted2_df_5_RPIg_m = as.data.frame(extracted2_df_5_RPIg_m[,(ncol(extracted2_df_5_RPIg_m)-2):ncol(extracted2_df_5_RPIg_m)])
+
+#Make a raster
+Min_test = raster(test, layer = 'Min')
+MinSd_test = raster(test, layer = 'MinSd')
+rm(test)
+
+#Save the raster
+saveRast(rast=Min_test
+         ,wd=wd_raster_out
+         ,rastnm='co_5_0_5_m_RPIg.tif')
+makeMap(rast=Min_test
+        ,plotnm='co_5_0_5_m_RPIg.png'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min'
+        ,numRF=4
+        ,sdMap=FALSE)
+
+saveRast(rast=MinSd_test
+         ,wd=wd_raster_out
+         ,rastnm='co_pfa_sd5_min_RPIg.tif')
+makeMap(rast=MinSd_test
+        ,plotnm='co_pfa_sd5_min_RPIg.png'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min'
+        ,numRF=4
+        ,sdMap=TRUE)
+
+#remove files for space
+rm(Min_test, MinSd_test)
+
+
+# RFC Minimum Monte Carlo All Risk Factors
+#Change for each different extracted2 variable.
+points = as.data.frame(extracted2_df_5_rfc_m)
+
+#All RFs
+distsmin <- matrix(0,rps,nrow(points))
+
+# loop for Monte Carlo
+for(i in 1:nrow(points)){
+  
+  # setting seed
+  set.seed(10)
+  
+  # initializing matrix
+  mat_mc <- matrix(0,rps,5) #5 is for the number of RFs, considering that seismic has 2 (stress and angle)
+  
+  # reservoir RPIw MC
+  pfm5 <- rep(0,rps)
+  
+  res_mean <- log(points$res_pred_rfc_max2[i])
+  res_cv <- points$res_pred_rfc_max_err[i]
+  
+  sigma2 <- log(res_cv^2 + 1)
+  mu <- res_mean- sigma2/2
+  rand <- rnorm(rps,mu,sqrt(sigma2))
+  rm(mu)
+  
+  pfm5[rand < log(res_rfc_thresh5[1])] <-5
+  pfm5[rand > log(res_rfc_thresh5[6])] <- 0
+  pfm5[intersect(which(rand >= log(res_rfc_thresh5[1])),which(rand < log(res_rfc_thresh5[2])))] <- 5- (rand[intersect(which(rand >= log(res_rfc_thresh5[1])),which(rand < log(res_rfc_thresh5[2])))] - log(res_rfc_thresh5[1]))/(log(res_rfc_thresh5[2])-log(res_rfc_thresh5[1]))
+  pfm5[intersect(which(rand >= log(res_rfc_thresh5[2])),which(rand < log(res_rfc_thresh5[3])))] <- 4- (rand[intersect(which(rand >= log(res_rfc_thresh5[2])),which(rand < log(res_rfc_thresh5[3])))] - log(res_rfc_thresh5[2]))/(log(res_rfc_thresh5[3])-log(res_rfc_thresh5[2]))
+  pfm5[intersect(which(rand >= log(res_rfc_thresh5[3])),which(rand < log(res_rfc_thresh5[4])))] <- 3- (rand[intersect(which(rand >= log(res_rfc_thresh5[3])),which(rand < log(res_rfc_thresh5[4])))] - log(res_rfc_thresh5[3]))/(log(res_rfc_thresh5[4])-log(res_rfc_thresh5[3]))
+  pfm5[intersect(which(rand >= log(res_rfc_thresh5[4])),which(rand < log(res_rfc_thresh5[5])))] <- 2- (rand[intersect(which(rand >= log(res_rfc_thresh5[4])),which(rand < log(res_rfc_thresh5[5])))] - log(res_rfc_thresh5[4]))/(log(res_rfc_thresh5[5])-log(res_rfc_thresh5[4]))
+  pfm5[intersect(which(rand >= log(res_rfc_thresh5[5])),which(rand < log(res_rfc_thresh5[6])))] <- 1- (rand[intersect(which(rand >= log(res_rfc_thresh5[5])),which(rand < log(res_rfc_thresh5[6])))] - log(res_rfc_thresh5[5]))/(log(res_rfc_thresh5[6])-log(res_rfc_thresh5[5]))
+  
+  #Because the values are reversed, switch them.
+  pfm5 <- 5-pfm5
+  
+  mat_mc[,1] <- pfm5
+  
+  
+  # thermal new thresholds MC
+  pfm5 <- rep(0,rps)
+  
+  th_mean <- points$therm_pred[i]
+  th_se <- points$therm_err[i]
+  
+  rand <- rnorm(rps,th_mean,th_se)
+  
+  pfm5[rand < therm_thresh5[1]] <- 5
+  pfm5[rand > therm_thresh5[6]] <- 0
+  pfm5[intersect(which(rand >= therm_thresh5[1]),which(rand < therm_thresh5[2]))] <- 5 - (rand[intersect(which(rand >= therm_thresh5[1]),which(rand < therm_thresh5[2]))] - therm_thresh5[1])/(therm_thresh5[2]-therm_thresh5[1])
+  pfm5[intersect(which(rand >= therm_thresh5[2]),which(rand < therm_thresh5[3]))] <- 4- (rand[intersect(which(rand >= therm_thresh5[2]),which(rand < therm_thresh5[3]))] - therm_thresh5[2])/(therm_thresh5[3]-therm_thresh5[2])
+  pfm5[intersect(which(rand >= therm_thresh5[3]),which(rand < therm_thresh5[4]))] <- 3- (rand[intersect(which(rand >= therm_thresh5[3]),which(rand < therm_thresh5[4]))] - therm_thresh5[3])/(therm_thresh5[4]-therm_thresh5[3])
+  pfm5[intersect(which(rand >= therm_thresh5[4]),which(rand < therm_thresh5[5]))] <- 2- (rand[intersect(which(rand >= therm_thresh5[4]),which(rand < therm_thresh5[5]))] - therm_thresh5[4])/(therm_thresh5[5]-therm_thresh5[4])
+  pfm5[intersect(which(rand >= therm_thresh5[5]),which(rand < therm_thresh5[6]))] <- 1- (rand[intersect(which(rand >= therm_thresh5[5]),which(rand < therm_thresh5[6]))] - therm_thresh5[5])/(therm_thresh5[6]-therm_thresh5[5])
+  
+  mat_mc[,2] <- pfm5
+  
+  
+  # seismic earthquake MC
+  pfm5 <- rep(0,rps)
+  
+  se_eq_mean <- points$seis_eq_pred[i]
+  se_eq_se <- points$seis_eq_err[i]
+  
+  rand <- rnorm(rps,se_eq_mean,se_eq_se)
+  
+  pfm5[rand < seis_eq_thresh5[1]] <-5
+  pfm5[rand > seis_eq_thresh5[6]] <-0
+  pfm5[intersect(which(rand >= seis_eq_thresh5[1]),which(rand < seis_eq_thresh5[2]))] <- 5- (rand[intersect(which(rand >= seis_eq_thresh5[1]),which(rand < seis_eq_thresh5[2]))] - seis_eq_thresh5[1])/(seis_eq_thresh5[2]-seis_eq_thresh5[1])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[2]),which(rand < seis_eq_thresh5[3]))] <- 4- (rand[intersect(which(rand >= seis_eq_thresh5[2]),which(rand < seis_eq_thresh5[3]))] - seis_eq_thresh5[2])/(seis_eq_thresh5[3]-seis_eq_thresh5[2])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[3]),which(rand < seis_eq_thresh5[4]))] <- 3- (rand[intersect(which(rand >= seis_eq_thresh5[3]),which(rand < seis_eq_thresh5[4]))] - seis_eq_thresh5[3])/(seis_eq_thresh5[4]-seis_eq_thresh5[3])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[4]),which(rand < seis_eq_thresh5[5]))] <- 2- (rand[intersect(which(rand >= seis_eq_thresh5[4]),which(rand < seis_eq_thresh5[5]))] - seis_eq_thresh5[4])/(seis_eq_thresh5[5]-seis_eq_thresh5[4])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[5]),which(rand < seis_eq_thresh5[6]))] <- 1- (rand[intersect(which(rand >= seis_eq_thresh5[5]),which(rand < seis_eq_thresh5[6]))] - seis_eq_thresh5[5])/(seis_eq_thresh5[6]-seis_eq_thresh5[5])
+  
+  #Because the values are reversed, switch them back here.
+  pfm5 <- 5-pfm5
+  
+  mat_mc[,3] <- pfm5
+  
+  
+  # seismic stress angle MC
+  pfm5 <- rep(0,rps)
+  
+  se_st_mean <- points$NormAngs[i]
+  se_st_se <- points$seis_stress_err[i]
+  
+  rand <- rnorm(rps,se_st_mean,se_st_se)
+  
+  # New Method:
+  # Find the values that are negative and add 360 degrees to them until they are all positive.
+  while (length(rand[which(rand < 0)]) != 0){
+    rand[which(rand < 0)] = rand[which(rand < 0)] + 360
+  }
+  # Now convert all values to [0,180]
+  while (length(rand[which(rand > 180)]) != 0){
+    rand[which(rand > 180)] = rand[which(rand > 180)] - 180
+  }
+  # Now take all angles and convert them to a risk angle
+  a1 = abs(rand - critical_ang1)
+  a2 = abs(rand - critical_ang2)
+  # Bind them
+  b = rbind(a1, a2)
+  # Assign the minimum value (most risky) to those points
+  rand = apply(b, 2, min)
+  rm(b,a1,a2)
+  
+  pfm5[rand < seis_stress_thresh5[1]] <- 5
+  pfm5[intersect(which(rand >= seis_stress_thresh5[1]),which(rand < seis_stress_thresh5[2]))] <- 5- (rand[intersect(which(rand >= seis_stress_thresh5[1]),which(rand < seis_stress_thresh5[2]))] - seis_stress_thresh5[1])/(seis_stress_thresh5[2]-seis_stress_thresh5[1])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[2]),which(rand < seis_stress_thresh5[3]))] <- 4- (rand[intersect(which(rand >= seis_stress_thresh5[2]),which(rand < seis_stress_thresh5[3]))] - seis_stress_thresh5[2])/(seis_stress_thresh5[3]-seis_stress_thresh5[2])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[3]),which(rand < seis_stress_thresh5[4]))] <- 3- (rand[intersect(which(rand >= seis_stress_thresh5[3]),which(rand < seis_stress_thresh5[4]))] - seis_stress_thresh5[3])/(seis_stress_thresh5[4]-seis_stress_thresh5[3])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[4]),which(rand < seis_stress_thresh5[5]))] <- 2- (rand[intersect(which(rand >= seis_stress_thresh5[4]),which(rand < seis_stress_thresh5[5]))] - seis_stress_thresh5[4])/(seis_stress_thresh5[5]-seis_stress_thresh5[4])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[5]),which(rand < seis_stress_thresh5[6]))] <- 1- (rand[intersect(which(rand >= seis_stress_thresh5[5]),which(rand < seis_stress_thresh5[6]))] - seis_stress_thresh5[5])/(seis_stress_thresh5[6]-seis_stress_thresh5[5])
+  
+  #Because the values are reversed, switch them back
+  pfm5 <- 5-pfm5
+  
+  mat_mc[,4] <- pfm5
+  
+  #Utilization:
+  # generating random values
+  rand <- rnorm(rps,points$util_pred[i],points$util_pred[i]*5/100) #5/100 is the 5% uncertainty that is assumed for utilization.
+  
+  # play fairway 5
+  pfm5 <- rep(0,rps)
+  pfm5[rand < util_thresh5[1]] <- 5
+  pfm5[rand > util_thresh5[6]] <- 0
+  pfm5[intersect(which(rand >= util_thresh5[1]),which(rand < util_thresh5[2]))] <- 5 - (rand[intersect(which(rand >= util_thresh5[1]),which(rand < util_thresh5[2]))] - util_thresh5[1])/(util_thresh5[2]-util_thresh5[1])
+  pfm5[intersect(which(rand >= util_thresh5[2]),which(rand < util_thresh5[3]))] <- 4 - (rand[intersect(which(rand >= util_thresh5[2]),which(rand < util_thresh5[3]))] - util_thresh5[2])/(util_thresh5[3]-util_thresh5[2])
+  pfm5[intersect(which(rand >= util_thresh5[3]),which(rand < util_thresh5[4]))] <- 3 - (rand[intersect(which(rand >= util_thresh5[3]),which(rand < util_thresh5[4]))] - util_thresh5[3])/(util_thresh5[4]-util_thresh5[3])
+  pfm5[intersect(which(rand >= util_thresh5[4]),which(rand < util_thresh5[5]))] <- 2 - (rand[intersect(which(rand >= util_thresh5[4]),which(rand < util_thresh5[5]))] - util_thresh5[4])/(util_thresh5[5]-util_thresh5[4])
+  pfm5[intersect(which(rand >= util_thresh5[5]),which(rand < util_thresh5[6]))] <- 1 - (rand[intersect(which(rand >= util_thresh5[5]),which(rand < util_thresh5[6]))] - util_thresh5[5])/(util_thresh5[6]-util_thresh5[5])
+  
+  mat_mc[,5] <- pfm5
+  
+  # calcuating overall distribution
+  distsmin[,i] <- apply(cbind(mat_mc[,1],mat_mc[,2],0.5*mat_mc[,3]+0.5*mat_mc[,4],mat_mc[,5]),1,min)
+}
+rm(rand, pfm5, i, th_mean, th_se, sigma2, res_mean, res_cv, se_eq_mean, se_eq_se, se_st_se, se_st_mean, mat_mc, points)
+
+#Add the mean and the standard deviation of the minimum to the dataset
+mean_test = apply(distsmin, 2, mean)
+sd_test = apply(distsmin, 2, sd)
+rm(distsmin)
+extracted2_df_5_rfc_m$Min = mean_test
+extracted2_df_5_rfc_m$MinSd = sd_test
+
+
+#Make it a spatial dataset
+coordinates(extracted2_df_5_rfc_m) = c('x','y')
+proj4string(extracted2_df_5_rfc_m) = CRS("+init=epsg:26917")
+
+#Add data back to the full region grid, which is stored in extracted_df_5_RPIg for all variables.
+dummy = extracted_df_5_RPIg
+#Add the rownames to each database for joining purposes
+extracted2_df_5_rfc_m$key = as.numeric(rownames(as.data.frame(extracted2_df_5_rfc_m)))
+dummy$key = as.numeric(rownames(as.data.frame(dummy)))
+
+#Merge the data based on the key. Only bring over the Min, MinSd, and key columns.
+test = merge(dummy, extracted2_df_5_rfc_m[,(ncol(extracted2_df_5_rfc_m)-2):ncol(extracted2_df_5_rfc_m)], by = 'key')
+rm(dummy)
+
+#Save only the results in case it needs to be remade.
+extracted2_df_5_rfc_m = as.data.frame(extracted2_df_5_rfc_m[,(ncol(extracted2_df_5_rfc_m)-2):ncol(extracted2_df_5_rfc_m)])
+
+#Make a raster
+Min_test = raster(test, layer = 'Min')
+MinSd_test = raster(test, layer = 'MinSd')
+rm(test)
+
+#Save the raster
+saveRast(rast=Min_test
+         ,wd=wd_raster_out
+         ,rastnm='co_5_0_5_m_rfc.tif')
+makeMap(rast=Min_test
+        ,plotnm='co_5_0_5_m_rfc.png'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min'
+        ,numRF=4
+        ,sdMap=FALSE)
+
+saveRast(rast=MinSd_test
+         ,wd=wd_raster_out
+         ,rastnm='co_pfa_sd5_min_rfc.tif')
+makeMap(rast=MinSd_test
+        ,plotnm='co_pfa_sd5_min_rfc.png'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min'
+        ,numRF=4
+        ,sdMap=TRUE)
+
+#remove files for space
+rm(Min_test, MinSd_test)
