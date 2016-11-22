@@ -23,7 +23,7 @@ solveQuant <- function(x # value of the minimum
     ssss <- ssss + ifelse(is.na(params[(i-1)*2+1]),0,(x/params[(i-1)*2+1])^params[2*i])
   }
   
-  #ps is defined outside of the function
+  #ps is defined outside of the function. This is the 100ps percentile.
   f <- log(1-ps) + ssss
   return(f)
 } 
