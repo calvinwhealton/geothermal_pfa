@@ -5362,6 +5362,11 @@ thMean <- rep(0,length(ind_use))
 seMean <- rep(0,length(ind_use))
 utMean <- rep(0,length(ind_use))
 
+reMed <- rep(0,length(ind_use))
+thMed <- rep(0,length(ind_use))
+seMed <- rep(0,length(ind_use))
+utMed <- rep(0,length(ind_use))
+
 ## Starting to collect information for poi2
 # points of interest
 points <- as.data.frame(poi2)
@@ -5517,7 +5522,7 @@ for(i in ind_use){
 }
 rm(mom)
 
-# setting NAs for utilization 0 when it has no uncertainty.
+# setting NAs for utilization 0 because this will have no uncertainty.
 dataParams[which(points$utilization == 0),7] <- NA
 dataParams[which(points$utilization == 0),8] <- NA
 
@@ -5527,7 +5532,10 @@ for(i in ind_use){
   params <- dataParams[i,]
   
   #Determine how to search for the root:
-  if (any(lb_mat[i,] != 0)){
+  #First check for utilization 0. All roots for this are 0.
+  if (is.na(dataParams[i,7]) == TRUE){
+    roots1[i,1] = roots1[i,2] = roots1[i,3] = 0.0
+  }else if (any(lb_mat[i,] != 0)){
     #The lower bound is non-zero for some terms. Solve for the value using only the smallest values.
     ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
     
@@ -5572,8 +5580,7 @@ for(i in ind_use){
       roots1[i,3] <- uniroot(solveQuant,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
       converge1[i,3] <- uniroot(solveQuant,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
     }
-  }
-  else{
+  }else{
     #The lower bound is 0 for all risk factors.
     ind_params = which(lb_mat[i,] == 0)
     
@@ -5776,6 +5783,11 @@ for(i in 1:length(ind_use)){
   thMean[i] <-  mean(mat_mc[,2])
   seMean[i] <-  mean(0.5*(mat_mc[,3]+mat_mc[,4]))
   utMean[i] <-  mean(mat_mc[,5])
+  
+  reMed[i] <- median(mat_mc[,1])
+  thMed[i] <-  median(mat_mc[,2])
+  seMed[i] <-  median(0.5*(mat_mc[,3]+mat_mc[,4]))
+  utMed[i] <-  median(mat_mc[,5])
   
   # print(mean(mat_mc[,1]))
   # print(mean(mat_mc[,2]))
@@ -15712,61 +15724,154 @@ points$util_err <- 5
 rm(inds, ind_max, ind_max2, ind_max3, nm)
 
 # solving for the weibull distribution parameters
-dataParams <- matrix(NA,10,3*2) #4 is for the number of RFs
+dataParams <- matrix(NA,10,3*2) #3 is for the number of RFs
 dp2 <- matrix(NA,10,3)
+#set the lower bound of the Weibull as NA
+lb=0
+#Record the value of the lower bound in a matrix
+lb_mat = matrix(0, nrow=nrow(points), ncol=ncol(dataParams)/2)
+
 for(i in ind_use){
   
   mom <- c(points$thermal[i],points$th_pfa_var5[i])
-  dataParams[i,c(1,2)] <- multiroot(solveWeibull,start=c(1,1))$root
-  dp2[i,1] <-  multiroot(solveWeibull,start=c(1,1))$iter
+  #check if thermal is 5 with 0 uncertainty
+  if ((points$thermal[i] == 5 & points$th_pfa_var5[i] == 0)){
+    #Use a lower bound of 5 
+    lb = 5
+    lb_mat[i,1] = lb
+    dataParams[i,c(1,2)] <- multiroot(solveWeibull, start=c(0.2,2), positive=TRUE)$root
+    dp2[i,1] <-  multiroot(solveWeibull,start=c(0.2,2), positive=TRUE)$iter
+    lb=0
+  }
+  else{
+    #Use a 2 parameter Weibull because the lower bound will be 0
+    lb_mat[i,1] = 0
+    dataParams[i,c(1,2)] <- multiroot(solveWeibull,start=c(1,1), positive=TRUE)$root
+    dp2[i,1] <-  multiroot(solveWeibull,start=c(1,1), positive=TRUE)$iter
+  }
   
   mom <- c(points$reservoir_rfc[i],points$re_pfa_var5_rfc[i])
-  dataParams[i,c(3,4)] <- multiroot(solveWeibull,start=c(1,1))$root
-  dp2[i,2] <-  multiroot(solveWeibull,start=c(1,1))$iter
+  #check if reservoir rfc is 5 with 0 uncertainty
+  if ((points$reservoir_rfc[i] == 5 & points$re_pfa_var5_rfc[i] == 0)){
+    #Use a lower bound of 5 
+    lb = 5
+    lb_mat[i,2] = lb
+    dataParams[i,c(3,4)] <- multiroot(solveWeibull, start=c(0.2,2), positive=TRUE)$root
+    dp2[i,2] <-  multiroot(solveWeibull,start=c(0.2,2), positive=TRUE)$iter
+    lb=0
+  }
+  else{
+    #Use a 2 parameter Weibull because the lower bound will be 0
+    lb_mat[i,2] = 0
+    dataParams[i,c(3,4)] <- multiroot(solveWeibull,start=c(1,1), positive=TRUE)$root
+    dp2[i,2] <-  multiroot(solveWeibull,start=c(1,1), positive=TRUE)$iter
+  }
   
   mom <- c(points$seismic[i],points$se_pfa_var5[i])
-  dataParams[i,c(5,6)] <- multiroot(solveWeibull,start=c(1,1))$root
-  dp2[i,3] <-  multiroot(solveWeibull,start=c(1,1))$iter
+  #check if either seismic stress or earthquake is a 5 with no uncertainty
+  if ((points$seis_eq_pred[i] > 25000 & points$seis_eq_err[i] == 0) | (points$seis_stress_pred[i] > 25 & points$seis_stress_err[i] == 0)){
+    #Use a 3 parameter Weibull. Need to find the lower bound.
+    if ((points$seis_eq_pred[i] > 25000 & points$seis_eq_err[i] == 0) & (points$seis_stress_pred[i] > 25 & points$seis_stress_err[i] == 0)){
+      lb_mat[i,3] = 5
+      #These have no need to be fit because the lower bound is a 5. Set parameters to NA.
+      dataParams[i,5] <- NA
+      dataParams[i,6] <- NA
+      lb = 0
+    }
+    else{
+      lb = 2.5
+      lb_mat[i,3] = lb
+      dataParams[i,c(5,6)] <- multiroot(solveWeibull, start=c(3.5,1), positive=TRUE)$root
+      dp2[i,3] <-  multiroot(solveWeibull,start=c(3.5,1), positive=TRUE)$iter
+      
+      if (dataParams[i,5] == 0){
+        #The lower bound is very close to 0, try fitting only 1 parameter with a fixed shape.
+        dataParams[i,6] <- 1.5
+        k = dataParams[i,6]
+        dataParams[i,5] <- uniroot(solveWeibull_u, interval=c(0.001,1000))$root
+        rm(k)
+      }
+      
+      lb=0
+    }
+  }
+  else{
+    #Use a 2 parameter Weibull because the lower bound will be 0
+    lb_mat[i,3] = 0
+    dataParams[i,c(5,6)] <- multiroot(solveWeibull,start=c(1,1), positive=TRUE)$root
+    dp2[i,3] <-  multiroot(solveWeibull,start=c(1,1), positive=TRUE)$iter
+  }
 }
 rm(mom)
 
-# setting NAs for seismic 5
-dataParams[which(dataParams[,5]  > 4.9999),5] <- NA
-dataParams[which(dataParams[,5] %in% NA),6] <- NA
-
-roots1 <- matrix(NA,10,3) #All RFs
 roots2 <- matrix(NA,10,3) #Geologic Only
-converge1 <- matrix(NA,10,3) #Iterations to converge
 converge2 <- matrix(NA,10,3)
 for(i in ind_use){
+  params <- dataParams[i,]
   
-  params <- dataParams[i,] #params is taken in solveQuant
-  
-  ps <- 0.05
-  roots1[i,1] <- uniroot(solveQuant,interval=c(0,5))$root
-  converge1[i,1] <- uniroot(solveQuant,interval=c(0,5))$iter
-  
-  ps <- 0.5
-  roots1[i,2] <- uniroot(solveQuant,interval=c(0,5))$root
-  converge1[i,2] <- uniroot(solveQuant,interval=c(0,5))$iter
-  
-  ps <- 0.95
-  roots1[i,3] <- uniroot(solveQuant,interval=c(0,5))$root
-  converge1[i,3] <- uniroot(solveQuant,interval=c(0,5))$iter
-  
-  params <- dataParams[i,seq(1,6,1)] #params is taken in solveQuant
-  
-  ps <- 0.05
-  roots2[i,1] <- uniroot(solveQuant,interval=c(0,5))$root
-  converge2[i,1] <- uniroot(solveQuant,interval=c(0,5))$iter
-  
-  ps <- 0.5
-  roots2[i,2] <- uniroot(solveQuant,interval=c(0,5))$root
-  converge2[i,2] <- uniroot(solveQuant,interval=c(0,5))$iter
-  
-  ps <- 0.95
-  roots2[i,3] <- uniroot(solveQuant,interval=c(0,5))$root
-  converge2[i,3] <- uniroot(solveQuant,interval=c(0,5))$iter
+  #Determine how to search for the root:
+  if (any(lb_mat[i,] != 0)){
+    #The lower bound is non-zero for some terms. Solve for the value using only the smallest values.
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.05
+    roots2[i,1] <- uniroot(solveQuant,interval=c(min(lb_mat[i,]),5))$root
+    converge2[i,1] <- uniroot(solveQuant,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots2[i,1] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots2[i,1] <- uniroot(solveQuant,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge2[i,1] <- uniroot(solveQuant,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+    
+    #Next Percentile
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.50
+    roots2[i,2] <- uniroot(solveQuant,interval=c(min(lb_mat[i,]),5))$root
+    converge2[i,2] <- uniroot(solveQuant,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots2[i,2] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots2[i,2] <- uniroot(solveQuant,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge2[i,2] <- uniroot(solveQuant,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+    
+    #Next Percentile
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.95
+    roots2[i,3] <- uniroot(solveQuant,interval=c(min(lb_mat[i,]),5))$root
+    converge2[i,3] <- uniroot(solveQuant,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots2[i,3] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots2[i,3] <- uniroot(solveQuant,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge2[i,3] <- uniroot(solveQuant,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+  }
+  else{
+    #The lower bound is 0 for all risk factors.
+    ind_params = which(lb_mat[i,] == 0)
+    
+    ps <- 0.05
+    roots2[i,1] <- uniroot(solveQuant,interval=c(0,5))$root
+    converge2[i,1] <- uniroot(solveQuant,interval=c(0,5))$iter
+    
+    ps <- 0.5
+    roots2[i,2] <- uniroot(solveQuant,interval=c(0,5))$root
+    converge2[i,2] <- uniroot(solveQuant,interval=c(0,5))$iter
+    
+    ps <- 0.95
+    roots2[i,3] <- uniroot(solveQuant,interval=c(0,5))$root
+    converge2[i,3] <- uniroot(solveQuant,interval=c(0,5))$iter
+  }
 }
 rm(params, ps)
 
@@ -15914,81 +16019,74 @@ for(i in 1:length(ind_use)){
   thMean[i] <-  mean(mat_mc[,2])
   seMean[i] <-  mean(0.5*(mat_mc[,3]+mat_mc[,4]))
   
-  # setwd(wd_image)
-  # par(xpd=T)
-  # png(paste('scdist',i,'.png',sep='')
-  #     ,height=6
-  #     ,width=6
-  #     ,units='in'
-  #     ,res=300
-  # )
-  # 
-  # par(mfrow=c(2,2)
-  #     ,oma=c(0.5,0.5,0.5,0.5)+0.1
-  #     ,mar=c(5,5,3,0)+0.1)
-  # 
-  # hist(mat_mc[,1]
-  #      ,freq=F
-  #      ,xlim=c(0,5)
-  #      ,main="Reservoir"
-  #      ,xlab="SFF"
-  # )
-  # lines(seq(0,5,0.01)
-  #       ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],4],scale=dataParams[ind_use[i],3])
-  #       ,col='royalblue'
-  #       ,lwd=2
-  # )
-  # points(points$reservoir[ind_use[i]],0
-  #        ,pch=19
-  # )
-  # 
-  # hist(mat_mc[,2]
-  #      ,freq=F
-  #      ,xlim=c(0,5)
-  #      ,main="Thermal"
-  #      ,xlab="SFF"
-  # )
-  # lines(seq(0,5,0.01)
-  #       ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],2],scale=dataParams[ind_use[i],1])
-  #       ,col='royalblue'
-  #       ,lwd=2
-  # )
-  # points(points$thermal[ind_use[i]],0
-  #        ,pch=19
-  # )
-  # 
-  # hist(0.5*(mat_mc[,3]+mat_mc[,4])
-  #      ,freq=F
-  #      ,xlim=c(0,5)
-  #      ,main="Seismic"
-  #      ,xlab="SFF"
-  # )
-  # lines(seq(0,5,0.01)
-  #       ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],6],scale=dataParams[ind_use[i],5])
-  #       ,col='royalblue'
-  #       ,lwd=2
-  # )
-  # points(points$seismic[ind_use[i]],0
-  #        ,pch=19
-  # )
-  # 
-  # hist(mat_mc[,5]
-  #      ,freq=F
-  #      ,xlim=c(0,5)
-  #      ,main="Utilization"
-  #      ,xlab="SFF"
-  # )
-  # lines(seq(0,5,0.01)
-  #       ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],8],scale=dataParams[ind_use[i],7])
-  #       ,col='royalblue'
-  #       ,lwd=2
-  # )
-  # points(points$utilization[ind_use[i]],0
-  #        ,pch=19
-  # )
-  # 
-  # par(xpd=T)
-  # dev.off()
+  setwd(wd_image)
+  par(xpd=T)
+  png(paste('scdist',i,'.png',sep='')
+      ,height=6
+      ,width=6
+      ,units='in'
+      ,res=300
+  )
+
+  par(mfrow=c(2,2)
+      ,oma=c(0.5,0.5,0.5,0.5)+0.1
+      ,mar=c(5,5,3,0)+0.1)
+
+  hist(mat_mc[,1]
+       ,freq=F
+       ,xlim=c(0,5)
+       ,main="Reservoir"
+       ,xlab="SFF"
+  )
+  lines(seq(0,5,0.01)
+        ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],4],scale=dataParams[ind_use[i],3])
+        ,col='royalblue'
+        ,lwd=2
+  )
+  points(points$reservoir[ind_use[i]],0
+         ,pch=19
+  )
+
+  hist(mat_mc[,2]
+       ,freq=F
+       ,xlim=c(0,5)
+       ,main="Thermal"
+       ,xlab="SFF"
+  )
+  lines(seq(0,5,0.01)
+        ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],2],scale=dataParams[ind_use[i],1])
+        ,col='royalblue'
+        ,lwd=2
+  )
+  points(points$thermal[ind_use[i]],0
+         ,pch=19
+  )
+
+  hist(0.5*(mat_mc[,3]+mat_mc[,4])
+       ,freq=F
+       ,xlim=c(0,5)
+       ,main="Seismic"
+       ,xlab="SFF"
+  )
+  if (lb_mat[ind_use[i],3] != 0){
+    lines(seq(lb_mat[ind_use[i],3],5+lb_mat[ind_use[i],3],0.01)
+          ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],6],scale=dataParams[ind_use[i],5])
+          ,col='royalblue'
+          ,lwd=2
+    )
+  }
+  else{
+    lines(seq(0,5,0.01)
+          ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],6],scale=dataParams[ind_use[i],5])
+          ,col='royalblue'
+          ,lwd=2
+    )
+  }
+  points(points$seismic[ind_use[i]],0
+         ,pch=19
+  )
+  par(xpd=T)
+  dev.off()
 }
 rm(rand, pfm5, i)
 
@@ -25652,732 +25750,744 @@ rm(IndNA)
 # making plot comparing analytical and monte carlo results
 # all variables
 
-# setwd(wd_image)
-# #par(mar=c(1,1,1,1)*0.1)
-# png('three_panel2_all.png'
-#     ,height=6
-#     ,width=6
-#     ,units='in'
-#     ,res=300
-# )
-# 
-# par(mfrow=c(1,5)
-#     ,oma=c(1,0,0,3)+0.1
-#     ,mar=c(5,0,0,0)+0.1)
-# dshift1 <- 0.4
-# dshift2 <- 0.2
-# 
-# plot(NA,NA
-#      ,xlim=c(0,1)
-#      ,ylim=c(0,length(ind_use))
-#      ,xaxt='n'
-#      ,yaxt='n'
-#      ,ylab=''
-#      ,xlab=''
-#      ,bty='n')
-# par(xpd=T)
-# for(i in 1:length(ind_use)){
-#   text(x=1,y=i-0.5
-#        ,labels=points$names[ind_use[i]]
-#        ,adj=1
-#        ,cex=1.2)
-#   
-# }
-# par(xpd=F)
-# 
-# plot(NA,NA
-#      ,xlim=c(0,5)
-#      ,ylim=c(0,length(ind_use))
-#      ,main=''
-#      ,xlab='Minimum'
-#      ,yaxt='n'
-#      ,ylab=''
-#      ,cex.lab=1.2)
-# grid(ny=NA)
-# for(i in 1:length(ind_use)){
-#   
-#   res_mean <- points$reservoir[ind_use[i]]
-#   #res_var <- points$re_pfa_var5[ind_use[i]]
-#   
-#   therm_mean <- points$thermal[ind_use[i]]
-#   #therm_var <- points$th_pfa_var5[ind_use[i]]
-#   
-#   seis_mean <- points$seismic[ind_use[i]]
-#   #seis_var <- points$se_pfa_var5[ind_use[i]]
-#   
-#   util_mean <- points$utilization[ind_use[i]]
-#   
-#   # calculating empirical quantiles
-#   empQuant <- quantile(distsmin[,i],c(0.05,0.95))
-#   
-#   # calculated values
-#   if(max(is.na(dataParams[ind_use[i],c(7,8)])) == 0){
-#     lines(roots1[ind_use[i],c(1,3)],c(i-1+dshift1+dshift2,i-1+dshift1+dshift2)
-#           ,lwd=2
-#           ,col='black'
-#     )
-#   }
-#   
-#   points(min(res_mean,therm_mean,seis_mean,util_mean),i-1+dshift1+dshift2
-#          ,pch=4
-#          ,col='black'
-#          ,cex=1.5
-#   )
-#   
-#   # empirical values
-#   lines(c(as.numeric(empQuant)),c(i-1+dshift1,i-1+dshift1)
-#         ,lwd=2
-#         ,col='gray48'
-#   )
-#   
-#   points(mean(distsmin[,i]),i-1+dshift1
-#          ,pch=4
-#          ,col='gray48'
-#          ,cex=1.5
-#   )
-# }
-# 
-# 
-# 
-# plot(NA,NA
-#      ,xlim=c(0,5)
-#      ,ylim=c(0,length(ind_use))
-#      ,main=''
-#      ,xlab='Geometric Mean'
-#      ,yaxt='n'
-#      ,ylab=''
-#      ,cex.lab=1.2)
-# grid(ny=NA)
-# for(i in 1:length(ind_use)){
-#   
-#   # calculating empirical quantiles
-#   empQuant <- quantile(distsgeomean[,i],c(0.05,0.95))
-#   
-#   #extracting values value
-#   res_mean <- points$reservoir[ind_use[i]]
-#   res_var_ls <- points$re_pfa_var5_ls[ind_use[i]]
-#   
-#   therm_mean <- points$thermal[ind_use[i]]
-#   therm_var_ls <- points$th_pfa_var5_ls[ind_use[i]]
-#   
-#   seis_mean <- points$seismic[ind_use[i]]
-#   seis_var_ls <- points$se_pfa_var5_ls[ind_use[i]]
-#   if(is.na(seis_var_ls)){
-#     seis_var_ls <- 0
-#   }
-#   
-#   util_mean <- points$utilization[ind_use[i]]
-#   util_var_ls <- points$util_pfa_var5_ls[ind_use[i]]
-#   
-#   var_geomean_ls <- (1/16)*(res_var_ls + therm_var_ls + seis_var_ls + util_var_ls)
-#   mean_geomean_ls <- 0.25*(log(res_mean) + log(therm_mean) + log(seis_mean) + log(util_mean))
-#   
-#   theoQuants <- exp(qnorm(c(0.05,0.95),mean_geomean_ls,sqrt(var_geomean_ls)))
-#   
-#   # calculated values
-#   lines(theoQuants,c(i-1+dshift1+dshift2,i-1+dshift1+dshift2)
-#         ,lwd=2
-#         ,col='black'
-#   )
-#   
-#   points(exp(mean_geomean_ls),i-1+dshift1+dshift2
-#          ,pch=4
-#          ,col='black'
-#          ,cex=1.5
-#   )
-#   
-#   # empirical values
-#   lines(c(as.numeric(empQuant)),c(i-1+dshift1,i-1+dshift1)
-#         ,lwd=2
-#         ,col='gray48'
-#   )
-#   
-#   points(mean(distsgeomean[,i]),i-1+dshift1
-#          ,pch=4
-#          ,col='gray48'
-#          ,cex=1.5
-#   )
-# }
-# 
-# 
-# plot(NA,NA
-#      ,xlim=c(0,5)
-#      ,ylim=c(0,length(ind_use))
-#      ,main=''
-#      ,xlab='Average'
-#      ,yaxt='n'
-#      ,ylab=''
-#      ,cex.lab=1.2)
-# grid(ny=NA)
-# for(i in 1:length(ind_use)){
-#   
-#   # calculating empirical quantiles
-#   empQuant <- quantile(distsavg[,i],c(0.05,0.95))
-#   
-#   #extracting values value
-#   res_mean <- points$reservoir[ind_use[i]]
-#   res_var <- points$re_pfa_var5[ind_use[i]]
-#   
-#   therm_mean <- points$thermal[ind_use[i]]
-#   therm_var <- points$th_pfa_var5[ind_use[i]]
-#   
-#   seis_mean <- points$seismic[ind_use[i]]
-#   seis_var <- points$se_pfa_var5[ind_use[i]]
-#   
-#   util_mean <- points$utilization[ind_use[i]]
-#   util_var <- points$util_pfa_var5[ind_use[i]]
-#   
-#   var_avg <- (1/16)*(seis_var+res_var+therm_var+util_var)
-#   mean_avg <- (res_mean+therm_mean +seis_mean+util_mean)/4
-#   # calculated valuesseis_mean
-#   lines(qnorm(c(0.05,0.95),mean_avg,sqrt(var_avg)),c(i-1+dshift1+dshift2,i-1+dshift1+dshift2)
-#         ,lwd=2
-#         ,col='black'
-#   )
-#   
-#   points(mean_avg,i-1+dshift1+dshift2
-#          ,pch=4
-#          ,col='black'
-#          ,cex=1.5
-#   )
-#   
-#   # empirical values
-#   lines(c(as.numeric(empQuant)),c(i-1+dshift1,i-1+dshift1)
-#         ,lwd=2
-#         ,col='gray48'
-#   )
-#   
-#   points(mean(distsavg[,i]),i-1+dshift1
-#          ,pch=4
-#          ,col='gray48'
-#          ,cex=1.5
-#   )
-# }
-# 
-# plot(NA,NA
-#      ,xlim=c(0,1)
-#      ,ylim=c(0,length(ind_use))
-#      ,xaxt='n'
-#      ,yaxt='n'
-#      ,ylab=''
-#      ,xlab=''
-#      ,bty='n')
-# 
-# legend('center'
-#        ,legend=c('Favorability \n Metric Value','Monte Carlo \n Mean','Approximate \n 90% PI','Monte Carlo \n 90% PI')
-#        ,pch=c(4,4,NA,NA)
-#        ,col=c('black','gray48','black','gray48')
-#        ,lwd=c(NA,NA,2,2)
-#        ,y.intersp = 1.5
-# )
-# par(xpd=F)
-# dev.off()
-# 
-# 
-# setwd(wd_image)
-# #par(mar=c(1,1,1,1)*0.1)
-# png('three_panel2_geo.png'
-#     ,height=6
-#     ,width=6
-#     ,units='in'
-#     ,res=300
-# )
-# 
-# par(mfrow=c(1,5)
-#     ,oma=c(1,0,0,3)+0.1
-#     ,mar=c(5,0,0,0)+0.1)
-# dshift1 <- 0.4
-# dshift2 <- 0.2
-# 
-# plot(NA,NA
-#      ,xlim=c(0,1)
-#      ,ylim=c(0,length(ind_use))
-#      ,xaxt='n'
-#      ,yaxt='n'
-#      ,ylab=''
-#      ,xlab=''
-#      ,bty='n')
-# par(xpd=T)
-# for(i in 1:length(ind_use)){
-#   text(x=1,y=i-0.5
-#        ,labels=points$names[ind_use[i]]
-#        ,adj=1
-#        ,cex=1.2)
-#   
-# }
-# par(xpd=F)
-# 
-# plot(NA,NA
-#      ,xlim=c(0,5)
-#      ,ylim=c(0,length(ind_use))
-#      ,main=''
-#      ,xlab='Minimum'
-#      ,yaxt='n'
-#      ,ylab=''
-#      ,cex.lab=1.2)
-# grid(ny=NA)
-# for(i in 1:length(ind_use)){
-#   
-#   res_mean <- points$reservoir[ind_use[i]]
-#   #res_var <- points$re_pfa_var5[ind_use[i]]
-#   
-#   therm_mean <- points$thermal[ind_use[i]]
-#   #therm_var <- points$th_pfa_var5[ind_use[i]]
-#   
-#   seis_mean <- points$seismic[ind_use[i]]
-#   #seis_var <- points$se_pfa_var5[ind_use[i]]
-#   
-#   #util_mean <- points$utilization[ind_use[i]]
-#   
-#   # calculating empirical quantiles
-#   empQuant <- quantile(distsmin_g[,i],c(0.05,0.95))
-#   
-#   # calculated values
-#   lines(roots2[ind_use[i],c(1,3)],c(i-1+dshift1+dshift2,i-1+dshift1+dshift2)
-#         ,lwd=2
-#         ,col='black'
-#   )
-#   
-#   points(min(res_mean,therm_mean,seis_mean),i-1+dshift1+dshift2
-#          ,pch=4
-#          ,col='black'
-#          ,cex=1.5
-#   )
-#   
-#   # empirical values
-#   lines(c(as.numeric(empQuant)),c(i-1+dshift1,i-1+dshift1)
-#         ,lwd=2
-#         ,col='gray48'
-#   )
-#   
-#   points(mean(distsmin_g[,i]),i-1+dshift1
-#          ,pch=4
-#          ,col='gray48'
-#          ,cex=1.5
-#   )
-# }
-# 
-# 
-# 
-# plot(NA,NA
-#      ,xlim=c(0,5)
-#      ,ylim=c(0,length(ind_use))
-#      ,main=''
-#      ,xlab='Geometric Mean'
-#      ,yaxt='n'
-#      ,ylab=''
-#      ,cex.lab=1.2)
-# grid(ny=NA)
-# for(i in 1:length(ind_use)){
-#   
-#   # calculating empirical quantiles
-#   empQuant <- quantile(distsgeomean_g[,i],c(0.05,0.95))
-#   
-#   #extracting values value
-#   res_mean <- points$reservoir[ind_use[i]]
-#   res_var_ls <- points$re_pfa_var5_ls[ind_use[i]]
-#   
-#   therm_mean <- points$thermal[ind_use[i]]
-#   therm_var_ls <- points$th_pfa_var5_ls[ind_use[i]]
-#   
-#   seis_mean <- points$seismic[ind_use[i]]
-#   seis_var_ls <- points$se_pfa_var5_ls[ind_use[i]]
-#   if(is.na(seis_var_ls)){
-#     seis_var_ls <- 0
-#   }
-#   
-#   var_geomean_ls <- (1/9)*(res_var_ls + therm_var_ls + seis_var_ls)
-#   mean_geomean_ls <- (log(res_mean) + log(therm_mean) + log(seis_mean))/3
-#   
-#   theoQuants <- exp(qnorm(c(0.05,0.95),mean_geomean_ls,sqrt(var_geomean_ls)))
-#   
-#   # calculated values
-#   lines(theoQuants,c(i-1+dshift1+dshift2,i-1+dshift1+dshift2)
-#         ,lwd=2
-#         ,col='black'
-#   )
-#   
-#   points(exp(mean_geomean_ls),i-1+dshift1+dshift2
-#          ,pch=4
-#          ,col='black'
-#          ,cex=1.5
-#   )
-#   
-#   # empirical values
-#   lines(c(as.numeric(empQuant)),c(i-1+dshift1,i-1+dshift1)
-#         ,lwd=2
-#         ,col='gray48'
-#   )
-#   
-#   points(mean(distsgeomean_g[,i]),i-1+dshift1
-#          ,pch=4
-#          ,col='gray48'
-#          ,cex=1.5
-#   )
-# }
-# 
-# 
-# plot(NA,NA
-#      ,xlim=c(0,5)
-#      ,ylim=c(0,length(ind_use))
-#      ,main=''
-#      ,xlab='Average'
-#      ,yaxt='n'
-#      ,ylab=''
-#      ,cex.lab=1.2)
-# grid(ny=NA)
-# for(i in 1:length(ind_use)){
-#   
-#   # calculating empirical quantiles
-#   empQuant <- quantile(distsavg_g[,i],c(0.05,0.95))
-#   
-#   #extracting values value
-#   res_mean <- points$reservoir[ind_use[i]]
-#   res_var <- points$re_pfa_var5[ind_use[i]]
-#   
-#   therm_mean <- points$thermal[ind_use[i]]
-#   therm_var <- points$th_pfa_var5[ind_use[i]]
-#   
-#   seis_mean <- points$seismic[ind_use[i]]
-#   seis_var <- points$se_pfa_var5[ind_use[i]]
-#   
-#   var_avg <- (1/9)*(seis_var+res_var+therm_var)
-#   mean_avg <- (res_mean+therm_mean +seis_mean)/3
-#   # calculated valuesseis_mean
-#   lines(qnorm(c(0.05,0.95),mean_avg,sqrt(var_avg)),c(i-1+dshift1+dshift2,i-1+dshift1+dshift2)
-#         ,lwd=2
-#         ,col='black'
-#   )
-#   
-#   points(mean_avg,i-1+dshift1+dshift2
-#          ,pch=4
-#          ,col='black'
-#          ,cex=1.5
-#   )
-#   
-#   # empirical values
-#   lines(c(as.numeric(empQuant)),c(i-1+dshift1,i-1+dshift1)
-#         ,lwd=2
-#         ,col='gray48'
-#   )
-#   
-#   points(mean(distsavg_g[,i]),i-1+dshift1
-#          ,pch=4
-#          ,col='gray48'
-#          ,cex=1.5
-#   )
-# }
-# 
-# plot(NA,NA
-#      ,xlim=c(0,1)
-#      ,ylim=c(0,length(ind_use))
-#      ,xaxt='n'
-#      ,yaxt='n'
-#      ,ylab=''
-#      ,xlab=''
-#      ,bty='n')
-# 
-# legend('center'
-#        ,legend=c('Favorability \n Metric Value','Monte Carlo \n Mean','Approximate \n 90% PI','Monte Carlo \n 90% PI')
-#        ,pch=c(4,4,NA,NA)
-#        ,col=c('black','gray48','black','gray48')
-#        ,lwd=c(NA,NA,2,2)
-#        ,y.intersp = 1.5
-# )
-# par(xpd=F)
-# dev.off()
+setwd(wd_image)
+par(mar=c(1,1,1,1)*0.1)
+png('three_panel2_all_med.png'
+     ,height=6
+     ,width=6
+     ,units='in'
+     ,res=300
+)
+ 
+par(mfrow=c(1,5)
+     ,oma=c(1,0,0,3)+0.1
+     ,mar=c(5,0,0,0)+0.1)
+dshift1 <- 0.4
+dshift2 <- 0.2
+ 
+plot(NA,NA
+      ,xlim=c(0,1)
+      ,ylim=c(0,length(ind_use))
+      ,xaxt='n'
+      ,yaxt='n'
+      ,ylab=''
+      ,xlab=''
+      ,bty='n')
+par(xpd=T)
+for(i in 1:length(ind_use)){
+   text(x=1,y=i-0.5
+        ,labels=names[i]
+        ,adj=1
+        ,cex=1.2)
+   
+}
+par(xpd=F)
+ 
+plot(NA,NA
+      ,xlim=c(0,5)
+      ,ylim=c(0,length(ind_use))
+      ,main=''
+      ,xlab='Minimum'
+      ,yaxt='n'
+      ,ylab=''
+      ,cex.lab=1.2)
+grid(ny=NA)
+for(i in 1:length(ind_use)){
+   
+   res_mean <- points$reservoir_rfc[ind_use[i]]
+   #res_var <- points$re_pfa_var5[ind_use[i]]
+   
+   therm_mean <- points$thermal[ind_use[i]]
+   #therm_var <- points$th_pfa_var5[ind_use[i]]
+   
+   seis_mean <- points$seismic[ind_use[i]]
+   #seis_var <- points$se_pfa_var5[ind_use[i]]
+   
+   util_mean <- points$utilization[ind_use[i]]
+   
+   # calculating empirical quantiles
+   empQuant <- quantile(distsmin[,i],c(0.05,0.95))
+   
+   # calculated values
+   if(max(is.na(dataParams[ind_use[i],c(7,8)])) == 0){
+     lines(roots1[ind_use[i],c(1,3)],c(i-1+dshift1+dshift2,i-1+dshift1+dshift2)
+           ,lwd=2
+           ,col='black')
+     }
+   
+   points(min(res_mean,therm_mean,seis_mean,util_mean),i-1+dshift1+dshift2
+          ,pch=4
+          ,col='black'
+          ,cex=1.5
+          )
+   
+   points(roots1[ind_use[i],2],i-1+dshift1+dshift2
+          ,pch=3
+          ,col='blue'
+          ,cex=1.5
+   )
+   
+   # empirical values
+   lines(c(as.numeric(empQuant)),c(i-1+dshift1,i-1+dshift1)
+         ,lwd=2
+         ,col='gray48'
+         )
+   
+   points(mean(distsmin[,i]),i-1+dshift1
+          ,pch=4
+          ,col='gray48'
+          ,cex=1.5
+          )
+   
+   points(median(distsmin[,i]),i-1+dshift1
+          ,pch=3
+          ,col='skyblue'
+          ,cex=1.5
+   )
+}
+ 
+ 
+ 
+plot(NA,NA
+      ,xlim=c(0,5)
+      ,ylim=c(0,length(ind_use))
+      ,main=''
+      ,xlab='Geometric Mean'
+      ,yaxt='n'
+      ,ylab=''
+      ,cex.lab=1.2)
+grid(ny=NA)
+for(i in 1:length(ind_use)){
+   
+   # calculating empirical quantiles
+   empQuant <- quantile(distsgeomean[,i],c(0.05,0.95))
+   
+   #extracting values value
+   res_mean <- points$reservoir_rfc[ind_use[i]]
+   res_var_ls <- points$re_pfa_var5_rfc_ls[ind_use[i]]
+   
+   therm_mean <- points$thermal[ind_use[i]]
+   therm_var_ls <- points$th_pfa_var5_ls[ind_use[i]]
+   
+   seis_mean <- points$seismic[ind_use[i]]
+   seis_var_ls <- points$se_pfa_var5_ls[ind_use[i]]
+   if(is.na(seis_var_ls)){
+     seis_var_ls <- 0
+   }
+   
+   util_mean <- points$utilization[ind_use[i]]
+   util_var_ls <- points$util_pfa_var5_ls[ind_use[i]]
+   
+   var_geomean_ls <- (1/16)*(res_var_ls + therm_var_ls + seis_var_ls + util_var_ls)
+   mean_geomean_ls <- 0.25*(log(res_mean) + log(therm_mean) + log(seis_mean) + log(util_mean))
+   
+   theoQuants <- exp(qnorm(c(0.05,0.95),mean_geomean_ls,sqrt(var_geomean_ls)))
+   
+   # calculated values
+   lines(theoQuants,c(i-1+dshift1+dshift2,i-1+dshift1+dshift2)
+         ,lwd=2
+         ,col='black'
+   )
+   
+   points(exp(mean_geomean_ls),i-1+dshift1+dshift2
+          ,pch=4
+          ,col='black'
+          ,cex=1.5
+   )
+   
+   # empirical values
+   lines(c(as.numeric(empQuant)),c(i-1+dshift1,i-1+dshift1)
+         ,lwd=2
+         ,col='gray48'
+   )
+   
+   points(mean(distsgeomean[,i]),i-1+dshift1
+          ,pch=4
+          ,col='gray48'
+          ,cex=1.5
+   )
+}
+ 
+ 
+plot(NA,NA
+      ,xlim=c(0,5)
+      ,ylim=c(0,length(ind_use))
+      ,main=''
+      ,xlab='Average'
+      ,yaxt='n'
+      ,ylab=''
+      ,cex.lab=1.2)
+grid(ny=NA)
+for(i in 1:length(ind_use)){
+   
+   # calculating empirical quantiles
+   empQuant <- quantile(distsavg[,i],c(0.05,0.95))
+   
+   #extracting values value
+   res_mean <- points$reservoir_rfc[ind_use[i]]
+   res_var <- points$re_pfa_var5_rfc[ind_use[i]]
+   
+   therm_mean <- points$thermal[ind_use[i]]
+   therm_var <- points$th_pfa_var5[ind_use[i]]
+   
+   seis_mean <- points$seismic[ind_use[i]]
+   seis_var <- points$se_pfa_var5[ind_use[i]]
+   
+   util_mean <- points$utilization[ind_use[i]]
+   util_var <- points$util_pfa_var5[ind_use[i]]
+   
+   var_avg <- (1/16)*(seis_var + res_var + therm_var + util_var)
+   mean_avg <- (res_mean + therm_mean + seis_mean + util_mean)/4
+   
+   # calculated values seis_mean
+   lines(qnorm(c(0.05,0.95),mean_avg,sqrt(var_avg)),c(i-1+dshift1+dshift2,i-1+dshift1+dshift2)
+         ,lwd=2
+         ,col='black'
+   )
+   
+   points(mean_avg,i-1+dshift1+dshift2
+          ,pch=4
+          ,col='black'
+          ,cex=1.5
+   )
+   
+   # empirical values
+   lines(c(as.numeric(empQuant)),c(i-1+dshift1,i-1+dshift1)
+         ,lwd=2
+         ,col='gray48'
+   )
+   
+   points(mean(distsavg[,i]),i-1+dshift1
+          ,pch=4
+          ,col='gray48'
+          ,cex=1.5
+   )
+}
+ 
+plot(NA,NA
+      ,xlim=c(0,1)
+      ,ylim=c(0,length(ind_use))
+      ,xaxt='n'
+      ,yaxt='n'
+      ,ylab=''
+      ,xlab=''
+      ,bty='n')
+ 
+legend('center'
+        ,legend=c('Favorability \n Metric Value','Monte Carlo \n Mean','Approximate \n 90% PI','Monte Carlo \n 90% PI')
+        ,pch=c(4,4,NA,NA)
+        ,col=c('black','gray48','black','gray48')
+        ,lwd=c(NA,NA,2,2)
+        ,y.intersp = 1.5
+)
+par(xpd=F)
+dev.off()
+ 
+
+ 
+setwd(wd_image)
+png('three_panel2_geo.png'
+    ,height=6
+    ,width=6
+    ,units='in'
+    ,res=300
+)
+
+par(mfrow=c(1,5)
+    ,oma=c(1,0,0,3)+0.1
+    ,mar=c(5,0,0,0)+0.1)
+dshift1 <- 0.4
+dshift2 <- 0.2
+
+plot(NA,NA
+     ,xlim=c(0,1)
+     ,ylim=c(0,length(ind_use))
+     ,xaxt='n'
+     ,yaxt='n'
+     ,ylab=''
+     ,xlab=''
+     ,bty='n')
+par(xpd=T)
+for(i in 1:length(ind_use)){
+  text(x=1,y=i-0.5
+       ,labels=names[i]
+       ,adj=1
+       ,cex=1.2)
+
+}
+par(xpd=F)
+
+plot(NA,NA
+     ,xlim=c(0,5)
+     ,ylim=c(0,length(ind_use))
+     ,main=''
+     ,xlab='Minimum'
+     ,yaxt='n'
+     ,ylab=''
+     ,cex.lab=1.2)
+grid(ny=NA)
+for(i in 1:length(ind_use)){
+
+  res_mean <- points$reservoir_rfc[ind_use[i]]
+
+  therm_mean <- points$thermal[ind_use[i]]
+
+  seis_mean <- points$seismic[ind_use[i]]
+
+  # calculating empirical quantiles
+  empQuant <- quantile(distsmin_g[,i],c(0.05,0.95))
+
+  # calculated values
+  lines(roots2[ind_use[i],c(1,3)],c(i-1+dshift1+dshift2,i-1+dshift1+dshift2)
+        ,lwd=2
+        ,col='black'
+  )
+
+  points(min(res_mean,therm_mean,seis_mean),i-1+dshift1+dshift2
+         ,pch=4
+         ,col='black'
+         ,cex=1.5
+  )
+
+  # empirical values
+  lines(c(as.numeric(empQuant)),c(i-1+dshift1,i-1+dshift1)
+        ,lwd=2
+        ,col='gray48'
+  )
+
+  points(mean(distsmin_g[,i]),i-1+dshift1
+         ,pch=4
+         ,col='gray48'
+         ,cex=1.5
+  )
+}
+
+
+
+plot(NA,NA
+     ,xlim=c(0,5)
+     ,ylim=c(0,length(ind_use))
+     ,main=''
+     ,xlab='Geometric Mean'
+     ,yaxt='n'
+     ,ylab=''
+     ,cex.lab=1.2)
+grid(ny=NA)
+for(i in 1:length(ind_use)){
+
+  # calculating empirical quantiles
+  empQuant <- quantile(distsgeomean_g[,i],c(0.05,0.95))
+
+  #extracting values value
+  res_mean <- points$reservoir_rfc[ind_use[i]]
+  res_var_ls <- points$re_pfa_var5_rfc_ls[ind_use[i]]
+
+  therm_mean <- points$thermal[ind_use[i]]
+  therm_var_ls <- points$th_pfa_var5_ls[ind_use[i]]
+
+  seis_mean <- points$seismic[ind_use[i]]
+  seis_var_ls <- points$se_pfa_var5_ls[ind_use[i]]
+  if(is.na(seis_var_ls)){
+    seis_var_ls <- 0
+  }
+
+  var_geomean_ls <- (1/9)*(res_var_ls + therm_var_ls + seis_var_ls)
+  mean_geomean_ls <- (log(res_mean) + log(therm_mean) + log(seis_mean))/3
+
+  theoQuants <- exp(qnorm(c(0.05,0.95),mean_geomean_ls,sqrt(var_geomean_ls)))
+
+  # calculated values
+  lines(theoQuants,c(i-1+dshift1+dshift2,i-1+dshift1+dshift2)
+        ,lwd=2
+        ,col='black'
+  )
+
+  points(exp(mean_geomean_ls),i-1+dshift1+dshift2
+         ,pch=4
+         ,col='black'
+         ,cex=1.5
+  )
+
+  # empirical values
+  lines(c(as.numeric(empQuant)),c(i-1+dshift1,i-1+dshift1)
+        ,lwd=2
+        ,col='gray48'
+  )
+
+  points(mean(distsgeomean_g[,i]),i-1+dshift1
+         ,pch=4
+         ,col='gray48'
+         ,cex=1.5
+  )
+}
+
+
+plot(NA,NA
+     ,xlim=c(0,5)
+     ,ylim=c(0,length(ind_use))
+     ,main=''
+     ,xlab='Average'
+     ,yaxt='n'
+     ,ylab=''
+     ,cex.lab=1.2)
+grid(ny=NA)
+for(i in 1:length(ind_use)){
+
+  # calculating empirical quantiles
+  empQuant <- quantile(distsavg_g[,i],c(0.05,0.95))
+
+  #extracting values value
+  res_mean <- points$reservoir_rfc[ind_use[i]]
+  res_var <- points$re_pfa_var5_rfc[ind_use[i]]
+
+  therm_mean <- points$thermal[ind_use[i]]
+  therm_var <- points$th_pfa_var5[ind_use[i]]
+
+  seis_mean <- points$seismic[ind_use[i]]
+  seis_var <- points$se_pfa_var5[ind_use[i]]
+
+  var_avg <- (1/9)*(seis_var+res_var+therm_var)
+  mean_avg <- (res_mean+therm_mean +seis_mean)/3
+  
+  # calculated values 
+  lines(qnorm(c(0.05,0.95),mean_avg,sqrt(var_avg)),c(i-1+dshift1+dshift2,i-1+dshift1+dshift2)
+        ,lwd=2
+        ,col='black'
+  )
+
+  points(mean_avg,i-1+dshift1+dshift2
+         ,pch=4
+         ,col='black'
+         ,cex=1.5
+  )
+
+  # empirical values
+  lines(c(as.numeric(empQuant)),c(i-1+dshift1,i-1+dshift1)
+        ,lwd=2
+        ,col='gray48'
+  )
+
+  points(mean(distsavg_g[,i]),i-1+dshift1
+         ,pch=4
+         ,col='gray48'
+         ,cex=1.5
+  )
+}
+
+plot(NA,NA
+     ,xlim=c(0,1)
+     ,ylim=c(0,length(ind_use))
+     ,xaxt='n'
+     ,yaxt='n'
+     ,ylab=''
+     ,xlab=''
+     ,bty='n')
+
+legend('center'
+       ,legend=c('Favorability \n Metric Value','Monte Carlo \n Mean','Approximate \n 90% PI','Monte Carlo \n 90% PI')
+       ,pch=c(4,4,NA,NA)
+       ,col=c('black','gray48','black','gray48')
+       ,lwd=c(NA,NA,2,2)
+       ,y.intersp = 1.5
+)
+par(xpd=F)
+dev.off()
 
 ###################################
 # making plot of different metrics for all favorability factors
 
-# setwd(wd_image)
-# #par(mar=c(1,1,1,1)*0.1)
-# png('single_panel2_all.png'
-#     ,height=6
-#     ,width=7
-#     ,units='in'
-#     ,res=300
-# )
-# layout(mat=matrix(c(1,2,3),1,3)
-#        ,widths=c(1,3,1.5))
-# par(oma=c(1,0,0,3)+0.1
-#     ,mar=c(5,0,0,0)+0.1)
-# 
-# dshift1 <- 0.3
-# dshift2 <- 0.2
-# 
-# plot(NA,NA
-#      ,xlim=c(0,1)
-#      ,ylim=c(0,length(ind_use))
-#      ,xaxt='n'
-#      ,yaxt='n'
-#      ,ylab=''
-#      ,xlab=''
-#      ,bty='n')
-# par(xpd=T)
-# for(i in 1:length(ind_use)){
-#   text(x=1,y=i-0.5
-#        ,labels=points$names[ind_use[i]]
-#        ,adj=1
-#        ,cex=1.2)
-#   
-# }
-# par(xpd=F)
-# 
-# plot(NA,NA
-#      ,xlim=c(0,5)
-#      ,ylim=c(0,length(ind_use))
-#      ,main=''
-#      ,xlab='Favorability Metric'
-#      ,yaxt='n'
-#      ,ylab=''
-#      ,cex.lab=1.2)
-# grid(ny=NA)
-# for(i in 1:length(ind_use)){
-#   res_mean <- points$reservoir[ind_use[i]]
-# 
-#   therm_mean <- points$thermal[ind_use[i]]
-# 
-#   seis_mean <- points$seismic[ind_use[i]]
-# 
-#   util_mean <- points$utilization[ind_use[i]]
-#   
-#   # calculated values
-#   if(max(is.na(dataParams[ind_use[i],c(7,8)])) == 0){
-#     lines(roots1[ind_use[i],c(1,3)],c(i-1+dshift1,i-1+dshift1)
-#           ,lwd=2
-#           ,col='black'
-#     )
-#   }
-#   
-#   points(min(res_mean,therm_mean,seis_mean,util_mean),i-1+dshift1
-#          ,pch=4
-#          ,col='black'
-#          ,cex=1.5
-#   )
-#   
-#   # calculating empirical quantiles
-#   empQuant <- quantile(distsgeomean[,i],c(0.05,0.95))
-#   
-#   #extracting values value
-#   res_mean <- points$reservoir[ind_use[i]]
-#   res_var_ls <- points$re_pfa_var5_ls[ind_use[i]]
-#   
-#   therm_mean <- points$thermal[ind_use[i]]
-#   therm_var_ls <- points$th_pfa_var5_ls[ind_use[i]]
-#   
-#   seis_mean <- points$seismic[ind_use[i]]
-#   seis_var_ls <- points$se_pfa_var5_ls[ind_use[i]]
-#   
-#   util_mean <- points$utilization[ind_use[i]]
-#   util_var_ls <- points$util_pfa_var5_ls[ind_use[i]]
-#   
-#   var_geomean_ls <- (1/16)*(res_var_ls + therm_var_ls + seis_var_ls + util_var_ls)
-#   mean_geomean_ls <- 0.25*(log(res_mean) + log(therm_mean) + log(seis_mean) + log(util_mean))
-#   
-#   theoQuants <- exp(qnorm(c(0.05,0.95),mean_geomean_ls,sqrt(var_geomean_ls)))
-#   
-#   # calculated values
-#   lines(theoQuants,c(i-1+dshift1+dshift2,i-1+dshift1+dshift2)
-#         ,lwd=2
-#         ,col='gray48'
-#   )
-#   
-#   points(exp(mean_geomean_ls),i-1+dshift1+dshift2
-#          ,pch=4
-#          ,col='gray48'
-#          ,cex=1.5
-#   )
-#   
-#   #extracting values value
-#   res_mean <- points$reservoir[ind_use[i]]
-#   res_var <- points$re_pfa_var5[ind_use[i]]
-#   
-#   therm_mean <- points$thermal[ind_use[i]]
-#   therm_var <- points$th_pfa_var5[ind_use[i]]
-#   
-#   seis_mean <- points$seismic[ind_use[i]]
-#   seis_var <- points$se_pfa_var5[ind_use[i]]
-#   
-#   util_mean <- points$utilization[ind_use[i]]
-#   util_var <- points$util_pfa_var5[ind_use[i]]
-#   
-#   var_avg <- (1/16)*(seis_var+res_var+therm_var+util_var)
-#   mean_avg <- (res_mean+therm_mean +seis_mean+util_mean)/4
-#   # calculated valuesseis_mean
-#   lines(qnorm(c(0.05,0.95),mean_avg,sqrt(var_avg)),c(i-1+dshift1+2*dshift2,i-1+dshift1+2*dshift2)
-#         ,lwd=2
-#         ,col='royalblue'
-#   )
-#   
-#   points(mean_avg,i-1+dshift1+2*dshift2
-#          ,pch=4
-#          ,col='royalblue'
-#          ,cex=1.5
-#   )
-# }
-# 
-# plot(NA,NA
-#      ,xlim=c(0,1)
-#      ,ylim=c(0,length(ind_use))
-#      ,xaxt='n'
-#      ,yaxt='n'
-#      ,ylab=''
-#      ,xlab=''
-#      ,bty='n')
-# 
-# legend('center'
-#        ,legend=c(rev(c('FM Minimum','FM Geometric \n  Mean','FM Average')),rev(c('Approximate 90% \n PI Minimum','Approximate 90% \n PI Geometric Mean','Approximate 90% \n PI Average')))
-#        ,pch=c(4,4,4,NA,NA,NA)
-#        ,col=rev(c('black','gray48','royalblue'))
-#        ,lwd=c(NA,NA,NA,2,2,2)
-#        ,y.intersp = 1.5
-# )
-# par(xpd=F)
-# dev.off()
+setwd(wd_image)
+png('single_panel2_all.png'
+    ,height=6
+    ,width=7
+    ,units='in'
+    ,res=300
+)
+layout(mat=matrix(c(1,2,3),1,3)
+       ,widths=c(1,3,1.5))
+par(oma=c(1,0,0,3)+0.1
+    ,mar=c(5,0,0,0)+0.1)
+
+dshift1 <- 0.3
+dshift2 <- 0.2
+
+plot(NA,NA
+     ,xlim=c(0,1)
+     ,ylim=c(0,length(ind_use))
+     ,xaxt='n'
+     ,yaxt='n'
+     ,ylab=''
+     ,xlab=''
+     ,bty='n')
+par(xpd=T)
+for(i in 1:length(ind_use)){
+  text(x=1,y=i-0.5
+       ,labels=names[i]
+       ,adj=1
+       ,cex=1.2)
+
+}
+par(xpd=F)
+
+plot(NA,NA
+     ,xlim=c(0,5)
+     ,ylim=c(0,length(ind_use))
+     ,main=''
+     ,xlab='Favorability Metric'
+     ,yaxt='n'
+     ,ylab=''
+     ,cex.lab=1.2)
+grid(ny=NA)
+for(i in 1:length(ind_use)){
+  res_mean <- points$reservoir_rfc[ind_use[i]]
+
+  therm_mean <- points$thermal[ind_use[i]]
+
+  seis_mean <- points$seismic[ind_use[i]]
+
+  util_mean <- points$utilization[ind_use[i]]
+
+  # calculated values
+  if(max(is.na(dataParams[ind_use[i],c(7,8)])) == 0){
+    lines(roots1[ind_use[i],c(1,3)],c(i-1+dshift1,i-1+dshift1)
+          ,lwd=2
+          ,col='black'
+    )
+  }
+
+  points(min(res_mean,therm_mean,seis_mean,util_mean),i-1+dshift1
+         ,pch=4
+         ,col='black'
+         ,cex=1.5
+  )
+  
+  points(roots1[ind_use[i],2],i-1+dshift1
+         ,pch=5
+         ,col='black'
+         ,cex=1.5
+  )
+
+  # calculating empirical quantiles
+  empQuant <- quantile(distsgeomean[,i],c(0.05,0.95))
+
+  #extracting values value
+  res_mean <- points$reservoir_rfc[ind_use[i]]
+  res_var_ls <- points$re_pfa_var5_rfc_ls[ind_use[i]]
+
+  therm_mean <- points$thermal[ind_use[i]]
+  therm_var_ls <- points$th_pfa_var5_ls[ind_use[i]]
+
+  seis_mean <- points$seismic[ind_use[i]]
+  seis_var_ls <- points$se_pfa_var5_ls[ind_use[i]]
+
+  util_mean <- points$utilization[ind_use[i]]
+  util_var_ls <- points$util_pfa_var5_ls[ind_use[i]]
+
+  var_geomean_ls <- (1/16)*(res_var_ls + therm_var_ls + seis_var_ls + util_var_ls)
+  mean_geomean_ls <- 0.25*(log(res_mean) + log(therm_mean) + log(seis_mean) + log(util_mean))
+
+  theoQuants <- exp(qnorm(c(0.05,0.95),mean_geomean_ls,sqrt(var_geomean_ls)))
+
+  # calculated values
+  lines(theoQuants,c(i-1+dshift1+dshift2,i-1+dshift1+dshift2)
+        ,lwd=2
+        ,col='gray48'
+  )
+
+  points(exp(mean_geomean_ls),i-1+dshift1+dshift2
+         ,pch=4
+         ,col='gray48'
+         ,cex=1.5
+  )
+
+  #extracting values value
+  res_mean <- points$reservoir_rfc[ind_use[i]]
+  res_var <- points$re_pfa_var5_rfc[ind_use[i]]
+
+  therm_mean <- points$thermal[ind_use[i]]
+  therm_var <- points$th_pfa_var5[ind_use[i]]
+
+  seis_mean <- points$seismic[ind_use[i]]
+  seis_var <- points$se_pfa_var5[ind_use[i]]
+
+  util_mean <- points$utilization[ind_use[i]]
+  util_var <- points$util_pfa_var5[ind_use[i]]
+
+  var_avg <- (1/16)*(seis_var+res_var+therm_var+util_var)
+  mean_avg <- (res_mean+therm_mean +seis_mean+util_mean)/4
+  # calculated valuesseis_mean
+  lines(qnorm(c(0.05,0.95),mean_avg,sqrt(var_avg)),c(i-1+dshift1+2*dshift2,i-1+dshift1+2*dshift2)
+        ,lwd=2
+        ,col='royalblue'
+  )
+
+  points(mean_avg,i-1+dshift1+2*dshift2
+         ,pch=4
+         ,col='royalblue'
+         ,cex=1.5
+  )
+}
+
+plot(NA,NA
+     ,xlim=c(0,1)
+     ,ylim=c(0,length(ind_use))
+     ,xaxt='n'
+     ,yaxt='n'
+     ,ylab=''
+     ,xlab=''
+     ,bty='n')
+
+legend('center'
+       ,legend=c(rev(c('FM Minimum','FM Geometric \n  Mean','FM Average')),rev(c('Approximate 90% \n PI Minimum','Approximate 90% \n PI Geometric Mean','Approximate 90% \n PI Average')))
+       ,pch=c(4,4,4,NA,NA,NA)
+       ,col=rev(c('black','gray48','royalblue'))
+       ,lwd=c(NA,NA,NA,2,2,2)
+       ,y.intersp = 1.5
+)
+par(xpd=F)
+dev.off()
 
 
 
 ###################################
-# making plot of different metrics for all favorability factors
+# making plot of different metrics for geologic favorability factors
 
-# setwd(wd_image)
-# #par(mar=c(1,1,1,1)*0.1)
-# png('single_panel2_geo.png'
-#     ,height=6
-#     ,width=7
-#     ,units='in'
-#     ,res=300
-# )
-# layout(mat=matrix(c(1,2,3),1,3)
-#        ,widths=c(1,3,1.5))
-# par(oma=c(1,0,0,3)+0.1
-#     ,mar=c(5,0,0,0)+0.1)
-# 
-# dshift1 <- 0.3
-# dshift2 <- 0.2
-# 
-# plot(NA,NA
-#      ,xlim=c(0,1)
-#      ,ylim=c(0,length(ind_use))
-#      ,xaxt='n'
-#      ,yaxt='n'
-#      ,ylab=''
-#      ,xlab=''
-#      ,bty='n')
-# par(xpd=T)
-# for(i in 1:length(ind_use)){
-#   text(x=1,y=i-0.5
-#        ,labels=points$names[ind_use[i]]
-#        ,adj=1
-#        ,cex=1.2)
-#   
-# }
-# par(xpd=F)
-# 
-# plot(NA,NA
-#      ,xlim=c(0,5)
-#      ,ylim=c(0,length(ind_use))
-#      ,main=''
-#      ,xlab='Favorability Metric'
-#      ,yaxt='n'
-#      ,ylab=''
-#      ,cex.lab=1.2)
-# grid(ny=NA)
-# for(i in 1:length(ind_use)){
-#   res_mean <- points$reservoir[ind_use[i]]
-#   
-#   therm_mean <- points$thermal[ind_use[i]]
-#   
-#   seis_mean <- points$seismic[ind_use[i]]
-#   
-#   util_mean <- points$utilization[ind_use[i]]
-#   
-#   # calculated values
-#     lines(roots2[ind_use[i],c(1,3)],c(i-1+dshift1,i-1+dshift1)
-#           ,lwd=2
-#           ,col='black'
-#     )
-#   
-#   points(min(res_mean,therm_mean,seis_mean),i-1+dshift1
-#          ,pch=4
-#          ,col='black'
-#          ,cex=1.5
-#   )
-#   
-#   #extracting values value
-#   res_mean <- points$reservoir[ind_use[i]]
-#   res_var_ls <- points$re_pfa_var5_ls[ind_use[i]]
-#   
-#   therm_mean <- points$thermal[ind_use[i]]
-#   therm_var_ls <- points$th_pfa_var5_ls[ind_use[i]]
-#   
-#   seis_mean <- points$seismic[ind_use[i]]
-#   seis_var_ls <- points$se_pfa_var5_ls[ind_use[i]]
-#   
-#   var_geomean_ls <- (1/9)*(res_var_ls + therm_var_ls + seis_var_ls)
-#   mean_geomean_ls <- (1/3)*(log(res_mean) + log(therm_mean) + log(seis_mean))
-#   
-#   theoQuants <- exp(qnorm(c(0.05,0.95),mean_geomean_ls,sqrt(var_geomean_ls)))
-#   
-#   # calculated values
-#   lines(theoQuants,c(i-1+dshift1+dshift2,i-1+dshift1+dshift2)
-#         ,lwd=2
-#         ,col='gray48'
-#   )
-#   
-#   points(exp(mean_geomean_ls),i-1+dshift1+dshift2
-#          ,pch=4
-#          ,col='gray48'
-#          ,cex=1.5
-#   )
-#   
-#   #extracting values value
-#   res_mean <- points$reservoir[ind_use[i]]
-#   res_var <- points$re_pfa_var5[ind_use[i]]
-#   
-#   therm_mean <- points$thermal[ind_use[i]]
-#   therm_var <- points$th_pfa_var5[ind_use[i]]
-#   
-#   seis_mean <- points$seismic[ind_use[i]]
-#   seis_var <- points$se_pfa_var5[ind_use[i]]
-#   
-#   util_mean <- points$utilization[ind_use[i]]
-#   util_var <- points$util_pfa_var5[ind_use[i]]
-#   
-#   var_avg <- (1/9)*(seis_var+res_var+therm_var)
-#   mean_avg <- (res_mean+therm_mean +seis_mean)/3
-#   # calculated valuesseis_mean
-#   lines(qnorm(c(0.05,0.95),mean_avg,sqrt(var_avg)),c(i-1+dshift1+2*dshift2,i-1+dshift1+2*dshift2)
-#         ,lwd=2
-#         ,col='royalblue'
-#   )
-#   
-#   points(mean_avg,i-1+dshift1+2*dshift2
-#          ,pch=4
-#          ,col='royalblue'
-#          ,cex=1.5
-#   )
-# }
-# 
-# plot(NA,NA
-#      ,xlim=c(0,1)
-#      ,ylim=c(0,length(ind_use))
-#      ,xaxt='n'
-#      ,yaxt='n'
-#      ,ylab=''
-#      ,xlab=''
-#      ,bty='n')
-# 
-# legend('center'
-#        ,legend=c(rev(c('FM Minimum','FM Geometric \n  Mean','FM Average')),rev(c('Approximate 90% \n PI Minimum','Approximate 90% \n PI Geometric Mean','Approximate 90% \n PI Average')))
-#        ,pch=c(4,4,4,NA,NA,NA)
-#        ,col=rev(c('black','gray48','royalblue'))
-#        ,lwd=c(NA,NA,NA,2,2,2)
-#        ,y.intersp = 1.5
-# )
-# par(xpd=F)
-# dev.off()
+setwd(wd_image)
+png('single_panel2_geo.png'
+    ,height=6
+    ,width=7
+    ,units='in'
+    ,res=300
+)
+layout(mat=matrix(c(1,2,3),1,3)
+       ,widths=c(1,3,1.5))
+par(oma=c(1,0,0,3)+0.1
+    ,mar=c(5,0,0,0)+0.1)
+
+dshift1 <- 0.3
+dshift2 <- 0.2
+
+plot(NA,NA
+     ,xlim=c(0,1)
+     ,ylim=c(0,length(ind_use))
+     ,xaxt='n'
+     ,yaxt='n'
+     ,ylab=''
+     ,xlab=''
+     ,bty='n')
+par(xpd=T)
+for(i in 1:length(ind_use)){
+  text(x=1,y=i-0.5
+       ,labels=names[i]
+       ,adj=1
+       ,cex=1.2)
+
+}
+par(xpd=F)
+
+plot(NA,NA
+     ,xlim=c(0,5)
+     ,ylim=c(0,length(ind_use))
+     ,main=''
+     ,xlab='Favorability Metric'
+     ,yaxt='n'
+     ,ylab=''
+     ,cex.lab=1.2)
+grid(ny=NA)
+for(i in 1:length(ind_use)){
+  res_mean <- points$reservoir_rfc[ind_use[i]]
+
+  therm_mean <- points$thermal[ind_use[i]]
+
+  seis_mean <- points$seismic[ind_use[i]]
+
+  util_mean <- points$utilization[ind_use[i]]
+
+  # calculated values
+    lines(roots2[ind_use[i],c(1,3)],c(i-1+dshift1,i-1+dshift1)
+          ,lwd=2
+          ,col='black'
+    )
+
+  points(min(res_mean,therm_mean,seis_mean),i-1+dshift1
+         ,pch=4
+         ,col='black'
+         ,cex=1.5
+  )
+
+  #extracting values value
+  res_mean <- points$reservoir_rfc[ind_use[i]]
+  res_var_ls <- points$re_pfa_var5_rfc_ls[ind_use[i]]
+
+  therm_mean <- points$thermal[ind_use[i]]
+  therm_var_ls <- points$th_pfa_var5_ls[ind_use[i]]
+
+  seis_mean <- points$seismic[ind_use[i]]
+  seis_var_ls <- points$se_pfa_var5_ls[ind_use[i]]
+
+  var_geomean_ls <- (1/9)*(res_var_ls + therm_var_ls + seis_var_ls)
+  mean_geomean_ls <- (1/3)*(log(res_mean) + log(therm_mean) + log(seis_mean))
+
+  theoQuants <- exp(qnorm(c(0.05,0.95),mean_geomean_ls,sqrt(var_geomean_ls)))
+
+  # calculated values
+  lines(theoQuants,c(i-1+dshift1+dshift2,i-1+dshift1+dshift2)
+        ,lwd=2
+        ,col='gray48'
+  )
+
+  points(exp(mean_geomean_ls),i-1+dshift1+dshift2
+         ,pch=4
+         ,col='gray48'
+         ,cex=1.5
+  )
+
+  #extracting values value
+  res_mean <- points$reservoir_rfc[ind_use[i]]
+  res_var <- points$re_pfa_var5_rfc[ind_use[i]]
+
+  therm_mean <- points$thermal[ind_use[i]]
+  therm_var <- points$th_pfa_var5[ind_use[i]]
+
+  seis_mean <- points$seismic[ind_use[i]]
+  seis_var <- points$se_pfa_var5[ind_use[i]]
+
+  util_mean <- points$utilization[ind_use[i]]
+  util_var <- points$util_pfa_var5[ind_use[i]]
+
+  var_avg <- (1/9)*(seis_var + res_var + therm_var)
+  mean_avg <- (res_mean + therm_mean + seis_mean)/3
+  # calculated valuesseis_mean
+  lines(qnorm(c(0.05,0.95),mean_avg,sqrt(var_avg)),c(i-1+dshift1+2*dshift2,i-1+dshift1+2*dshift2)
+        ,lwd=2
+        ,col='royalblue'
+  )
+
+  points(mean_avg,i-1+dshift1+2*dshift2
+         ,pch=4
+         ,col='royalblue'
+         ,cex=1.5
+  )
+}
+
+plot(NA,NA
+     ,xlim=c(0,1)
+     ,ylim=c(0,length(ind_use))
+     ,xaxt='n'
+     ,yaxt='n'
+     ,ylab=''
+     ,xlab=''
+     ,bty='n')
+
+legend('center'
+       ,legend=c(rev(c('FM Minimum','FM Geometric \n  Mean','FM Average')),rev(c('Approximate 90% \n PI Minimum','Approximate 90% \n PI Geometric Mean','Approximate 90% \n PI Average')))
+       ,pch=c(4,4,4,NA,NA,NA)
+       ,col=rev(c('black','gray48','royalblue'))
+       ,lwd=c(NA,NA,NA,2,2,2)
+       ,y.intersp = 1.5
+)
+par(xpd=F)
+dev.off()
 
 
 
