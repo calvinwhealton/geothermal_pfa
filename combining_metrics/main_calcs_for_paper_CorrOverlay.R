@@ -5428,7 +5428,7 @@ rm(inds, ind_max, ind_max2, ind_max3, nm)
 # solving for the weibull distribution parameters
 dataParams <- matrix(NA,10,4*2) #4 is for the number of RFs
 dp2 <- matrix(NA,10,4) #Number of iterations
-#set the lower bound of the Weibull as NA
+#set the lower bound of the Weibull as 0
 lb=0
 #Record the value of the lower bound in a matrix
 lb_mat = matrix(0, nrow=nrow(points), ncol=ncol(dataParams)/2)
@@ -5598,6 +5598,189 @@ for(i in ind_use){
   }
 }
 rm(params, ps)
+
+# solving for the Beta distribution parameters
+dataParams_Beta <- matrix(NA,10,4*2) #4 is for the number of RFs. 2 is number of parameters. 10 is number of places
+dpBeta <- matrix(NA,10,4) #Number of iterations
+#set the lower bound of the Beta as 0 and the upper bound as 5
+lb = 0
+ub = 5
+#Record the value of the lower and upper bounds in a matrix
+lb_mat = matrix(0, nrow=nrow(points), ncol=ncol(dataParams)/2)
+ub_mat = matrix(0, nrow=nrow(points), ncol=ncol(dataParams)/2)
+for(i in ind_use){
+  
+  mom <- c(points$thermal[i],points$th_pfa_var5[i])
+  #check if thermal is 5 with 0 uncertainty
+  if ((points$thermal[i] == 5 & points$th_pfa_var5[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,1] = 5
+    ub_mat[i,1] = 5
+    #Set these parameters to NA because the roots are all 5
+    dataParams_Beta[i,c(1,2)] <- NA
+    dpBeta[i,1] <-  NA
+  }
+  else{
+    #Solve for the roots with a lower bound of 0
+    lb_mat[i,1] = 0
+    ub_mat[i,1] = 5
+    dataParams_Beta[i,c(1,2)] <- multiroot(solveBeta,start=c(1,1), positive=TRUE)$root
+    dpBeta[i,1] <-  multiroot(solveBeta,start=c(1,1), positive=TRUE)$iter
+  }
+
+  mom <- c(points$reservoir_rfc[i],points$re_pfa_var5_rfc[i])
+  #check if reservoir rfc is 5 with 0 uncertainty
+  if ((points$reservoir_rfc[i] == 5 & points$re_pfa_var5_rfc[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,2] = 5
+    ub_mat[i,2] = 5
+    dataParams_Beta[i,c(3,4)] <- NA
+    dpBeta[i,2] <-  NA
+  }
+  else{
+    #Solve for the roots with a lower bound of 0
+    lb_mat[i,2] = 0
+    ub_mat[i,2] = 5
+    dataParams_Beta[i,c(3,4)] <- multiroot(solveBeta,start=c(1,1), positive=TRUE)$root
+    dpBeta[i,2] <-  multiroot(solveBeta,start=c(1,1), positive=TRUE)$iter
+  }
+
+  mom <- c(points$seismic[i],points$se_pfa_var5[i])
+  #check if either seismic stress or earthquake is a 5 with no uncertainty
+  if ((points$seis_eq_pred[i] > 25000 & points$seis_eq_err[i] == 0) | (points$seis_stress_pred[i] > 25 & points$seis_stress_err[i] == 0)){
+    #Need to find the lower bound.
+    if ((points$seis_eq_pred[i] > 25000 & points$seis_eq_err[i] == 0) & (points$seis_stress_pred[i] > 25 & points$seis_stress_err[i] == 0)){
+      lb_mat[i,3] = 5
+      ub_mat[i,3] = 5
+      #These have no need to be fit because the lower bound is a 5. Set parameters to NA.
+      dataParams_Beta[i,5] <- NA
+      dataParams_Beta[i,6] <- NA
+    }
+    else{
+      lb = 2.5
+      lb_mat[i,3] = lb
+      ub_mat[i,3] = ub
+      dataParams_Beta[i,c(5,6)] <- multiroot(solveBeta, start=c(1,1), positive=TRUE)$root
+      dpBeta[i,3] <-  multiroot(solveBeta,start=c(100,100), positive=TRUE)$iter
+
+      if (dataParams_Beta[i,6] == 0){
+        #Did not converge. Try a fixed high alpha low beta
+        dataParams_Beta[i,c(5,6)] = c(100,0.001)
+      }
+
+      if (dataParams_Beta[i,5] == 0){
+        #Did not converge. Try a fixed low alpha high beta
+        dataParams_Beta[i,c(5,6)] = rev(c(100,0.001))
+      }
+
+      #Set the lower bound back to 0
+      lb=0
+    }
+  }
+  else{
+    #Solve using a lower bound of 0
+    lb_mat[i,3] = 0
+    ub_mat[i,3] = 5
+    dataParams_Beta[i,c(5,6)] <- multiroot(solveBeta,start=c(1,1), positive=TRUE)$root
+    dpBeta[i,3] <-  multiroot(solveBeta,start=c(1,1), positive=TRUE)$iter
+  }
+
+  mom <- c(points$utilization[i],points$util_pfa_var5[i])
+  #check if utilization is 5 with 0 uncertainty
+  if ((points$utilization[i] == 5 & points$util_pfa_var5[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,4] = 5
+    ub_mat[i,4] = 5
+    dataParams_Beta[i,c(3,4)] <- NA
+    dpBeta[i,2] <-  NA
+  }
+  else{
+    #Solve using a lower bound of 0
+    lb_mat[i,4] = 0
+    ub_mat[i,4] = 5
+    dataParams_Beta[i,c(7,8)] <- multiroot(solveBeta,start=c(1,1), positive=TRUE)$root
+    dpBeta[i,4] <-  multiroot(solveBeta,start=c(1,1), positive=TRUE)$iter
+  }
+}
+rm(mom)
+
+# setting NAs for utilization 0 because this will have no uncertainty.
+dataParams_Beta[which(points$utilization == 0),7] <- NA
+dataParams_Beta[which(points$utilization == 0),8] <- NA
+
+roots1_Beta <- matrix(NA,10,3) #Percentiles to find roots for
+converge1_Beta <- matrix(NA,10,3) #Iterations to converge
+for(i in ind_use){
+  params <- dataParams_Beta[i,]
+  
+  #Determine how to search for the root:
+  #First check for utilization 0. All roots for this are 0.
+  if (is.na(dataParams_Beta[i,7]) == TRUE){
+    roots1_Beta[i,1] = roots1_Beta[i,2] = roots1_Beta[i,3] = 0.0
+  }else if (any(lb_mat[i,] != 0)){
+    #The lower bound is non-zero for some terms. Solve for the value using only the smallest values.
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.05
+    roots1_Beta[i,1] <- uniroot(solveQuant_Beta,interval=c(min(lb_mat[i,]),5))$root
+    converge1_Beta[i,1] <- uniroot(solveQuant_Beta,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots1_Beta[i,1] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots1_Beta[i,1] <- uniroot(solveQuant_Beta,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge1_Beta[i,1] <- uniroot(solveQuant_Beta,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+    
+    #Next Percentile
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.50
+    roots1_Beta[i,2] <- uniroot(solveQuant_Beta,interval=c(min(lb_mat[i,]),5))$root
+    converge1_Beta[i,2] <- uniroot(solveQuant_Beta,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots1_Beta[i,2] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots1_Beta[i,2] <- uniroot(solveQuant_Beta,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge1_Beta[i,2] <- uniroot(solveQuant_Beta,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+    
+    #Next Percentile
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.95
+    roots1_Beta[i,3] <- uniroot(solveQuant_Beta,interval=c(min(lb_mat[i,]),5))$root
+    converge1_Beta[i,3] <- uniroot(solveQuant_Beta,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots1_Beta[i,3] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots1_Beta[i,3] <- uniroot(solveQuant_Beta,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge1_Beta[i,3] <- uniroot(solveQuant_Beta,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+  }else{
+    #The lower bound is 0 for all risk factors.
+    ind_params = which(lb_mat[i,] == 0)
+    
+    ps <- 0.05
+    roots1_Beta[i,1] <- uniroot(solveQuant_Beta,interval=c(0,5))$root
+    converge1_Beta[i,1] <- uniroot(solveQuant_Beta,interval=c(0,5))$iter
+    
+    ps <- 0.5
+    roots1_Beta[i,2] <- uniroot(solveQuant_Beta,interval=c(0,5))$root
+    converge1_Beta[i,2] <- uniroot(solveQuant_Beta,interval=c(0,5))$iter
+    
+    ps <- 0.95
+    roots1_Beta[i,3] <- uniroot(solveQuant_Beta,interval=c(0,5))$root
+    converge1_Beta[i,3] <- uniroot(solveQuant_Beta,interval=c(0,5))$iter
+  }
+}
+rm(params, ps)
+
 
 # loop for Monte Carlo
 for(i in 1:length(ind_use)){
@@ -5870,6 +6053,82 @@ for(i in 1:length(ind_use)){
   )
   lines(seq(0,5,0.01)
         ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],8],scale=dataParams[ind_use[i],7])
+        ,col='royalblue'
+        ,lwd=2
+  )
+  points(points$utilization[ind_use[i]],0
+         ,pch=19
+  )
+  
+  par(xpd=T)
+  dev.off()
+  
+  setwd(wd_image)
+  par(xpd=T)
+  png(paste('scdist_Beta',i,'.png',sep='')
+      ,height=6
+      ,width=6
+      ,units='in'
+      ,res=300
+  )
+  
+  par(mfrow=c(2,2)
+      ,oma=c(0.5,0.5,0.5,0.5)+0.1
+      ,mar=c(5,5,3,0)+0.1)
+  
+  hist(mat_mc[,1]
+       ,freq=F
+       ,xlim=c(0,5)
+       ,main="Reservoir"
+       ,xlab="SFF"
+  )
+  lines(seq(0,5,0.01)
+        ,dBeta_ab(seq(0,5,0.01),dataParams_Beta[ind_use[i],3],dataParams_Beta[ind_use[i],4], 0, 5)
+        ,col='royalblue'
+        ,lwd=2
+  )
+  points(points$reservoir[ind_use[i]],0
+         ,pch=19
+  )
+  
+  hist(mat_mc[,2]
+       ,freq=F
+       ,xlim=c(0,5)
+       ,main="Thermal"
+       ,xlab="SFF"
+  )
+  lines(seq(0,5,0.01)
+        ,dBeta_ab(seq(0,5,0.01),dataParams_Beta[ind_use[i],1],dataParams_Beta[ind_use[i],2], 0, 5)
+        ,col='royalblue'
+        ,lwd=2
+  )
+  points(points$thermal[ind_use[i]],0
+         ,pch=19
+  )
+  
+  hist(0.5*(mat_mc[,3]+mat_mc[,4])
+       ,freq=F
+       ,xlim=c(0,5)
+       ,main="Seismic"
+       ,xlab="SFF"
+  )
+  lines(seq(lb_mat[ind_use[i],3], ub_mat[ind_use[i],3],0.01)
+        ,dBeta_ab(seq(lb_mat[ind_use[i],3], ub_mat[ind_use[i],3],0.01), dataParams_Beta[ind_use[i],5], dataParams_Beta[ind_use[i],6], lb_mat[ind_use[i],3], ub_mat[ind_use[i],3])
+        ,col='royalblue'
+        ,lwd=2
+  )
+  points(points$seismic[ind_use[i]],0
+         ,pch=19
+  )
+  
+  hist(mat_mc[,5]
+       ,freq=F
+       ,xlim=c(0,5)
+       ,main="Utilization"
+       ,xlab="SFF"
+  )
+  lines(seq(0,5,0.01)
+        ,dBeta_ab(seq(0,5,0.01),dataParams_Beta[ind_use[i],7],dataParams_Beta[ind_use[i],8], 0, 5)
         ,col='royalblue'
         ,lwd=2
   )
@@ -25752,7 +26011,7 @@ rm(IndNA)
 
 setwd(wd_image)
 par(mar=c(1,1,1,1)*0.1)
-png('three_panel2_all_med.png'
+png('three_panel2_all_med_beta.png'
      ,height=6
      ,width=6
      ,units='in'
@@ -25764,6 +26023,7 @@ par(mfrow=c(1,5)
      ,mar=c(5,0,0,0)+0.1)
 dshift1 <- 0.4
 dshift2 <- 0.2
+dshift3 <- 0.2
  
 plot(NA,NA
       ,xlim=c(0,1)
@@ -25813,6 +26073,10 @@ for(i in 1:length(ind_use)){
      lines(roots1[ind_use[i],c(1,3)],c(i-1+dshift1+dshift2,i-1+dshift1+dshift2)
            ,lwd=2
            ,col='black')
+     #Beta
+     lines(roots1_Beta[ind_use[i],c(1,3)],c(i-1+dshift1+dshift2+dshift3,i-1+dshift1+dshift2+dshift3)
+           ,lwd=2
+           ,col='red')
      }
    
    points(min(res_mean,therm_mean,seis_mean,util_mean),i-1+dshift1+dshift2
@@ -25824,6 +26088,12 @@ for(i in 1:length(ind_use)){
    points(roots1[ind_use[i],2],i-1+dshift1+dshift2
           ,pch=3
           ,col='blue'
+          ,cex=1.5
+   )
+   
+   points(roots1_Beta[ind_use[i],2],i-1+dshift1+dshift2+dshift3
+          ,pch=3
+          ,col='red'
           ,cex=1.5
    )
    

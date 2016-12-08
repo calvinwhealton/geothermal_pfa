@@ -42,4 +42,54 @@ solveQuant <- function(x # value of the minimum
   #ps is defined outside of the function. This is the 100p percentile.
   f <- log(1-ps) + ssss
   return(f)
-} 
+}
+
+# function to solve the generalized Beta distribution parameters
+# assuming that the upper and lower bounds are known.
+solveBeta <- function(x # alpha and beta 
+){
+  #lb and ub define the lower and upper bounds of the generalized Beta distribution.
+  #Using the method of moments
+  #Mean
+  f1 <- ((ub - lb)*(x[1]/(x[1] + x[2])) + lb) - mom[1]
+  #Variance
+  f2 <- (x[1]*x[2]*(ub - lb)^2)/(((x[1] + x[2])^2)*(x[1] + x[2] + 1)) - mom[2]
+  
+  return(c(f1,f2))
+}
+
+solveBeta_beta <- function(x # alpha 
+){
+  #The lb and ub matrices define the lower and upper bounds of the generalized Beta distribution.
+  #Using the method of moments
+  #Mean
+  f1 <- (ub*alpha - lb*x[1])/(alpha + x[1]) - mom[1]
+  
+  return(c(f1))
+}
+
+solveBeta_alpha <- function(x # beta 
+){
+  #The lb and ub matrices define the lower and upper bounds of the generalized Beta distribution.
+  #Using the method of moments
+  #Mean
+  f1 <- (ub*x[1] - lb*beta)/(x[1] + beta) - mom[1]
+  
+  return(c(f1))
+}
+
+#Library for the 4 parameter beta CDF
+library(ExtDist)
+
+solveQuant_Beta <- function(x #value of the minimum
+){
+  #Multiplication of the CDFs for each variable 
+  mmmm <- 1
+  for(j in ind_params){
+    mmmm <- mmmm * ifelse(is.na(params[(j-1)*2+1]), 1, (1 - pBeta_ab(x, shape1 = params[(j-1)*2+1], shape2 = params[j*2], a = lb_mat[i,j], b = ub_mat[i,j])))
+  }
+  
+  #ps is defined outside of the function. This is the 100p percentile.
+  f <- (1-ps) - mmmm
+  return(f)
+}
