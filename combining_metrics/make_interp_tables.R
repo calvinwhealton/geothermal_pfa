@@ -6,6 +6,7 @@
 
 # Load library for writing out *.xlsx files.
 library(xlsx)
+library(circular) # von Mises distribution package
 
 # settting working directory
 setwd('C:\\Users\\Jared\\Documents\\Cornell\\Research\\Publications\\DOE Grant\\CombiningRiskFactorCode\\geothermal_pfa')
@@ -15,7 +16,7 @@ wd_error_interp <- paste(getwd(), '/Rasters/Rasters_in/error_interp_tabs', sep='
 
 ### for seismic worm angle to stress ----
 mean_seSt <- seq(0,180,by=2) # range of means.
-std_seSt <- seq(0,310,by=10) # range of standard deviations
+std_seSt <- seq(0,310,by=10) # range of standard deviations in degrees
 nMC_seSt <- 100000 # number of monte carlo replicates
 
 set.seed(10) # setting seed
@@ -23,6 +24,8 @@ set.seed(10) # setting seed
 # initializing matrix
 seSt_var3 <- matrix(0,length(mean_seSt),length(std_seSt))
 seSt_var5 <- matrix(0,length(mean_seSt),length(std_seSt))
+seSt_mean3 <- matrix(0,length(mean_seSt),length(std_seSt))
+seSt_mean5 <- matrix(0,length(mean_seSt),length(std_seSt))
 seSt_var3_ls <- matrix(0,length(mean_seSt),length(std_seSt))
 seSt_var5_ls <- matrix(0,length(mean_seSt),length(std_seSt))
 
@@ -103,6 +106,72 @@ for(i in 1:length(mean_seSt)){
 }
 rm(a1, a2, b, i, j, rand, pfm3, pfm5)
 
+#seismic stress using the von Mises distribution
+for(i in 1:length(mean_seSt)){
+  for(j in 1:length(std_seSt)){
+    
+    # creating random values
+    kappa = A1inv(exp(((std_seSt[j]*pi/180)^2)/-2))
+    if (kappa == Inf){
+      #This is a point distribution (no uncertainty). All values of rand should be the mean.
+      rand <- rep(circular(mean_seSt[i]/180*pi, units='radians', template = 'none', modulo = 'asis', zero = 0, rotation = 'counter'), nMC_seSt)
+    }else{
+      rand <- rvonmises(nMC_seSt, mu = circular(mean_seSt[i]/180*pi, units='radians', template = 'none', modulo = 'asis', zero = 0, rotation = 'counter'), kappa = kappa)
+    }
+    # Find the randomly generated values that are greater than pi and subtract pi to get on [0,pi].
+    rand[rand > pi] = rand[rand > pi] - pi
+    
+    # Now convert all values to [0,180]
+    rand = rand*180/pi
+    
+    # Now take all angles and convert them to a risk angle
+    a1 = abs(rand - critical_ang1)
+    a2 = abs(rand - critical_ang2)
+    # Bind them
+    b = rbind(a1, a2)
+    # Assign the minimum value (most risky) to those points
+    rand = apply(b, 2, min)
+    
+    
+    # calculating play fairway 3
+    pfm3 <- rep(0,nMC_seSt)
+    pfm3[rand < seis_stress_thresh3[1]] <- 3
+    pfm3[intersect(which(rand >= seis_stress_thresh3[1]),which(rand < seis_stress_thresh3[2]))] <- 3- (rand[intersect(which(rand >= seis_stress_thresh3[1]),which(rand < seis_stress_thresh3[2]))] - seis_stress_thresh3[1])/(seis_stress_thresh3[2]-seis_stress_thresh3[1])
+    pfm3[intersect(which(rand >= seis_stress_thresh3[2]),which(rand < seis_stress_thresh3[3]))] <- 2- (rand[intersect(which(rand >= seis_stress_thresh3[2]),which(rand < seis_stress_thresh3[3]))] - seis_stress_thresh3[2])/(seis_stress_thresh3[3]-seis_stress_thresh3[2])
+    pfm3[intersect(which(rand >= seis_stress_thresh3[3]),which(rand < seis_stress_thresh3[4]))] <- 1- (rand[intersect(which(rand >= seis_stress_thresh3[3]),which(rand < seis_stress_thresh3[4]))] - seis_stress_thresh3[3])/(seis_stress_thresh3[4]-seis_stress_thresh3[3])
+    
+    # calculating play fairway 5
+    pfm5 <- rep(0,nMC_seSt)
+    pfm5[rand < seis_stress_thresh5[1]] <- 5
+    pfm5[intersect(which(rand >= seis_stress_thresh5[1]),which(rand < seis_stress_thresh5[2]))] <- 5- (rand[intersect(which(rand >= seis_stress_thresh5[1]),which(rand < seis_stress_thresh5[2]))] - seis_stress_thresh5[1])/(seis_stress_thresh5[2]-seis_stress_thresh5[1])
+    pfm5[intersect(which(rand >= seis_stress_thresh5[2]),which(rand < seis_stress_thresh5[3]))] <- 4- (rand[intersect(which(rand >= seis_stress_thresh5[2]),which(rand < seis_stress_thresh5[3]))] - seis_stress_thresh5[2])/(seis_stress_thresh5[3]-seis_stress_thresh5[2])
+    pfm5[intersect(which(rand >= seis_stress_thresh5[3]),which(rand < seis_stress_thresh5[4]))] <- 3- (rand[intersect(which(rand >= seis_stress_thresh5[3]),which(rand < seis_stress_thresh5[4]))] - seis_stress_thresh5[3])/(seis_stress_thresh5[4]-seis_stress_thresh5[3])
+    pfm5[intersect(which(rand >= seis_stress_thresh5[4]),which(rand < seis_stress_thresh5[5]))] <- 2- (rand[intersect(which(rand >= seis_stress_thresh5[4]),which(rand < seis_stress_thresh5[5]))] - seis_stress_thresh5[4])/(seis_stress_thresh5[5]-seis_stress_thresh5[4])
+    pfm5[intersect(which(rand >= seis_stress_thresh5[5]),which(rand < seis_stress_thresh5[6]))] <- 1- (rand[intersect(which(rand >= seis_stress_thresh5[5]),which(rand < seis_stress_thresh5[6]))] - seis_stress_thresh5[5])/(seis_stress_thresh5[6]-seis_stress_thresh5[5])
+    
+    pfm5 <- 5- pfm5
+    pfm3 <- 3 - pfm3
+    
+    # adding values to matrix
+    seSt_var3[i,j] <- var(pfm3)
+    seSt_var5[i,j] <- var(pfm5)
+    seSt_mean3[i,j] <- mean(pfm3)
+    seSt_mean5[i,j] <- mean(pfm5)
+    
+    
+    # Log Space
+    
+    # Set small values to a constant before computing the variance of the logs.
+    pfm5[which(pfm5 < 0.2)] <- 0.2
+    pfm3[which(pfm3 < 0.2)] <- 0.2
+    
+    seSt_var3_ls[i,j] <- var(log(pfm3))
+    seSt_var5_ls[i,j] <- var(log(pfm5))
+    
+  }
+}
+rm(a1, a2, b, i, j, rand, pfm3, pfm5)
+
 ### for seismic distance to earthquake ----
 mean_seEq <- seq(0,26000,by=200) # range of means
 std_seEq <- seq(0,2600,by=100) # range of standard deviations
@@ -113,6 +182,8 @@ set.seed(10) # setting seed
 # initializing matrix
 seEq_var3 <- matrix(0,length(mean_seEq),length(std_seEq))
 seEq_var5 <- matrix(0,length(mean_seEq),length(std_seEq))
+seEq_mean3 <- matrix(0,length(mean_seEq),length(std_seEq))
+seEq_mean5 <- matrix(0,length(mean_seEq),length(std_seEq))
 seEq_var3_ls <- matrix(0,length(mean_seEq),length(std_seEq))
 seEq_var5_ls <- matrix(0,length(mean_seEq),length(std_seEq))
 
@@ -128,7 +199,7 @@ for(i in 1:length(mean_seEq)){
   for(j in 1:length(std_seEq)){
     
     # creating random values
-    # normal approximaton is wrong, but negative value not not reasonable
+    # normal approximaton is wrong, but negative values are not reasonable
     rand <- abs(rnorm(nMC_seEq,mean_seEq[i],std_seEq[j]))
         
     # calculating play fairway 3
@@ -156,6 +227,8 @@ for(i in 1:length(mean_seEq)){
     # adding values to matrix
     seEq_var3[i,j] <- var(pfm3)
     seEq_var5[i,j] <- var(pfm5)
+    seEq_mean3[i,j] <- mean(pfm3)
+    seEq_mean5[i,j] <- mean(pfm5)
     
     # Log Space
     
@@ -182,16 +255,22 @@ set.seed(10) # setting seed
 # initializing matrix
 re_rfc_var3 <- matrix(0,length(mean_re_rfc),length(cv_re))
 re_rfc_var5 <- matrix(0,length(mean_re_rfc),length(cv_re))
+re_rfc_mean3 <- matrix(0,length(mean_re_rfc),length(cv_re))
+re_rfc_mean5 <- matrix(0,length(mean_re_rfc),length(cv_re))
 re_rfc_var3_ls <- matrix(0,length(mean_re_rfc),length(cv_re))
 re_rfc_var5_ls <- matrix(0,length(mean_re_rfc),length(cv_re))
 
 re_RPIw_var3 <- matrix(0,length(mean_re_RPIw),length(cv_re))
 re_RPIw_var5 <- matrix(0,length(mean_re_RPIw),length(cv_re))
+re_RPIw_mean3 <- matrix(0,length(mean_re_RPIw),length(cv_re))
+re_RPIw_mean5 <- matrix(0,length(mean_re_RPIw),length(cv_re))
 re_RPIw_var3_ls <- matrix(0,length(mean_re_RPIw),length(cv_re))
 re_RPIw_var5_ls <- matrix(0,length(mean_re_RPIw),length(cv_re))
 
 re_RPIg_var3 <- matrix(0,length(mean_re_RPIg),length(cv_re))
 re_RPIg_var5 <- matrix(0,length(mean_re_RPIg),length(cv_re))
+re_RPIg_mean3 <- matrix(0,length(mean_re_RPIg),length(cv_re))
+re_RPIg_mean5 <- matrix(0,length(mean_re_RPIg),length(cv_re))
 re_RPIg_var3_ls <- matrix(0,length(mean_re_RPIg),length(cv_re))
 re_RPIg_var5_ls <- matrix(0,length(mean_re_RPIg),length(cv_re))
 
@@ -246,6 +325,8 @@ for(i in 1:length(mean_re_rfc)){
     # adding values to matrix
     re_rfc_var3[i,j] <- var(pfm3)
     re_rfc_var5[i,j] <- var(pfm5)
+    re_rfc_mean3[i,j] <- mean(pfm3)
+    re_rfc_mean5[i,j] <- mean(pfm5)
     
     # Log Space
     
@@ -363,6 +444,8 @@ set.seed(10) # setting seed
 # initializing matrices
 thd80_var3 <- matrix(0,length(mean_thd80),length(std_thd80))
 thd80_var5 <- matrix(0,length(mean_thd80),length(std_thd80))
+thd80_mean3 <- matrix(0,length(mean_thd80),length(std_thd80))
+thd80_mean5 <- matrix(0,length(mean_thd80),length(std_thd80))
 thd80_var3_ls <- matrix(0,length(mean_thd80),length(std_thd80))
 thd80_var5_ls <- matrix(0,length(mean_thd80),length(std_thd80))
 
@@ -406,6 +489,8 @@ for(i in 1:length(mean_thd80)){
 
     thd80_var3[i,j] <- var(pfm3)
     thd80_var5[i,j] <- var(pfm5)
+    thd80_mean3[i,j] <- mean(pfm3)
+    thd80_mean5[i,j] <- mean(pfm5)
     
     # Log Space
     
@@ -469,6 +554,8 @@ set.seed(10) # setting seed
 # initializing matrices
 util_var3 <- matrix(0,length(mean_util),length(std_util_pct))
 util_var5 <- matrix(0,length(mean_util),length(std_util_pct))
+util_mean3 <- matrix(0,length(mean_util),length(std_util_pct))
+util_mean5 <- matrix(0,length(mean_util),length(std_util_pct))
 util_var3_ls <- matrix(0,length(mean_util),length(std_util_pct))
 util_var5_ls <- matrix(0,length(mean_util),length(std_util_pct))
 
@@ -504,6 +591,8 @@ for(i in 1:length(mean_util)){
     
     util_var3[i,j] <- var(pfm3)
     util_var5[i,j] <- var(pfm5)
+    util_mean3[i,j] <- mean(pfm3)
+    util_mean5[i,j] <- mean(pfm5)
     
     # Log Space
     
@@ -529,6 +618,15 @@ write.xlsx(util_var5
            ,col.names=F
            ,row.names=F)
 
+write.xlsx(util_mean3
+           ,'ut_slcoh_pfmean3.xlsx'
+           ,col.names=F
+           ,row.names=F)
+write.xlsx(util_mean5
+           ,'ut_slcoh_pfmean5.xlsx'
+           ,col.names=F
+           ,row.names=F)
+
 write.xlsx(util_var3_ls
            ,'ut_slcoh_pfvar3_ls.xlsx'
            ,col.names=F
@@ -544,6 +642,15 @@ write.xlsx(re_rfc_var3
            ,row.names=F)
 write.xlsx(re_rfc_var5
            ,'re_rfc_pfvar5.xlsx'
+           ,col.names=F
+           ,row.names=F)
+
+write.xlsx(re_rfc_mean3
+           ,'re_rfc_pfmean3.xlsx'
+           ,col.names=F
+           ,row.names=F)
+write.xlsx(re_rfc_mean5
+           ,'re_rfc_pfmean5.xlsx'
            ,col.names=F
            ,row.names=F)
 
@@ -610,6 +717,42 @@ write.xlsx(seSt_var5_ls
            ,col.names=F
            ,row.names=F)
 
+write.xlsx(seSt_var3
+           ,'seSt_pfvar3_VM.xlsx'
+           ,col.names=F
+           ,row.names=F)
+write.xlsx(seSt_var5
+           ,'seSt_pfvar5_VM.xlsx'
+           ,col.names=F
+           ,row.names=F)
+
+write.xlsx(seSt_var3_ls
+           ,'seSt_pfvar3_VM_ls.xlsx'
+           ,col.names=F
+           ,row.names=F)
+write.xlsx(seSt_var5_ls
+           ,'seSt_pfvar5_VM_ls.xlsx'
+           ,col.names=F
+           ,row.names=F)
+
+write.xlsx(seSt_mean3
+           ,'seSt_pfmean3_VM.xlsx'
+           ,col.names=F
+           ,row.names=F)
+write.xlsx(seSt_mean5
+           ,'seSt_pfmean5_VM.xlsx'
+           ,col.names=F
+           ,row.names=F)
+
+write.xlsx(seEq_mean3
+           ,'seEq_pfmean3_VM.xlsx'
+           ,col.names=F
+           ,row.names=F)
+write.xlsx(seEq_mean5
+           ,'seEq_pfmean5_VM.xlsx'
+           ,col.names=F
+           ,row.names=F)
+
 write.xlsx(seEq_var3
            ,'seEq_pfvar3.xlsx'
            ,col.names=F
@@ -634,6 +777,15 @@ write.xlsx(thd80_var3
            ,row.names=F)
 write.xlsx(thd80_var5
            ,'th_pfvar5.xlsx'
+           ,col.names=F
+           ,row.names=F)
+
+write.xlsx(thd80_mean3
+           ,'th_pfmean3.xlsx'
+           ,col.names=F
+           ,row.names=F)
+write.xlsx(thd80_mean5
+           ,'th_pfmean5.xlsx'
            ,col.names=F
            ,row.names=F)
 
@@ -663,3 +815,15 @@ write.xlsx(thd80_var5_old_ls
            ,'th_pfvar5_old_ls.xlsx'
            ,col.names=F
            ,row.names=F)
+
+
+
+plot(test)
+par(new=TRUE)
+plot(circular(65.2/180*pi), col='red')
+par(new=TRUE)
+plot(circular(114.8/180*pi), col='red')
+par(new=TRUE)
+plot(circular((114.8+180)/180*pi), col='red')
+par(new=TRUE)
+plot(circular((65.2+180)/180*pi), col='red')

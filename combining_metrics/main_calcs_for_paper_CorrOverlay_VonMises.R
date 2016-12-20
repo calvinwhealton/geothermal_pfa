@@ -1661,6 +1661,12 @@ se_stress_interp_tab3_ls <- as.matrix(read.xlsx(paste(wd_error_interp,'/seSt_pfv
 se_stress_interp_tab5 <- as.matrix(read.xlsx(paste(wd_error_interp,'/seSt_pfvar5.xlsx',sep=''),1,header=FALSE))
 se_stress_interp_tab5_ls <- as.matrix(read.xlsx(paste(wd_error_interp,'/seSt_pfvar5_ls.xlsx',sep=''),1,header=FALSE))
 
+#Von Mises Variances
+se_stress_interp_tab3 <- as.matrix(read.xlsx(paste(wd_error_interp,'/seSt_pfvar3_VM.xlsx',sep=''),1,header=FALSE))
+se_stress_interp_tab3_ls <- as.matrix(read.xlsx(paste(wd_error_interp,'/seSt_pfvar3_VM_ls.xlsx',sep=''),1,header=FALSE))
+se_stress_interp_tab5 <- as.matrix(read.xlsx(paste(wd_error_interp,'/seSt_pfvar5_VM.xlsx',sep=''),1,header=FALSE))
+se_stress_interp_tab5_ls <- as.matrix(read.xlsx(paste(wd_error_interp,'/seSt_pfvar5_VM_ls.xlsx',sep=''),1,header=FALSE))
+
 se_eq_interp_tab3 <-  as.matrix(read.xlsx(paste(wd_error_interp,'/seEq_pfvar3.xlsx',sep=''),1,header=FALSE))
 se_eq_interp_tab3_ls <-  as.matrix(read.xlsx(paste(wd_error_interp,'/seEq_pfvar3_ls.xlsx',sep=''),1,header=FALSE))
 se_eq_interp_tab5 <-  as.matrix(read.xlsx(paste(wd_error_interp,'/seEq_pfvar5.xlsx',sep=''),1,header=FALSE))
@@ -1758,9 +1764,9 @@ values(seSt_pfa_var5_ls) <- seStvecPFvar5_ls
 # saving rasters and making maps
 saveRast(rast=seSt_pfa_var3
          ,wd=wd_raster_out
-         ,rastnm='seSt_pfa_var3.tif')
+         ,rastnm='seSt_pfa_var3_VM.tif')
 makeMap(rast=seSt_pfa_var3
-        ,plotnm='seSt_pfa_var3.png'
+        ,plotnm='seSt_pfa_var3_VM.png'
         ,wd=wd_image
         ,numCol=3
         ,comTy=NA
@@ -1769,9 +1775,9 @@ makeMap(rast=seSt_pfa_var3
 
 saveRast(rast=seSt_pfa_var3_ls
          ,wd=wd_raster_out
-         ,rastnm='seSt_pfa_var3_ls.tif')
+         ,rastnm='seSt_pfa_var3_VM_ls.tif')
 makeMap(rast=seSt_pfa_var3_ls
-        ,plotnm='seSt_pfa_var3_ls.png'
+        ,plotnm='seSt_pfa_var3_VM_ls.png'
         ,wd=wd_image
         ,numCol=3
         ,comTy=NA
@@ -1780,9 +1786,9 @@ makeMap(rast=seSt_pfa_var3_ls
 
 saveRast(rast=seSt_pfa_var5
          ,wd=wd_raster_out
-         ,rastnm='seSt_pfa_var5.tif')
+         ,rastnm='seSt_pfa_var5_VM.tif')
 makeMap(rast=seSt_pfa_var5
-         ,plotnm='seSt_pfa_var5.png'
+         ,plotnm='seSt_pfa_var5_VM.png'
          ,wd=wd_image
          ,numCol=5
          ,comTy=NA
@@ -1791,9 +1797,9 @@ makeMap(rast=seSt_pfa_var5
 
 saveRast(rast=seSt_pfa_var5_ls
           ,wd=wd_raster_out
-          ,rastnm='seSt_pfa_var5_ls.tif')
+          ,rastnm='seSt_pfa_var5_VM_ls.tif')
 makeMap(rast=seSt_pfa_var5_ls
-         ,plotnm='seSt_pfa_var5_ls.png'
+         ,plotnm='seSt_pfa_var5_VM_ls.png'
          ,wd=wd_image
          ,numCol=5
          ,comTy=NA
@@ -1803,9 +1809,9 @@ makeMap(rast=seSt_pfa_var5_ls
 # saving rasters and making maps
 saveRast(rast=calc(seSt_pfa_var3,fun=sqrt)
          ,wd=wd_raster_out
-         ,rastnm='seSt_pfa_sd3.tif')
+         ,rastnm='seSt_pfa_sd3_VM.tif')
 makeMap(rast=calc(seSt_pfa_var3,fun=sqrt)
-        ,plotnm='seSt_pfa_sd3.png'
+        ,plotnm='seSt_pfa_sd3_VM.png'
         ,wd=wd_image
         ,numCol=3
         ,comTy=NA
@@ -1814,9 +1820,9 @@ makeMap(rast=calc(seSt_pfa_var3,fun=sqrt)
 
 saveRast(rast=calc(seSt_pfa_var3_ls,fun=sqrt)
          ,wd=wd_raster_out
-         ,rastnm='seSt_pfa_sd3_ls.tif')
+         ,rastnm='seSt_pfa_sd3_VM_ls.tif')
 makeMap(rast=calc(seSt_pfa_var3_ls,fun=sqrt)
-        ,plotnm='seSt_pfa_sd3_ls.png'
+        ,plotnm='seSt_pfa_sd3_VM_ls.png'
         ,wd=wd_image
         ,numCol=3
         ,comTy=NA
@@ -1825,9 +1831,9 @@ makeMap(rast=calc(seSt_pfa_var3_ls,fun=sqrt)
 
 saveRast(rast=calc(seSt_pfa_var5,fun=sqrt)
          ,wd=wd_raster_out
-         ,rastnm='seSt_pfa_sd5.tif')
+         ,rastnm='seSt_pfa_sd5_VM.tif')
 makeMap(rast=calc(seSt_pfa_var5,fun=sqrt)
-         ,plotnm='seSt_pfa_sd5.png'
+         ,plotnm='seSt_pfa_sd5_VM.png'
          ,wd=wd_image
          ,numCol=5
          ,comTy=NA
@@ -1836,9 +1842,9 @@ makeMap(rast=calc(seSt_pfa_var5,fun=sqrt)
 
 saveRast(rast=calc(seSt_pfa_var5_ls,fun=sqrt)
           ,wd=wd_raster_out
-          ,rastnm='seSt_pfa_sd5_ls.tif')
+          ,rastnm='seSt_pfa_sd5_VM_ls.tif')
 makeMap(rast=calc(seSt_pfa_var5_ls,fun=sqrt)
-         ,plotnm='seSt_pfa_sd5_ls.png'
+         ,plotnm='seSt_pfa_sd5_VM_ls.png'
          ,wd=wd_image
          ,numCol=5
          ,comTy=NA
@@ -2037,9 +2043,9 @@ makeMap(rast=se_pfa_var3_ls
 
 saveRast(rast=se_pfa_var5
          ,wd=wd_raster_out
-         ,rastnm='se_pfa_var5.tif')
+         ,rastnm='se_pfa_var5_VM.tif')
 makeMap(rast=se_pfa_var5
-         ,plotnm='se_pfa_var5.png'
+         ,plotnm='se_pfa_var5_VM.png'
          ,wd=wd_image
          ,numCol=5
          ,comTy=NA
@@ -2048,9 +2054,9 @@ makeMap(rast=se_pfa_var5
 
 saveRast(rast=se_pfa_var5_ls
          ,wd=wd_raster_out
-         ,rastnm='se_pfa_var5_ls.tif')
+         ,rastnm='se_pfa_var5_VM_ls.tif')
 makeMap(rast=se_pfa_var5_ls
-        ,plotnm='se_pfa_var5_ls.png'
+        ,plotnm='se_pfa_var5_VM_ls.png'
         ,wd=wd_image
         ,numCol=5
         ,comTy=NA
@@ -2083,9 +2089,9 @@ makeMap(rast=calc(se_pfa_var3_ls,fun=sqrt)
 
 saveRast(rast=calc(se_pfa_var5,fun=sqrt)
          ,wd=wd_raster_out
-         ,rastnm='se_pfa_sd5.tif')
+         ,rastnm='se_pfa_sd5_VM.tif')
 makeMap(rast=calc(se_pfa_var5,fun=sqrt)
-         ,plotnm='se_pfa_sd5.png'
+         ,plotnm='se_pfa_sd5_VM.png'
          ,wd=wd_image
          ,numCol=5
          ,comTy=NA
@@ -2094,9 +2100,9 @@ makeMap(rast=calc(se_pfa_var5,fun=sqrt)
 
 saveRast(rast=calc(se_pfa_var5_ls,fun=sqrt)
          ,wd=wd_raster_out
-         ,rastnm='se_pfa_sd5_ls.tif')
+         ,rastnm='se_pfa_sd5_VM_ls.tif')
 makeMap(rast=calc(se_pfa_var5_ls,fun=sqrt)
-        ,plotnm='se_pfa_sd5_ls.png'
+        ,plotnm='se_pfa_sd5_VM_ls.png'
         ,wd=wd_image
         ,numCol=5
         ,comTy=NA
@@ -3281,9 +3287,9 @@ co_pfa_var5_avg_egs <- calc(co_uncer_avg1,fun=function(x){return(x/9)}) #Divide 
 #All RFs
 saveRast(rast=co_pfa_var5_avg_rfc
          ,wd=wd_raster_out
-         ,rastnm='co_pfa_var5_avg_rfc.tif')
+         ,rastnm='co_pfa_var5_avg_rfc_VM.tif')
 makeMap(rast=co_pfa_var5_avg_rfc
-        ,plotnm='co_pfa_var5_avg_rfc.png'
+        ,plotnm='co_pfa_var5_avg_rfc_VM.png'
         ,wd=wd_image
         ,numCol=5
         ,comTy='min'
@@ -3292,9 +3298,9 @@ makeMap(rast=co_pfa_var5_avg_rfc
 
 saveRast(rast=calc(co_pfa_var5_avg_rfc,fun=sqrt)
          ,wd=wd_raster_out
-         ,rastnm='co_pfa_sd5_avg_rfc.tif')
+         ,rastnm='co_pfa_sd5_avg_rfc_VM.tif')
 makeMap(rast=calc(co_pfa_var5_avg_rfc,fun=sqrt)
-        ,plotnm='co_pfa_sd5_avg_rfc.png'
+        ,plotnm='co_pfa_sd5_avg_rfc_VM.png'
         ,wd=wd_image
         ,numCol=5
         ,comTy='min'
@@ -3547,9 +3553,9 @@ makeMap(rast=calc(co_pfa_var3_avg_RPIg_oldth,fun=sqrt)
 # Geology Only
 saveRast(rast=co_pfa_var5_avg_rfc_geo
          ,wd=wd_raster_out
-         ,rastnm='co_pfa_var5_avg_rfc_geo.tif')
+         ,rastnm='co_pfa_var5_avg_rfc_geo_VM.tif')
 makeMap(rast=co_pfa_var5_avg_rfc_geo
-        ,plotnm='co_pfa_var5_avg_rfc_geo.png'
+        ,plotnm='co_pfa_var5_avg_rfc_geo_VM.png'
         ,wd=wd_image
         ,numCol=5
         ,comTy='min'
@@ -3558,9 +3564,9 @@ makeMap(rast=co_pfa_var5_avg_rfc_geo
 
 saveRast(rast=calc(co_pfa_var5_avg_rfc_geo,fun=sqrt)
          ,wd=wd_raster_out
-         ,rastnm='co_pfa_sd5_avg_rfc_geo.tif')
+         ,rastnm='co_pfa_sd5_avg_rfc_geo_VM.tif')
 makeMap(rast=calc(co_pfa_var5_avg_rfc_geo,fun=sqrt)
-        ,plotnm='co_pfa_sd5_avg_rfc_geo.png'
+        ,plotnm='co_pfa_sd5_avg_rfc_geo_VM.png'
         ,wd=wd_image
         ,numCol=5
         ,comTy='min'
@@ -3813,9 +3819,9 @@ makeMap(rast=calc(co_pfa_var3_avg_RPIg_oldth_geo,fun=sqrt)
 # EGS
 saveRast(rast=co_pfa_var5_avg_egs
          ,wd=wd_raster_out
-         ,rastnm='co_pfa_var5_avg_egs.tif')
+         ,rastnm='co_pfa_var5_avg_egs_VM.tif')
 makeMap(rast=co_pfa_var5_avg_egs
-        ,plotnm='co_pfa_var5_avg_egs.png'
+        ,plotnm='co_pfa_var5_avg_egs_VM.png'
         ,wd=wd_image
         ,numCol=5
         ,comTy='min'
@@ -3835,9 +3841,9 @@ makeMap(rast=co_pfa_var3_avg_egs
 
 saveRast(rast=calc(co_pfa_var5_avg_egs,fun=sqrt)
          ,wd=wd_raster_out
-         ,rastnm='co_pfa_sd5_avg_egs.tif')
+         ,rastnm='co_pfa_sd5_avg_egs_VM.tif')
 makeMap(rast=calc(co_pfa_var5_avg_egs,fun=sqrt)
-        ,plotnm='co_pfa_sd5_avg_egs.png'
+        ,plotnm='co_pfa_sd5_avg_egs_VM.png'
         ,wd=wd_image
         ,numCol=5
         ,comTy='min'
@@ -4033,9 +4039,9 @@ makeMap(rast=co_pfa_var5_geomean_rfc
 
 saveRast(rast=calc(co_pfa_var5_geomean_rfc,fun=sqrt)
          ,wd=wd_raster_out
-         ,rastnm='co_pfa_sd5_geomean_rfc.tif')
+         ,rastnm='co_pfa_sd5_geomean_rfc_VM.tif')
 makeMap(rast=calc(co_pfa_var5_geomean_rfc,fun=sqrt)
-        ,plotnm='co_pfa_sd5_geomean_rfc.png'
+        ,plotnm='co_pfa_sd5_geomean_rfc_VM.png'
         ,wd=wd_image
         ,numCol=5
         ,comTy='min'
@@ -4299,9 +4305,9 @@ makeMap(rast=co_pfa_var5_geomean_rfc_geo
 
 saveRast(rast=calc(co_pfa_var5_geomean_rfc_geo,fun=sqrt)
          ,wd=wd_raster_out
-         ,rastnm='co_pfa_sd5_geomean_rfc_geo.tif')
+         ,rastnm='co_pfa_sd5_geomean_rfc_geo_VM.tif')
 makeMap(rast=calc(co_pfa_var5_geomean_rfc_geo,fun=sqrt)
-        ,plotnm='co_pfa_sd5_geomean_rfc_geo.png'
+        ,plotnm='co_pfa_sd5_geomean_rfc_geo_VM.png'
         ,wd=wd_image
         ,numCol=5
         ,comTy='min'
@@ -4576,9 +4582,9 @@ makeMap(rast=co_pfa_var3_geomean_egs
 
 saveRast(rast=calc(co_pfa_var5_geomean_egs,fun=sqrt)
          ,wd=wd_raster_out
-         ,rastnm='co_pfa_sd5_geomean_egs.tif')
+         ,rastnm='co_pfa_sd5_geomean_egs_VM.tif')
 makeMap(rast=calc(co_pfa_var5_geomean_egs,fun=sqrt)
-        ,plotnm='co_pfa_sd5_geomean_egs.png'
+        ,plotnm='co_pfa_sd5_geomean_egs_VM.png'
         ,wd=wd_image
         ,numCol=5
         ,comTy='min'
@@ -4814,10 +4820,10 @@ co_5_0_16_s_RPIg_oldth_geo[co_5_0_16_s_RPIg_oldth_geo < 0] <- NA
 co_5_0_125_p_RPIg_oldth_geo[co_5_0_125_p_RPIg_oldth_geo < 0] <- NA
 co_5_0_5_m_RPIg_oldth_geo[co_5_0_5_m_RPIg_oldth_geo < 0] <- NA
 
-co_pfa_sd5_avg_rfc = raster(paste(wd_raster_out,'/co_pfa_sd5_avg_rfc.tif',sep=''))
-co_pfa_sd5_geomean_rfc = raster(paste(wd_raster_out,'/co_pfa_sd5_geomean_rfc.tif',sep=''))
-co_pfa_sd5_avg_rfc_geo = raster(paste(wd_raster_out,'/co_pfa_sd5_avg_rfc_geo.tif',sep=''))
-co_pfa_sd5_geomean_rfc_geo = raster(paste(wd_raster_out,'/co_pfa_sd5_geomean_rfc_geo.tif',sep=''))
+co_pfa_sd5_avg_rfc = raster(paste(wd_raster_out,'/co_pfa_sd5_avg_rfc_VM.tif',sep=''))
+co_pfa_sd5_geomean_rfc = raster(paste(wd_raster_out,'/co_pfa_sd5_geomean_rfc_VM.tif',sep=''))
+co_pfa_sd5_avg_rfc_geo = raster(paste(wd_raster_out,'/co_pfa_sd5_avg_rfc_geo_VM.tif',sep=''))
+co_pfa_sd5_geomean_rfc_geo = raster(paste(wd_raster_out,'/co_pfa_sd5_geomean_rfc_geo_VM.tif',sep=''))
 
 co_pfa_sd5_avg_rfc[co_pfa_sd5_avg_rfc < 0] <- NA
 co_pfa_sd5_geomean_rfc[co_pfa_sd5_geomean_rfc < 0] <- NA
@@ -5377,21 +5383,21 @@ for(i in 1:nrow(points)){
   extracted2_df_5_rfc_a[nm] <- sqrt((extracted2_df_5_rfc_a$x - points$x[i])^2 + (extracted2_df_5_rfc_a$y - points$y[i])^2)
   extracted2_df_5_rfc_g[nm] <- sqrt((extracted2_df_5_rfc_g$x - points$x[i])^2 + (extracted2_df_5_rfc_g$y - points$y[i])^2)
   extracted2_df_5_rfc_m[nm] <- sqrt((extracted2_df_5_rfc_m$x - points$x[i])^2 + (extracted2_df_5_rfc_m$y - points$y[i])^2)
-  extracted2_df_5_RPIw_a[nm] <- sqrt((extracted2_df_5_RPIw_a$x - points$x[i])^2 + (extracted2_df_5_RPIw_a$y - points$y[i])^2)
-  extracted2_df_5_RPIw_g[nm] <- sqrt((extracted2_df_5_RPIw_g$x - points$x[i])^2 + (extracted2_df_5_RPIw_g$y - points$y[i])^2)
-  extracted2_df_5_RPIw_m[nm] <- sqrt((extracted2_df_5_RPIw_m$x - points$x[i])^2 + (extracted2_df_5_RPIw_m$y - points$y[i])^2)
-  extracted2_df_5_RPIg_a[nm] <- sqrt((extracted2_df_5_RPIg_a$x - points$x[i])^2 + (extracted2_df_5_RPIg_a$y - points$y[i])^2)
-  extracted2_df_5_RPIg_g[nm] <- sqrt((extracted2_df_5_RPIg_g$x - points$x[i])^2 + (extracted2_df_5_RPIg_g$y - points$y[i])^2)
-  extracted2_df_5_RPIg_m[nm] <- sqrt((extracted2_df_5_RPIg_m$x - points$x[i])^2 + (extracted2_df_5_RPIg_m$y - points$y[i])^2)
-  extracted2_df_5_rfc_a_oldth[nm] <- sqrt((extracted2_df_5_rfc_a_oldth$x - points$x[i])^2 + (extracted2_df_5_rfc_a_oldth$y - points$y[i])^2)
-  extracted2_df_5_rfc_g_oldth[nm] <- sqrt((extracted2_df_5_rfc_g_oldth$x - points$x[i])^2 + (extracted2_df_5_rfc_g_oldth$y - points$y[i])^2)
-  extracted2_df_5_rfc_m_oldth[nm] <- sqrt((extracted2_df_5_rfc_m_oldth$x - points$x[i])^2 + (extracted2_df_5_rfc_m_oldth$y - points$y[i])^2)
-  extracted2_df_5_RPIw_a_oldth[nm] <- sqrt((extracted2_df_5_RPIw_a_oldth$x - points$x[i])^2 + (extracted2_df_5_RPIw_a_oldth$y - points$y[i])^2)
-  extracted2_df_5_RPIw_g_oldth[nm] <- sqrt((extracted2_df_5_RPIw_g_oldth$x - points$x[i])^2 + (extracted2_df_5_RPIw_g_oldth$y - points$y[i])^2)
-  extracted2_df_5_RPIw_m_oldth[nm] <- sqrt((extracted2_df_5_RPIw_m_oldth$x - points$x[i])^2 + (extracted2_df_5_RPIw_m_oldth$y - points$y[i])^2)
-  extracted2_df_5_RPIg_a_oldth[nm] <- sqrt((extracted2_df_5_RPIg_a_oldth$x - points$x[i])^2 + (extracted2_df_5_RPIg_a_oldth$y - points$y[i])^2)
-  extracted2_df_5_RPIg_g_oldth[nm] <- sqrt((extracted2_df_5_RPIg_g_oldth$x - points$x[i])^2 + (extracted2_df_5_RPIg_g_oldth$y - points$y[i])^2)
-  extracted2_df_5_RPIg_m_oldth[nm] <- sqrt((extracted2_df_5_RPIg_m_oldth$x - points$x[i])^2 + (extracted2_df_5_RPIg_m_oldth$y - points$y[i])^2)
+  # extracted2_df_5_RPIw_a[nm] <- sqrt((extracted2_df_5_RPIw_a$x - points$x[i])^2 + (extracted2_df_5_RPIw_a$y - points$y[i])^2)
+  # extracted2_df_5_RPIw_g[nm] <- sqrt((extracted2_df_5_RPIw_g$x - points$x[i])^2 + (extracted2_df_5_RPIw_g$y - points$y[i])^2)
+  # extracted2_df_5_RPIw_m[nm] <- sqrt((extracted2_df_5_RPIw_m$x - points$x[i])^2 + (extracted2_df_5_RPIw_m$y - points$y[i])^2)
+  # extracted2_df_5_RPIg_a[nm] <- sqrt((extracted2_df_5_RPIg_a$x - points$x[i])^2 + (extracted2_df_5_RPIg_a$y - points$y[i])^2)
+  # extracted2_df_5_RPIg_g[nm] <- sqrt((extracted2_df_5_RPIg_g$x - points$x[i])^2 + (extracted2_df_5_RPIg_g$y - points$y[i])^2)
+  # extracted2_df_5_RPIg_m[nm] <- sqrt((extracted2_df_5_RPIg_m$x - points$x[i])^2 + (extracted2_df_5_RPIg_m$y - points$y[i])^2)
+  # extracted2_df_5_rfc_a_oldth[nm] <- sqrt((extracted2_df_5_rfc_a_oldth$x - points$x[i])^2 + (extracted2_df_5_rfc_a_oldth$y - points$y[i])^2)
+  # extracted2_df_5_rfc_g_oldth[nm] <- sqrt((extracted2_df_5_rfc_g_oldth$x - points$x[i])^2 + (extracted2_df_5_rfc_g_oldth$y - points$y[i])^2)
+  # extracted2_df_5_rfc_m_oldth[nm] <- sqrt((extracted2_df_5_rfc_m_oldth$x - points$x[i])^2 + (extracted2_df_5_rfc_m_oldth$y - points$y[i])^2)
+  # extracted2_df_5_RPIw_a_oldth[nm] <- sqrt((extracted2_df_5_RPIw_a_oldth$x - points$x[i])^2 + (extracted2_df_5_RPIw_a_oldth$y - points$y[i])^2)
+  # extracted2_df_5_RPIw_g_oldth[nm] <- sqrt((extracted2_df_5_RPIw_g_oldth$x - points$x[i])^2 + (extracted2_df_5_RPIw_g_oldth$y - points$y[i])^2)
+  # extracted2_df_5_RPIw_m_oldth[nm] <- sqrt((extracted2_df_5_RPIw_m_oldth$x - points$x[i])^2 + (extracted2_df_5_RPIw_m_oldth$y - points$y[i])^2)
+  # extracted2_df_5_RPIg_a_oldth[nm] <- sqrt((extracted2_df_5_RPIg_a_oldth$x - points$x[i])^2 + (extracted2_df_5_RPIg_a_oldth$y - points$y[i])^2)
+  # extracted2_df_5_RPIg_g_oldth[nm] <- sqrt((extracted2_df_5_RPIg_g_oldth$x - points$x[i])^2 + (extracted2_df_5_RPIg_g_oldth$y - points$y[i])^2)
+  # extracted2_df_5_RPIg_m_oldth[nm] <- sqrt((extracted2_df_5_RPIg_m_oldth$x - points$x[i])^2 + (extracted2_df_5_RPIg_m_oldth$y - points$y[i])^2)
 }
 rm(nm)
 
@@ -5434,7 +5440,7 @@ right = 5.0
 right = Inf
 #Record the value of the lower bound in a matrix
 lb_mat = matrix(0, nrow=nrow(points), ncol=ncol(dataParams)/2)
-for(i in ind_use){
+for(i in ind_use[6]){
   
   mom <- c(points$thermal[i],points$th_pfa_var5[i])
   #check if thermal is 5 with 0 uncertainty
@@ -6072,6 +6078,393 @@ for(i in 1:length(ind_use)){
   setwd(wd_image)
   par(xpd=T)
   png(paste('scdist_trunc',i,'.png',sep='')
+      ,height=6
+      ,width=6
+      ,units='in'
+      ,res=300
+  )
+  
+  par(mfrow=c(2,2)
+      ,oma=c(0.5,0.5,0.5,0.5)+0.1
+      ,mar=c(5,5,3,0)+0.1)
+  
+  hist(mat_mc[,1]
+       ,freq=F
+       ,xlim=c(0,5)
+       ,main="Reservoir"
+       ,xlab="SFF"
+  )
+  if (right != Inf){
+    #Truncated Weibull pdf
+    lines(seq(0,5,0.01)
+          ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],4],scale=dataParams[ind_use[i],3])/pweibull(5,shape=dataParams[ind_use[i],4],scale=dataParams[ind_use[i],3])
+          ,col='royalblue'
+          ,lwd=2
+    )
+  }else{
+    lines(seq(0,5,0.01)
+          ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],4],scale=dataParams[ind_use[i],3])
+          ,col='royalblue'
+          ,lwd=2
+    )
+  }
+  points(points$reservoir[ind_use[i]],0
+         ,pch=19
+  )
+  
+  hist(mat_mc[,2]
+       ,freq=F
+       ,xlim=c(0,5)
+       ,main="Thermal"
+       ,xlab="SFF"
+  )
+  if (right != Inf){
+    #Truncated Weibull pdf
+    lines(seq(0,5,0.01)
+          ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],2],scale=dataParams[ind_use[i],1])/pweibull(5,shape=dataParams[ind_use[i],2],scale=dataParams[ind_use[i],1])
+          ,col='royalblue'
+          ,lwd=2
+    )
+  }else{
+    lines(seq(0,5,0.01)
+          ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],2],scale=dataParams[ind_use[i],1])
+          ,col='royalblue'
+          ,lwd=2
+    )
+  }
+  points(points$thermal[ind_use[i]],0
+         ,pch=19
+  )
+  
+  hist(0.5*(mat_mc[,3]+mat_mc[,4])
+       ,freq=F
+       ,xlim=c(0,5)
+       ,main="Seismic"
+       ,xlab="SFF"
+  )
+  if (right != Inf){
+    #Use truncated Weibull pdf
+    if (lb_mat[ind_use[i],3] != 0){
+      lines(seq(lb_mat[ind_use[i],3],right,0.01)
+            ,dweibull(seq(0,(right - lb_mat[ind_use[i],3]),0.01),shape=dataParams[ind_use[i],6],scale=dataParams[ind_use[i],5])/pweibull((right - lb_mat[ind_use[i],3]), shape=dataParams[ind_use[i],6],scale=dataParams[ind_use[i],5])
+            ,col='royalblue'
+            ,lwd=2
+      )
+    }
+    else{
+      lines(seq(0,5,0.01)
+            ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],6],scale=dataParams[ind_use[i],5])/pweibull(5,shape=dataParams[ind_use[i],6],scale=dataParams[ind_use[i],5])
+            ,col='royalblue'
+            ,lwd=2
+      )
+    }
+  }else{
+    if (lb_mat[ind_use[i],3] != 0){
+      lines(seq(lb_mat[ind_use[i],3],5+lb_mat[ind_use[i],3],0.01)
+            ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],6],scale=dataParams[ind_use[i],5])
+            ,col='royalblue'
+            ,lwd=2
+      )
+    }
+    else{
+      lines(seq(0,5,0.01)
+            ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],6],scale=dataParams[ind_use[i],5])
+            ,col='royalblue'
+            ,lwd=2
+      )
+    }
+  }
+  points(points$seismic[ind_use[i]],0
+         ,pch=19
+  )
+  
+  hist(mat_mc[,5]
+       ,freq=F
+       ,xlim=c(0,5)
+       ,main="Utilization"
+       ,xlab="SFF"
+  )
+  if (right != Inf){
+    #Truncated Weibull pdf
+    lines(seq(0,5,0.01)
+          ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],8],scale=dataParams[ind_use[i],7])/pweibull(5,shape=dataParams[ind_use[i],8],scale=dataParams[ind_use[i],7])
+          ,col='royalblue'
+          ,lwd=2
+    )
+  }else{
+    lines(seq(0,5,0.01)
+          ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],8],scale=dataParams[ind_use[i],7])
+          ,col='royalblue'
+          ,lwd=2
+    )
+  }
+  points(points$utilization[ind_use[i]],0
+         ,pch=19
+  )
+  
+  par(xpd=T)
+  dev.off()
+  
+  setwd(wd_image)
+  par(xpd=T)
+  png(paste('scdist_Beta',i,'.png',sep='')
+      ,height=6
+      ,width=6
+      ,units='in'
+      ,res=300
+  )
+  
+  par(mfrow=c(2,2)
+      ,oma=c(0.5,0.5,0.5,0.5)+0.1
+      ,mar=c(5,5,3,0)+0.1)
+  
+  hist(mat_mc[,1]
+       ,freq=F
+       ,xlim=c(0,5)
+       ,main="Reservoir"
+       ,xlab="SFF"
+  )
+  lines(seq(0,5,0.01)
+        ,dBeta_ab(seq(0,5,0.01),dataParams_Beta[ind_use[i],3],dataParams_Beta[ind_use[i],4], 0, 5)
+        ,col='royalblue'
+        ,lwd=2
+  )
+  points(points$reservoir[ind_use[i]],0
+         ,pch=19
+  )
+  
+  hist(mat_mc[,2]
+       ,freq=F
+       ,xlim=c(0,5)
+       ,main="Thermal"
+       ,xlab="SFF"
+  )
+  lines(seq(0,5,0.01)
+        ,dBeta_ab(seq(0,5,0.01),dataParams_Beta[ind_use[i],1],dataParams_Beta[ind_use[i],2], 0, 5)
+        ,col='royalblue'
+        ,lwd=2
+  )
+  points(points$thermal[ind_use[i]],0
+         ,pch=19
+  )
+  
+  hist(0.5*(mat_mc[,3]+mat_mc[,4])
+       ,freq=F
+       ,xlim=c(0,5)
+       ,main="Seismic"
+       ,xlab="SFF"
+  )
+  lines(seq(lb_mat[ind_use[i],3], ub_mat[ind_use[i],3],0.01)
+        ,dBeta_ab(seq(lb_mat[ind_use[i],3], ub_mat[ind_use[i],3],0.01), dataParams_Beta[ind_use[i],5], dataParams_Beta[ind_use[i],6], lb_mat[ind_use[i],3], ub_mat[ind_use[i],3])
+        ,col='royalblue'
+        ,lwd=2
+  )
+  points(points$seismic[ind_use[i]],0
+         ,pch=19
+  )
+  
+  hist(mat_mc[,5]
+       ,freq=F
+       ,xlim=c(0,5)
+       ,main="Utilization"
+       ,xlab="SFF"
+  )
+  lines(seq(0,5,0.01)
+        ,dBeta_ab(seq(0,5,0.01),dataParams_Beta[ind_use[i],7],dataParams_Beta[ind_use[i],8], 0, 5)
+        ,col='royalblue'
+        ,lwd=2
+  )
+  points(points$utilization[ind_use[i]],0
+         ,pch=19
+  )
+  
+  par(xpd=T)
+  dev.off()
+}
+rm(rand, pfm5, i)
+
+library(circular)
+# loop for Monte Carlo with Von Mises for Seismic Stress
+for(i in 1:length(ind_use)){
+  
+  # setting seed
+  set.seed(10)
+  
+  # initializing matrix
+  mat_mc <- matrix(0,rps,5) #5 is for the number of RFs, considering that seismic has 2 (stress and angle)
+  
+  # reservoir rfc MC
+  pfm5 <- rep(0,rps)
+  
+  res_mean <- log(points$res_pred_rfc_max2[ind_use[i]])
+  res_cv <- points$res_pred_rfc_max_err[ind_use[i]]
+  
+  sigma2 <- log(res_cv^2 + 1)
+  mu <- res_mean- sigma2/2
+  rand <- rnorm(rps,mu,sqrt(sigma2))
+  rm(mu)
+  
+  pfm5[rand < log(res_rfc_thresh5[1])] <-5
+  pfm5[rand > log(res_rfc_thresh5[6])] <- 0
+  pfm5[intersect(which(rand >= log(res_rfc_thresh5[1])),which(rand < log(res_rfc_thresh5[2])))] <- 5- (rand[intersect(which(rand >= log(res_rfc_thresh5[1])),which(rand < log(res_rfc_thresh5[2])))] - log(res_rfc_thresh5[1]))/(log(res_rfc_thresh5[2])-log(res_rfc_thresh5[1]))
+  pfm5[intersect(which(rand >= log(res_rfc_thresh5[2])),which(rand < log(res_rfc_thresh5[3])))] <- 4- (rand[intersect(which(rand >= log(res_rfc_thresh5[2])),which(rand < log(res_rfc_thresh5[3])))] - log(res_rfc_thresh5[2]))/(log(res_rfc_thresh5[3])-log(res_rfc_thresh5[2]))
+  pfm5[intersect(which(rand >= log(res_rfc_thresh5[3])),which(rand < log(res_rfc_thresh5[4])))] <- 3- (rand[intersect(which(rand >= log(res_rfc_thresh5[3])),which(rand < log(res_rfc_thresh5[4])))] - log(res_rfc_thresh5[3]))/(log(res_rfc_thresh5[4])-log(res_rfc_thresh5[3]))
+  pfm5[intersect(which(rand >= log(res_rfc_thresh5[4])),which(rand < log(res_rfc_thresh5[5])))] <- 2- (rand[intersect(which(rand >= log(res_rfc_thresh5[4])),which(rand < log(res_rfc_thresh5[5])))] - log(res_rfc_thresh5[4]))/(log(res_rfc_thresh5[5])-log(res_rfc_thresh5[4]))
+  pfm5[intersect(which(rand >= log(res_rfc_thresh5[5])),which(rand < log(res_rfc_thresh5[6])))] <- 1- (rand[intersect(which(rand >= log(res_rfc_thresh5[5])),which(rand < log(res_rfc_thresh5[6])))] - log(res_rfc_thresh5[5]))/(log(res_rfc_thresh5[6])-log(res_rfc_thresh5[5]))
+  
+  #Because the values are reversed, switch them.
+  pfm5 <- 5-pfm5
+  
+  mat_mc[,1] <- pfm5
+  
+  dist_vars[1,i] <- var(pfm5)
+  
+  # thermal new thresholds MC
+  pfm5 <- rep(0,rps)
+  
+  th_mean <- points$therm_pred[ind_use[i]]
+  th_se <- points$therm_err[ind_use[i]]
+  
+  rand <- rnorm(rps,th_mean,th_se)
+  
+  pfm5[rand < therm_thresh5[1]] <- 5
+  pfm5[rand > therm_thresh5[6]] <- 0
+  pfm5[intersect(which(rand >= therm_thresh5[1]),which(rand < therm_thresh5[2]))] <- 5 - (rand[intersect(which(rand >= therm_thresh5[1]),which(rand < therm_thresh5[2]))] - therm_thresh5[1])/(therm_thresh5[2]-therm_thresh5[1])
+  pfm5[intersect(which(rand >= therm_thresh5[2]),which(rand < therm_thresh5[3]))] <- 4- (rand[intersect(which(rand >= therm_thresh5[2]),which(rand < therm_thresh5[3]))] - therm_thresh5[2])/(therm_thresh5[3]-therm_thresh5[2])
+  pfm5[intersect(which(rand >= therm_thresh5[3]),which(rand < therm_thresh5[4]))] <- 3- (rand[intersect(which(rand >= therm_thresh5[3]),which(rand < therm_thresh5[4]))] - therm_thresh5[3])/(therm_thresh5[4]-therm_thresh5[3])
+  pfm5[intersect(which(rand >= therm_thresh5[4]),which(rand < therm_thresh5[5]))] <- 2- (rand[intersect(which(rand >= therm_thresh5[4]),which(rand < therm_thresh5[5]))] - therm_thresh5[4])/(therm_thresh5[5]-therm_thresh5[4])
+  pfm5[intersect(which(rand >= therm_thresh5[5]),which(rand < therm_thresh5[6]))] <- 1- (rand[intersect(which(rand >= therm_thresh5[5]),which(rand < therm_thresh5[6]))] - therm_thresh5[5])/(therm_thresh5[6]-therm_thresh5[5])
+  
+  mat_mc[,2] <- pfm5
+  
+  dist_vars[2,i] <- var(pfm5)
+  
+  # seismic earthquake MC
+  pfm5 <- rep(0,rps)
+  
+  se_eq_mean <- points$seis_eq_pred[ind_use[i]]
+  se_eq_se <- points$seis_eq_err[ind_use[i]]
+  
+  rand <- rnorm(rps,se_eq_mean,se_eq_se)
+  
+  pfm5[rand < seis_eq_thresh5[1]] <-5
+  pfm5[rand > seis_eq_thresh5[6]] <-0
+  pfm5[intersect(which(rand >= seis_eq_thresh5[1]),which(rand < seis_eq_thresh5[2]))] <- 5- (rand[intersect(which(rand >= seis_eq_thresh5[1]),which(rand < seis_eq_thresh5[2]))] - seis_eq_thresh5[1])/(seis_eq_thresh5[2]-seis_eq_thresh5[1])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[2]),which(rand < seis_eq_thresh5[3]))] <- 4- (rand[intersect(which(rand >= seis_eq_thresh5[2]),which(rand < seis_eq_thresh5[3]))] - seis_eq_thresh5[2])/(seis_eq_thresh5[3]-seis_eq_thresh5[2])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[3]),which(rand < seis_eq_thresh5[4]))] <- 3- (rand[intersect(which(rand >= seis_eq_thresh5[3]),which(rand < seis_eq_thresh5[4]))] - seis_eq_thresh5[3])/(seis_eq_thresh5[4]-seis_eq_thresh5[3])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[4]),which(rand < seis_eq_thresh5[5]))] <- 2- (rand[intersect(which(rand >= seis_eq_thresh5[4]),which(rand < seis_eq_thresh5[5]))] - seis_eq_thresh5[4])/(seis_eq_thresh5[5]-seis_eq_thresh5[4])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[5]),which(rand < seis_eq_thresh5[6]))] <- 1- (rand[intersect(which(rand >= seis_eq_thresh5[5]),which(rand < seis_eq_thresh5[6]))] - seis_eq_thresh5[5])/(seis_eq_thresh5[6]-seis_eq_thresh5[5])
+  
+  #Because the values are reversed, switch them back here.
+  pfm5 <- 5-pfm5
+  
+  mat_mc[,3] <- pfm5
+  dist_vars[3,i] <- var(pfm5)
+  
+  # seismic stress angle MC
+  pfm5 <- rep(0,rps)
+  
+  se_st_mean <- points$NormAngs[ind_use[i]]
+  se_st_se <- points$seis_stress_err[ind_use[i]]
+  
+  # creating random values
+  kappa = A1inv(exp(((se_st_se*pi/180)^2)/-2))
+  if (kappa == Inf){
+    #This is a point distribution (no uncertainty). All values of rand should be the mean.
+    rand <- rep(circular(se_st_mean/180*pi, units='radians', template = 'none', modulo = 'asis', zero = 0, rotation = 'counter'), rps)
+  }else{
+    rand <- rvonmises(rps, mu = circular(se_st_mean/180*pi, units='radians', template = 'none', modulo = 'asis', zero = 0, rotation = 'counter'), kappa = kappa)
+  }
+  
+  # Find the randomly generated values that are greater than pi and subtract pi to get on [0,pi].
+  rand[rand > pi] = rand[rand > pi] - pi
+  
+  # Now convert all values to [0,180]
+  rand = rand*180/pi
+  
+  # Now take all angles and convert them to a risk angle
+  a1 = abs(rand - critical_ang1)
+  a2 = abs(rand - critical_ang2)
+  # Bind them
+  b = rbind(a1, a2)
+  # Assign the minimum value (most risky) to those points
+  rand = apply(b, 2, min)
+  rm(b,a1,a2)
+  
+  pfm5[rand < seis_stress_thresh5[1]] <- 5
+  pfm5[intersect(which(rand >= seis_stress_thresh5[1]),which(rand < seis_stress_thresh5[2]))] <- 5- (rand[intersect(which(rand >= seis_stress_thresh5[1]),which(rand < seis_stress_thresh5[2]))] - seis_stress_thresh5[1])/(seis_stress_thresh5[2]-seis_stress_thresh5[1])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[2]),which(rand < seis_stress_thresh5[3]))] <- 4- (rand[intersect(which(rand >= seis_stress_thresh5[2]),which(rand < seis_stress_thresh5[3]))] - seis_stress_thresh5[2])/(seis_stress_thresh5[3]-seis_stress_thresh5[2])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[3]),which(rand < seis_stress_thresh5[4]))] <- 3- (rand[intersect(which(rand >= seis_stress_thresh5[3]),which(rand < seis_stress_thresh5[4]))] - seis_stress_thresh5[3])/(seis_stress_thresh5[4]-seis_stress_thresh5[3])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[4]),which(rand < seis_stress_thresh5[5]))] <- 2- (rand[intersect(which(rand >= seis_stress_thresh5[4]),which(rand < seis_stress_thresh5[5]))] - seis_stress_thresh5[4])/(seis_stress_thresh5[5]-seis_stress_thresh5[4])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[5]),which(rand < seis_stress_thresh5[6]))] <- 1- (rand[intersect(which(rand >= seis_stress_thresh5[5]),which(rand < seis_stress_thresh5[6]))] - seis_stress_thresh5[5])/(seis_stress_thresh5[6]-seis_stress_thresh5[5])
+  
+  #Because the values are reversed, switch them back
+  pfm5 <- 5-pfm5
+  
+  mat_mc[,4] <- pfm5
+  
+  #Is this missing????
+  #dist_vars[4,i] <- var(pfm5)
+  
+  #Utilization:
+  # generating random values
+  rand <- rnorm(rps,points$util_pred[ind_use[i]],points$util_pred[ind_use[i]]*5/100) #5/100 is the 5% uncertainty that is assumed for utilization.
+  
+  # play fairway 5
+  pfm5 <- rep(0,rps)
+  pfm5[rand < util_thresh5[1]] <- 5
+  pfm5[rand > util_thresh5[6]] <- 0
+  pfm5[intersect(which(rand >= util_thresh5[1]),which(rand < util_thresh5[2]))] <- 5 - (rand[intersect(which(rand >= util_thresh5[1]),which(rand < util_thresh5[2]))] - util_thresh5[1])/(util_thresh5[2]-util_thresh5[1])
+  pfm5[intersect(which(rand >= util_thresh5[2]),which(rand < util_thresh5[3]))] <- 4 - (rand[intersect(which(rand >= util_thresh5[2]),which(rand < util_thresh5[3]))] - util_thresh5[2])/(util_thresh5[3]-util_thresh5[2])
+  pfm5[intersect(which(rand >= util_thresh5[3]),which(rand < util_thresh5[4]))] <- 3 - (rand[intersect(which(rand >= util_thresh5[3]),which(rand < util_thresh5[4]))] - util_thresh5[3])/(util_thresh5[4]-util_thresh5[3])
+  pfm5[intersect(which(rand >= util_thresh5[4]),which(rand < util_thresh5[5]))] <- 2 - (rand[intersect(which(rand >= util_thresh5[4]),which(rand < util_thresh5[5]))] - util_thresh5[4])/(util_thresh5[5]-util_thresh5[4])
+  pfm5[intersect(which(rand >= util_thresh5[5]),which(rand < util_thresh5[6]))] <- 1 - (rand[intersect(which(rand >= util_thresh5[5]),which(rand < util_thresh5[6]))] - util_thresh5[5])/(util_thresh5[6]-util_thresh5[5])
+  
+  mat_mc[,5] <- pfm5
+  
+  #Is this missing????
+  #dist_vars[4,i] <- var(pfm5)
+  
+  # calcuating overall distribution
+  distsavg[,i] <- (mat_mc[,1] + mat_mc[,2] + 0.5*mat_mc[,3]+0.5*mat_mc[,4]+mat_mc[,5])/4
+  distsgeomean[,i] <- (mat_mc[,1]*mat_mc[,2]*(0.5*mat_mc[,3]+0.5*mat_mc[,4])*mat_mc[,5])^(1/4)
+  distsmin[,i] <- apply(cbind(mat_mc[,1],mat_mc[,2],0.5*mat_mc[,3]+0.5*mat_mc[,4],mat_mc[,5]),1,min)
+  
+  #Geologic
+  #distsavg_g[,i] <- (mat_mc[,1] + mat_mc[,2] + 0.5*mat_mc[,3]+0.5*mat_mc[,4])/3
+  #distsgeomean_g[,i] <- (mat_mc[,1]*mat_mc[,2]*(0.5*mat_mc[,3]+0.5*mat_mc[,4]))^(1/3)
+  #distsmin_g[,i] <- apply(cbind(mat_mc[,1],mat_mc[,2],0.5*mat_mc[,3]+0.5*mat_mc[,4]),1,min)
+  
+  #Fraction of time each RF is the minimum for each city
+  for(j in 1:rps){
+    if(distsmin[j,i] == mat_mc[j,1]){
+      minRe[i] <- minRe[i] + 1
+    }
+    if(distsmin[j,i] == mat_mc[j,2]){
+      minTh[i] <- minTh[i] + 1
+    }
+    if(distsmin[j,i] == 0.5*(mat_mc[j,3]+mat_mc[j,4])){
+      minSe[i] <- minSe[i] + 1
+    }
+    if(distsmin[j,i] == mat_mc[j,5]){
+      minUt[i] <- minUt[i] + 1
+    }
+  }
+  rm(j)
+  
+  reMean[i] <- mean(mat_mc[,1])
+  thMean[i] <-  mean(mat_mc[,2])
+  seMean[i] <-  mean(0.5*(mat_mc[,3]+mat_mc[,4]))
+  utMean[i] <-  mean(mat_mc[,5])
+  
+  reMed[i] <- median(mat_mc[,1])
+  thMed[i] <-  median(mat_mc[,2])
+  seMed[i] <-  median(0.5*(mat_mc[,3]+mat_mc[,4]))
+  utMed[i] <-  median(mat_mc[,5])
+  
+  setwd(wd_image)
+  par(xpd=T)
+  png(paste('scdist_VM',i,'.png',sep='')
       ,height=6
       ,width=6
       ,units='in'
