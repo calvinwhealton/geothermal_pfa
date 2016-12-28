@@ -31,11 +31,13 @@ library(RColorBrewer) # R color brewer palettes for parallel axis plot
 library(pracma)       # for interpolation in tables
 library(vioplot)      # for violin plots
 #Edit the vioplot function
-vioplot = edit(vioplot) #Change the col parameter to col[i], and add a cex=0.75 to the points for median
+#Change the col parameter to col[i], and add a cex=0.75 to the points for median
+vioplot = edit(vioplot)
 library(prettymapr)
 library(maps)
-library(rootSolve)
-library(Hmisc)
+library(rootSolve)    #For root solving of Weibull and other distributions
+library(Hmisc)        #For minor tick marks on plots
+library(circular)     #For the von Mises distribution
 
 ##### defining working directories #####
 # need to be changed based on machine
@@ -130,10 +132,10 @@ source('convertRasterPFAMetric.R')
 source('combineRFs.R')
 source('makeUtilBuf.R')
 source('makeHist.R')
-source('makemapr.R')
+source('makeMap.R')
 source('saveRast.R')
 source('plotWeightBuf.R')
-source('rw_functions_lb.R') #Weibull and beta dists. Note that the new functions have not been added to all calls yet.
+source('rw_functions_lb.R') #Weibull and beta dists. Note that these functions have not been added to all of the combined metrics.
 
 ##### THERMAL ######
 # importing rasters, depth to 80 DegC and standard error of prediction
@@ -213,7 +215,7 @@ makeMap (rast=th_5_0_5_NA_old
          ,comTy=NA
          ,numRF=1)
 
-# making thermal uncertainty maps
+# making thermal uncertainty maps ----
 th_interp_tab3 <- as.matrix(read.xlsx(paste(wd_error_interp,'/th_pfvar3.xlsx',sep=''),1,header=FALSE))
 th_interp_tab3_ls <- as.matrix(read.xlsx(paste(wd_error_interp,'/th_pfvar3_ls.xlsx',sep=''),1,header=FALSE))
 th_interp_tab5 <- as.matrix(read.xlsx(paste(wd_error_interp,'/th_pfvar5.xlsx',sep=''),1,header=FALSE))
@@ -776,7 +778,7 @@ makeMap(rast=re_5_0_5_NA_RPIg
         ,comTy=NA
         ,numRF=1)
 
-# making uncertainty map
+# making uncertainty map----
 # reading-in tables for interpolated values
 re_interp_tab3_rfc <- as.matrix(read.xlsx(paste(wd_error_interp,'/re_rfc_pfvar3.xlsx',sep=''),1,header=FALSE))
 re_interp_tab3_RPIw <- as.matrix(read.xlsx(paste(wd_error_interp,'/re_RPIw_pfvar3_NewThresh.xlsx',sep=''),1,header=FALSE))
@@ -793,7 +795,7 @@ re_interp_tab5_RPIw_ls <- as.matrix(read.xlsx(paste(wd_error_interp,'/re_RPIw_pf
 re_interp_tab5_RPIg_ls <- as.matrix(read.xlsx(paste(wd_error_interp,'/re_RPIg_pfvar5_ls_NewThresh.xlsx',sep=''),1,header=FALSE))
 
 # making the uncertainty maps
-# values are in base-e (ln) to match calculations in make_interp_tabs
+# values are in base-e (ln) to match calculations in make_interp_tables
 re_means_rfc <- log(values(res_pred_rfc_max2))
 re_uncer_rfc <- values(res_pred_rfc_max_err)
 re_means_RPIw <- log(values(res_pred_RPIw_max2))
@@ -1364,16 +1366,16 @@ makeMap(rast=ut5_5_0_5_NA
         ,comTy=NA
         ,numRF=1)
 
-# making uncertainty map
+# making uncertainty map----
 util_pred2 <- util_pred
-util_pred2[which(values(util_pred) %in% NA)] <- 1000
+util_pred2[which(values(util_pred) %in% NA)] <- 1100
 util_pred2 <- calc(util_pred2,fun=function(x){2000-x})
 utTemp <- focal(util_pred2
                 ,w=makeUtilBufWeight(5)
                 ,fun=max
-                ,na.rm=TRUE #There are no NAs because they were just set to 1000
+                ,na.rm=TRUE #Buffer has NAs and the pad values are NAs
                 ,pad=TRUE
-                ,padValue=-2000)
+                ,padValue=NA)
 
 util_means <- 2000 - values(utTemp) 
 util_uncer <- rep(5,length(util_means))
@@ -1419,11 +1421,11 @@ utilvecPFvar5_ls <- interp2(x=uncer_util
                         ,yp=util_means
                         ,method='linear')
 
-# setting values back to NAs. The -Inf result from the focal at NA locations.
-utilvecPFvar3[which(values(ut5_3_0_3_NA) %in% -Inf)] <- NA
-utilvecPFvar3_ls[which(values(ut5_3_0_3_NA) %in% -Inf)] <- NA
-utilvecPFvar5[which(values(ut5_5_0_5_NA) %in% -Inf)] <- NA
-utilvecPFvar5_ls[which(values(ut5_5_0_5_NA) %in% -Inf)] <- NA
+# setting values back to NAs. The 900 is set above for NA locations.
+utilvecPFvar3[which(values(utTemp) %in% 900)] <- NA
+utilvecPFvar3_ls[which(values(utTemp) %in% 900)] <- NA
+utilvecPFvar5[which(values(utTemp) %in% 900)] <- NA
+utilvecPFvar5_ls[which(values(utTemp) %in% 900)] <- NA
 
 # initializing raster for the stored values
 # updating values of the raster
@@ -1628,7 +1630,7 @@ makeMap(rast=seSt_5_0_5_NA
         ,numRF=1)
 
 
-# combining stress and earthquakes into play fairway seismic map
+# combining stress and earthquakes into play fairway seismic map----
 se_3_0_3_a  <- calc(stack(c(seEq_3_0_3_NA,seSt_3_0_3_NA)),fun=mean)
 se_5_0_5_a  <- calc(stack(c(seEq_5_0_5_NA,seSt_5_0_5_NA)),fun=mean)
 
@@ -1654,7 +1656,7 @@ makeMap(rast=se_5_0_5_a
         ,comTy=NA
         ,numRF=1)
 
-## calcualting uncertainty maps for the play fairway scheme
+## calcualting uncertainty maps for the play fairway scheme----
 # reading-in tables for interpolated values
 se_stress_interp_tab3 <- as.matrix(read.xlsx(paste(wd_error_interp,'/seSt_pfvar3.xlsx',sep=''),1,header=FALSE))
 se_stress_interp_tab3_ls <- as.matrix(read.xlsx(paste(wd_error_interp,'/seSt_pfvar3_ls.xlsx',sep=''),1,header=FALSE))
@@ -1734,9 +1736,9 @@ seStvecPFvar5_ls <- interp2(x=std_seSt
 
 # setting values back to NAs
 seStvecPFvar3[which(values(NormAngs) %in% NA)] <- NA
-seStvecPFvar3_ls[which(values(seis_stress_pred) %in% NA)] <- NA
+seStvecPFvar3_ls[which(values(NormAngs) %in% NA)] <- NA
 seStvecPFvar5[which(values(NormAngs) %in% NA)] <- NA
-seStvecPFvar5_ls[which(values(seis_stress_pred) %in% NA)] <- NA
+seStvecPFvar5_ls[which(values(NormAngs) %in% NA)] <- NA
 
 #Not needed for new method.
 #seStvecPFvar5[which(values(seis_stress_pred) %in% 70)] <- 0
@@ -2110,7 +2112,7 @@ rm(seEqvecPFvar5,seStvecPFvar5)
 rm(se_stress_sds,se_stress_means,se_eq_means,se_eq_sds)
 rm(mean_seEq,mean_seSt,std_seEq,std_seSt)
 
-#### combining maps, all variables ###
+##### combining maps, all variables #####
 # creating a stacked raster
 re_3_0_3_NA_rfc <- raster(paste(wd_raster_out,'re_3_0_3_NA_rfc.tif',sep='/'))
 re_3_0_3_NA_RPIw <- raster(paste(wd_raster_out,'re_3_0_3_NA_RPIw.tif',sep='/'))
@@ -3141,7 +3143,7 @@ makeMap(rast=co_5_0_5_m_egs
         ,numRF=3)
 
 
-### COMBINED UNCERTAINTY -----
+##### COMBINED UNCERTAINTY #####
 # for average
 uncer_temp <- stack(re_pfa_var3_rfc,th_pfa_var3,se_pfa_var3,util_pfa_var3)
 uncer_temp[uncer_temp < 0] <- NA
@@ -4596,7 +4598,7 @@ makeMap(rast=calc(co_pfa_var3_geomean_egs,fun=sqrt)
         ,numRF=3
         ,sdMap=TRUE)
 
-########################
+##### Extracting City Info #####
 # extracting values of layers for cities
 # reading-in the scaled rasters
 # note that scaled rasters are in the wd_raster_out
@@ -4715,19 +4717,20 @@ util_pred <- raster(paste(wd_raster_in,'/Utilization/slcoh_p4.tif',sep=''))
 
 # replacing no data (-9999) with NA
 util_pred[(util_pred %in% -9999)] <- NA
-util_pred[(util_pred %in% 0)] <- NA #None of them are 0
+#util_pred[(util_pred %in% 0)] <- NA #None of them are 0
 
-util_pred2 <- calc(util_pred,fun=function(x){return(1000-x)})
+util_pred2 <- util_pred
+util_pred2[which(values(util_pred) %in% NA)] <- 1100 #Use a number to increase speed of computation.
+util_pred2 <- calc(util_pred2,fun=function(x){2000-x})
+utTemp <- focal(util_pred2
+                ,w=makeUtilBufWeight(5)
+                ,fun=max
+                ,na.rm=TRUE #Buffer has NAs and the pad values are NAs
+                ,pad=TRUE
+                ,padValue=NA)
 
-util_pred3 <- focal(util_pred2
-                   ,w=makeUtilBufWeight(5)
-                   ,fun=max
-                   ,na.rm=T
-                   ,padValue=-2000
-                   )
-
-util_pred <- calc(util_pred3,fun=function(x){return(1000-x)})
-util_pred <- calc(util_pred,fun=function(x){return(ifelse(x==Inf,NA,x))})
+util_pred <- calc(utTemp,fun=function(x){return(2000-x)})
+util_pred <- calc(util_pred,fun=function(x){return(ifelse(x==1100,NA,x))})
 
 #Five Color Combinations:
 co_5_0_20_s_rfc <- raster(paste(wd_raster_out,'/co_5_0_5_a_rfc.tif',sep=''))
@@ -5395,6 +5398,7 @@ for(i in 1:nrow(points)){
 }
 rm(nm)
 
+#### RFC Average ####
 #Change for each different extracted2 variable.
 points[comb_names_5_rfc] <- NA 
 
@@ -6460,7 +6464,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RFC Average Old Thermal
+### RFC Average Old Thermal ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -7012,7 +7016,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RFC Geometric Mean
+#### RFC Geometric Mean ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -7582,7 +7586,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RFC Geometric Mean Old Thermal
+### RFC Geometric Mean Old Thermal ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -8152,7 +8156,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RFC Minimum
+#### RFC Minimum ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -8721,7 +8725,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RFC Minimum Old Thermal
+### RFC Minimum Old Thermal ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -9291,7 +9295,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RPIw Average
+#### RPIw Average ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -9843,7 +9847,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RPIw Average Old Thermal
+### RPIw Average Old Thermal ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -10395,7 +10399,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RPIw Geomean
+#### RPIw Geometric Mean ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -10965,7 +10969,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RPIw Geomean Old Thermal
+### RPIw Geomean Old Thermal ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -11535,7 +11539,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RPIw Minimum
+#### RPIw Minimum ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -12104,7 +12108,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RPIw Minimum Old Thermal
+### RPIw Minimum Old Thermal ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -12674,7 +12678,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RPIg Average
+#### RPIg Average ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -13226,7 +13230,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RPIg Average Old Thermal
+### RPIg Average Old Thermal ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -13778,7 +13782,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RPIg Geomean
+#### RPIg Geomean ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -14348,7 +14352,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RPIg Geomean Old Thermal
+### RPIg Geomean Old Thermal ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -14918,7 +14922,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RPIg Minimum
+#### RPIg Minimum ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -15487,7 +15491,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RPIg Minimum Old Thermal
+### RPIg Minimum Old Thermal ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -16057,10 +16061,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-
-
-
-# Geology Only
+#### Geology Only ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -16089,6 +16090,7 @@ for(i in 1:nrow(points)){
 }
 rm(nm)
 
+#### RFC Geologic Average ####
 #Change for each different extracted2 variable.
 points[comb_names_5_rfc] <- NA 
 
@@ -16664,7 +16666,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RPIw Average Old Thermal
+### RFC Geologic Average Old Thermal ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -17159,7 +17161,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RFC Geometric Mean
+#### RFC Geologic Geometric Mean ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -17654,7 +17656,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RFC Geometric Mean Old Thermal
+### RFC Geologic Geometric Mean Old Thermal ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -18152,7 +18154,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RFC Minimum
+#### RFC Geologic Minimum ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -18645,7 +18647,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RFC Minimum Old Thermal
+### RFC Geologic Minimum Old Thermal ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -19143,7 +19145,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RPIw Average
+#### RPIw Geologic Average ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -19639,7 +19641,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RPIw Average Old Thermal
+### RPIw Geologic Average Old Thermal ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -20139,7 +20141,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RPIw Geomean
+#### RPIw Geologic Geometric Mean ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -20633,7 +20635,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RPIw Geomean Old Thermal
+### RPIw Geologic Geometric Mean Old Thermal ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -21131,7 +21133,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RPIw Geologic Minimum
+#### RPIw Geologic Minimum ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -21624,7 +21626,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RPIw Minimum Old Thermal
+### RPIw Geologic Minimum Old Thermal ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -22122,7 +22124,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RPIg Average
+#### RPIg Geologic Average ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -22618,7 +22620,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RPIg Average Old Thermal
+### RPIg Geologic Average Old Thermal ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -23118,7 +23120,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RPIg Geomean
+#### RPIg Geolocic Geometric Mean ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -23612,7 +23614,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RPIg Geomean Old Thermal
+### RPIg Geologic Geometric Mean Old Thermal ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -24109,7 +24111,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RPIg Minimum
+#### RPIg Geologic Minimum ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -24602,7 +24604,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-# RPIg Minimum Old Thermal
+### RPIg Geologic Minimum Old Thermal ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -25100,9 +25102,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-
-
-#EGS
+#### EGS ####
 for(i in 1:nrow(points)){
   nm <- paste('dist',i,sep='')
   extracted2_df_5_egs_a[nm] <- sqrt((extracted2_df_5_egs_a$x - points$x[i])^2 + (extracted2_df_5_egs_a$y - points$y[i])^2)
@@ -26141,7 +26141,7 @@ dev.off()
 rm(IndNA)
 
 
-###################################
+##### Analytical vs Monte Carlo ####
 # making plot comparing analytical and monte carlo results
 # all variables
 
@@ -26619,7 +26619,7 @@ legend('center'
 par(xpd=F)
 dev.off()
 
-###################################
+##### Metric Comparison #####
 # making plot of different metrics for all favorability factors
 
 setwd(wd_image)
@@ -26775,7 +26775,7 @@ dev.off()
 
 
 
-###################################
+#### Geology Only ####
 # making plot of different metrics for geologic favorability factors
 
 setwd(wd_image)
@@ -26918,7 +26918,7 @@ dev.off()
 
 
 
-############################## Scatter Plots of Metrics
+##### Scatter Plots of Metrics #####
 # extracting values of layers for cities
 th_5_0_5_NA <- raster(paste(wd_raster_out,'/th_5_0_5_NA.tif',sep=''))
 th_5_0_5_NA[th_5_0_5_NA < 0] <- NA
@@ -27409,15 +27409,7 @@ axis(2
      ,labels=c(0,1,2,3,4,5))
 dev.off()
 
-
-# saving workspace
-setwd(wd_workspace)
-filename <- paste('geotherma_pfa_analysis_FinalRun_',Sys.Date(),'.RData',sep='')
-save.image(file=filename)
-
-
-
-####################################
+##### Monte Carlo Minimum Uncertainty Maps #####
 #Trying to make an uncertainty map for the minimum using Monte Carlo
 # number of MC replicates
 rps <- 10000
@@ -29126,7 +29118,7 @@ rm(Min_test, MinSd_test)
 
 
 
-################
+##### Histograms of Metrics #####
 #Making histograms for the metrics
 setwd(wd_image)
 makeHist(rast=therm_pred
@@ -29575,3 +29567,8 @@ makeHist(rast=co_3_0_9_s_egs
          ,yloc=-0.19
          ,yshift=0
          ,title='Average of Thermal, Seismic, and Utilization Risk Factors')
+##### Saving Workspace #####
+# saving workspace
+setwd(wd_workspace)
+filename <- paste('geotherma_pfa_analysis_FinalRun_',Sys.Date(),'.RData',sep='')
+save.image(file=filename)

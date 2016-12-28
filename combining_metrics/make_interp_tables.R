@@ -91,6 +91,8 @@ for(i in 1:length(mean_seSt)){
     # adding values to matrix
     seSt_var3[i,j] <- var(pfm3)
     seSt_var5[i,j] <- var(pfm5)
+    seSt_mean3[i,j] <- mean(pfm3)
+    seSt_mean5[i,j] <- mean(pfm5)
     
     
     # Log Space
@@ -374,6 +376,8 @@ for(i in 1:length(mean_re_RPIw)){
     # adding values to matrix
     re_RPIw_var3[i,j] <- var(pfm3)
     re_RPIw_var5[i,j] <- var(pfm5)
+    re_RPIw_mean3[i,j] <- mean(pfm3)
+    re_RPIw_mean5[i,j] <- mean(pfm5)
     
     # Log Space
     
@@ -421,6 +425,8 @@ for(i in 1:length(mean_re_RPIg)){
     # adding values to matrix
     re_RPIg_var3[i,j] <- var(pfm3)
     re_RPIg_var5[i,j] <- var(pfm5)
+    re_RPIg_mean3[i,j] <- mean(pfm3)
+    re_RPIg_mean5[i,j] <- mean(pfm5)
     
     # Log Space
     
@@ -663,6 +669,15 @@ write.xlsx(re_rfc_var5_ls
            ,col.names=F
            ,row.names=F)
 
+write.xlsx(re_RPIw_mean3
+           ,'re_RPIw_pfmean3_NewThresh.xlsx'
+           ,col.names=F
+           ,row.names=F)
+write.xlsx(re_RPIw_mean5
+           ,'re_RPIw_pfmean5_NewThresh.xlsx'
+           ,col.names=F
+           ,row.names=F)
+
 write.xlsx(re_RPIw_var3
            ,'re_RPIw_pfvar3_NewThresh.xlsx'
            ,col.names=F
@@ -678,6 +693,15 @@ write.xlsx(re_RPIw_var3_ls
            ,row.names=F)
 write.xlsx(re_RPIw_var5_ls
            ,'re_RPIw_pfvar5_ls_NewThresh.xlsx'
+           ,col.names=F
+           ,row.names=F)
+
+write.xlsx(re_RPIg_mean3
+           ,'re_RPIg_pfmean3_NewThresh.xlsx'
+           ,col.names=F
+           ,row.names=F)
+write.xlsx(re_RPIg_mean5
+           ,'re_RPIg_pfmean5_NewThresh.xlsx'
            ,col.names=F
            ,row.names=F)
 
@@ -744,12 +768,21 @@ write.xlsx(seSt_mean5
            ,col.names=F
            ,row.names=F)
 
+write.xlsx(seSt_mean3
+           ,'seSt_pfmean3.xlsx'
+           ,col.names=F
+           ,row.names=F)
+write.xlsx(seSt_mean5
+           ,'seSt_pfmean5.xlsx'
+           ,col.names=F
+           ,row.names=F)
+
 write.xlsx(seEq_mean3
-           ,'seEq_pfmean3_VM.xlsx'
+           ,'seEq_pfmean3.xlsx'
            ,col.names=F
            ,row.names=F)
 write.xlsx(seEq_mean5
-           ,'seEq_pfmean5_VM.xlsx'
+           ,'seEq_pfmean5.xlsx'
            ,col.names=F
            ,row.names=F)
 

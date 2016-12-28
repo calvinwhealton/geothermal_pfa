@@ -21,7 +21,7 @@ makeUtilBufWeight <- function(dist # distance used in pumping
         # when center distance of cells is greater than
         # the specified distance
         if(cell_dist > dist){
-          weightMat[i,j] <- 0
+          weightMat[i,j] <- NA
         }
         
       }
