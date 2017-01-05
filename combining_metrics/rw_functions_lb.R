@@ -119,3 +119,58 @@ solveQuant_Beta <- function(x #value of the minimum
   f <- (1-ps) - mmmm
   return(f)
 }
+
+#Library for the doubly truncated normal distribution
+library(msm)
+
+solveQuant_dtn <- function(x #value of the minimum
+){
+  #Multiplication of the CDFs for each variable 
+  mmmm <- 1
+  for(j in ind_params){
+    mmmm <- mmmm * ifelse(is.na(params[(j-1)*2+1]), 1, (1 - (ptnorm(x, params[(j-1)*2+1], sqrt(params[j*2]), lb_mat[i,j], ub_mat[i,j]))))
+  }
+  
+  #ps is defined outside of the function. This is the 100p percentile.
+  f <- (1-ps) - mmmm
+  return(f)
+}
+
+#Library for the folded normal distribution
+library(VGAM)
+
+solveQuant_ftn <- function(x #value of the minimum
+){
+  #Multiplication of the CDFs for each variable 
+  mmmm <- 1
+  for(j in ind_params){
+    if (lb_mat[i,j] != 0){
+      mmmm <- mmmm * ifelse(is.na(params[(j-1)*2+1]), 1, (1 - (pfoldnorm((x - lb_mat[i,j]), (params[(j-1)*2+1] - lb_mat[i,j]), sqrt(params[j*2])))/(pfoldnorm((ub_mat[i,j] - lb_mat[i,j]), (params[(j-1)*2+1] - lb_mat[i,j]), sqrt(params[j*2])) - pfoldnorm((lb_mat[i,j] - lb_mat[i,j]), (params[(j-1)*2+1] - lb_mat[i,j]), sqrt(params[j*2])))))
+    }else{
+      mmmm <- mmmm * ifelse(is.na(params[(j-1)*2+1]), 1, (1 - (pfoldnorm(x, params[(j-1)*2+1], sqrt(params[j*2])))/(pfoldnorm(ub_mat[i,j], params[(j-1)*2+1], sqrt(params[j*2])) - pfoldnorm(lb_mat[i,j], params[(j-1)*2+1], sqrt(params[j*2])))))
+    }
+  }
+  
+  #ps is defined outside of the function. This is the 100p percentile.
+  f <- (1-ps) - mmmm
+  return(f)
+}
+
+solveQuant_SpecialSeis <- function(x #value of the minimum
+){
+  #Multiplication of the CDFs for each variable 
+  mmmm <- 1
+  for(j in ind_params){
+    if (j == 3 & lb_mat[i,j] == 2.5){
+      #Seismic variable with a lower bound of 2.5 uses the doubly truncated normal.
+      mmmm <- mmmm * ifelse(is.na(params[(j-1)*2+1]), 1, (1 - (ptnorm(x, params[(j-1)*2+1], sqrt(params[j*2]), lb_mat[i,j], ub_mat[i,j]))))
+    }else{
+      #Multiplication of Weibulls
+      mmmm <- mmmm * ifelse(is.na(params[(j-1)*2+1]), 1, (1 - (pweibull(x, params[2*j], params[(j-1)*2+1]))))
+    }
+  }
+  
+  #ps is defined outside of the function. This is the 100p percentile.
+  f <- (1-ps) - mmmm
+  return(f)
+}

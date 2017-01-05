@@ -38,6 +38,8 @@ library(maps)
 library(rootSolve)    #For root solving of Weibull and other distributions
 library(Hmisc)        #For minor tick marks on plots
 library(circular)     #For the von Mises distribution
+library(ExtDist)      #For Generalized Beta distribution
+library(msm)          #For doubly truncated normal distribution
 
 ##### defining working directories #####
 # need to be changed based on machine
@@ -133,7 +135,7 @@ source('makeHist.R')
 source('makeMap.R')
 source('saveRast.R')
 source('plotWeightBuf.R')
-source('rw_functions_lb.R') #Weibull and beta dists. Note that the new functions have not been added to all calls yet.
+source('rw_functions_lb.R') #Weibull and beta dists. Note that the new functions have not been added to all variables yet.
 
 ##### THERMAL ######
 # importing rasters, depth to 80 DegC and standard error of prediction
@@ -1136,7 +1138,7 @@ values(se_pfa_var5) <- values(se_pfa_var5)*0.25
 se_pfa_var5_temp1 <- calc(se_pfa_var5s,fun=sum)
 se_pfa_var5_temp2 <- calc(stack(seSt_5_0_5_NA,seEq_5_0_5_NA),fun=sum)
 se_pfa_var5_temp3 <- calc(se_pfa_var5_temp2,fun=function(x){return(x^(-2))})
-se_pfa_var5_temp4 <- calc(se_pfa_var5_temp3,fun=function(x){return(ifelse(x > 0.2^2,0.2,x))})
+se_pfa_var5_temp4 <- calc(se_pfa_var5_temp3,fun=function(x){return(ifelse(x > 1/(0.4^2), 1/(0.4^2),x))})
 se_pfa_var5_ls <- calc(stack(se_pfa_var5_temp4,se_pfa_var5_temp1),fun=prod)
 
 # saving rasters and making maps
@@ -2171,6 +2173,7 @@ extracted2_df_5_egs_g <- extracted_df_5_egs[setdiff(seq(1,nrow(extracted_df_5_eg
 extracted2_df_5_egs_m <- extracted_df_5_egs[setdiff(seq(1,nrow(extracted_df_5_egs),1),which(extracted_df_5_egs$co_5_0_5_m_egs %in% NA)),]
 rm(extracted_df_5_egs)
 
+#### Setting up plotting parameters and points data----
 # Setting parameters for boxplots/violin plots for distriutions after MC of the parameters in extracted2
 # ignoring 3 because it corresponds to Ithaca, which did not have a reservoir within 10 km
 ind_use <- c(1,2,4,5,6,7,8,9,10)
@@ -2456,6 +2459,185 @@ for(i in ind_use){
     ps <- 0.95
     roots1[i,3] <- uniroot(solveQuant,interval=c(0,5))$root
     converge1[i,3] <- uniroot(solveQuant,interval=c(0,5))$iter
+  }
+}
+rm(params, ps)
+
+# Seismic Doubly Truncated Normal when lb = 2.5, all else Weibull - Used for paper
+dataParams <- matrix(NA,10,4*2) #4 is for the number of RFs
+dp2 <- matrix(NA,10,4) #Number of iterations
+#set the lower bound of the Weibull as 0
+lb = 0
+#Set the right truncation point to Inf
+right = Inf
+#Record the value of the lower bound in a matrix
+lb_mat = matrix(0, nrow=nrow(points), ncol=ncol(dataParams)/2)
+for(i in ind_use){
+  
+  mom <- c(points$thermal[i],points$th_pfa_var5[i])
+  #check if thermal is 5 with 0 uncertainty
+  if ((points$thermal[i] == 5 & points$th_pfa_var5[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,1] = 5
+    dataParams[i,c(1,2)] <- NA
+    dp2[i,1] <-  NA
+  }
+  else{
+    #Use a 2 parameter Weibull because the lower bound will be 0
+    lb_mat[i,1] = 0
+    dataParams[i,c(1,2)] <- multiroot(solveWeibull,start=c(1,1), positive=TRUE)$root
+    dp2[i,1] <-  multiroot(solveWeibull,start=c(1,1), positive=TRUE)$iter
+  }
+  
+  mom <- c(points$reservoir_rfc[i],points$re_pfa_var5_rfc[i])
+  #check if reservoir rfc is 5 with 0 uncertainty
+  if ((points$reservoir_rfc[i] == 5 & points$re_pfa_var5_rfc[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,2] = 5
+    dataParams[i,c(3,4)] <- NA
+    dp2[i,2] <-  NA
+  }
+  else{
+    #Use a 2 parameter Weibull because the lower bound will be 0
+    lb_mat[i,2] = 0
+    dataParams[i,c(3,4)] <- multiroot(solveWeibull,start=c(1,2), positive=TRUE)$root
+    dp2[i,2] <-  multiroot(solveWeibull,start=c(1,2), positive=TRUE)$iter
+  }
+  
+  mom <- c(points$seismic[i],points$se_pfa_var5[i])
+  #check if either seismic stress or earthquake is a 5 with no uncertainty
+  if ((points$seis_eq_pred[i] > 25000 & points$seis_eq_err[i] == 0) | (points$seis_stress_pred[i] > 25 & points$seis_stress_err[i] == 0)){
+    #Use a 3 parameter Weibull. Need to find the lower bound.
+    if ((points$seis_eq_pred[i] > 25000 & points$seis_eq_err[i] == 0) & (points$seis_stress_pred[i] > 25 & points$seis_stress_err[i] == 0)){
+      lb_mat[i,3] = 5
+      #These have no need to be fit because the lower bound is a 5. Set parameters to NA.
+      dataParams[i,5] <- NA
+      dataParams[i,6] <- NA
+    }
+    else{
+      if (right != Inf){
+        if (points$seismic[i] == 5){
+          #No matter what the variance is, this distribution by definition of being truncated at 5 cannot be fit.
+          lb_mat[i,3] = 2.5
+          dataParams[i,5] <- NA
+          dataParams[i,6] <- NA
+        }else{
+          #Use the doubly truncated normal
+          lb = 2.5
+          lb_mat[i,3] = lb
+          dataParams[i,c(5,6)] <- mom
+          dp2[i,3] <-  1
+          
+          lb=0
+        }
+      }else{
+        #Use the doubly truncated normal
+        lb = 2.5
+        lb_mat[i,3] = lb
+        dataParams[i,c(5,6)] <- mom
+        dp2[i,3] <-  1
+        
+        lb=0
+      }
+    }
+  }
+  else{
+    #Use a 2 parameter Weibull because the lower bound will be 0
+    lb_mat[i,3] = 0
+    dataParams[i,c(5,6)] <- multiroot(solveWeibull,start=c(1,2), positive=TRUE)$root
+    dp2[i,3] <-  multiroot(solveWeibull,start=c(1,2), positive=TRUE)$iter
+  }
+  
+  mom <- c(points$utilization[i],points$util_pfa_var5[i])
+  #check if utilization is 5 with 0 uncertainty
+  if ((points$utilization[i] == 5 & points$util_pfa_var5[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,4] = 5
+    dataParams[i,c(3,4)] <- NA
+    dp2[i,2] <-  NA
+  }
+  else{
+    #Use a 2 parameter Weibull because the lower bound will be 0
+    lb_mat[i,4] = 0
+    dataParams[i,c(7,8)] <- multiroot(solveWeibull,start=c(1,2), positive=TRUE)$root
+    dp2[i,4] <-  multiroot(solveWeibull,start=c(1,2), positive=TRUE)$iter
+  }
+}
+rm(mom)
+
+# setting NAs for utilization 0 because this will have no uncertainty.
+dataParams[which(points$utilization == 0),7] <- NA
+dataParams[which(points$utilization == 0),8] <- NA
+
+roots1 <- matrix(NA,10,3) #Percentiles to find roots
+converge1 <- matrix(NA,10,3) #Iterations to converge
+for(i in ind_use){
+  params <- dataParams[i,]
+  
+  #Determine how to search for the root:
+  #First check for utilization 0. All roots for this are 0.
+  if (is.na(dataParams[i,7]) == TRUE){
+    roots1[i,1] = roots1[i,2] = roots1[i,3] = 0.0
+  }else if (any(lb_mat[i,] != 0)){
+    #The lower bound is non-zero for some terms. Solve for the value using only the smallest values.
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.05
+    roots1[i,1] <- uniroot(solveQuant_SpecialSeis,interval=c(min(lb_mat[i,]),5))$root
+    converge1[i,1] <- uniroot(solveQuant_SpecialSeis,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots1[i,1] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots1[i,1] <- uniroot(solveQuant_SpecialSeis,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge1[i,1] <- uniroot(solveQuant_SpecialSeis,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+    
+    #Next Percentile
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.50
+    roots1[i,2] <- uniroot(solveQuant_SpecialSeis,interval=c(min(lb_mat[i,]),5))$root
+    converge1[i,2] <- uniroot(solveQuant_SpecialSeis,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots1[i,2] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots1[i,2] <- uniroot(solveQuant_SpecialSeis,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge1[i,2] <- uniroot(solveQuant_SpecialSeis,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+    
+    #Next Percentile
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.95
+    roots1[i,3] <- uniroot(solveQuant_SpecialSeis,interval=c(min(lb_mat[i,]),5))$root
+    converge1[i,3] <- uniroot(solveQuant_SpecialSeis,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots1[i,3] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots1[i,3] <- uniroot(solveQuant_SpecialSeis,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge1[i,3] <- uniroot(solveQuant_SpecialSeis,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+  }else{
+    #The lower bound is 0 for all risk factors.
+    ind_params = which(lb_mat[i,] == 0)
+    
+    ps <- 0.05
+    roots1[i,1] <- uniroot(solveQuant_SpecialSeis,interval=c(0,5))$root
+    converge1[i,1] <- uniroot(solveQuant_SpecialSeis,interval=c(0,5))$iter
+    
+    ps <- 0.5
+    roots1[i,2] <- uniroot(solveQuant_SpecialSeis,interval=c(0,5))$root
+    converge1[i,2] <- uniroot(solveQuant_SpecialSeis,interval=c(0,5))$iter
+    
+    ps <- 0.95
+    roots1[i,3] <- uniroot(solveQuant_SpecialSeis,interval=c(0,5))$root
+    converge1[i,3] <- uniroot(solveQuant_SpecialSeis,interval=c(0,5))$iter
   }
 }
 rm(params, ps)
@@ -2821,9 +3003,318 @@ for(i in ind_use){
 }
 rm(params, ps)
 
+#Doubly Truncated Normal Distribution
+# solving for the Beta distribution parameters
+dataParams_dtn <- matrix(NA,10,4*2) #4 is for the number of RFs. 2 is number of parameters. 10 is number of places
+#set the lower bound as 0 and the upper bound as 5
+lb = 0
+ub = 5
+#Record the value of the lower and upper bounds in a matrix
+lb_mat = matrix(0, nrow=nrow(points), ncol=ncol(dataParams)/2)
+ub_mat = matrix(0, nrow=nrow(points), ncol=ncol(dataParams)/2)
+for(i in ind_use){
+  
+  mom <- c(points$thermal[i],points$th_pfa_var5[i])
+  #check if thermal is 5 with 0 uncertainty
+  if ((points$thermal[i] == 5 & points$th_pfa_var5[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,1] = 5
+    ub_mat[i,1] = 5
+    #Set these parameters to NA because the roots are all 5
+    dataParams_dtn[i,c(1,2)] <- NA
+  }
+  else{
+    #Solve for the roots with a lower bound of 0
+    lb_mat[i,1] = 0
+    ub_mat[i,1] = 5
+    dataParams_dtn[i,c(1,2)] <- mom
+  }
+  
+  mom <- c(points$reservoir_rfc[i],points$re_pfa_var5_rfc[i])
+  #check if reservoir rfc is 5 with 0 uncertainty
+  if ((points$reservoir_rfc[i] == 5 & points$re_pfa_var5_rfc[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,2] = 5
+    ub_mat[i,2] = 5
+    dataParams_dtn[i,c(3,4)] <- NA
+  }
+  else{
+    #Solve for the roots with a lower bound of 0
+    lb_mat[i,2] = 0
+    ub_mat[i,2] = 5
+    dataParams_dtn[i,c(3,4)] <- mom
+  }
+  
+  mom <- c(points$seismic[i],points$se_pfa_var5[i])
+  #check if either seismic stress or earthquake is a 5 with no uncertainty
+  if ((points$seis_eq_pred[i] > 25000 & points$seis_eq_err[i] == 0) | (points$seis_stress_pred[i] > 25 & points$seis_stress_err[i] == 0)){
+    #Need to find the lower bound.
+    if ((points$seis_eq_pred[i] > 25000 & points$seis_eq_err[i] == 0) & (points$seis_stress_pred[i] > 25 & points$seis_stress_err[i] == 0)){
+      lb_mat[i,3] = 5
+      ub_mat[i,3] = 5
+      #These have no need to be fit because the lower bound is a 5. Set parameters to NA.
+      dataParams_dtn[i,5] <- NA
+      dataParams_dtn[i,6] <- NA
+    }
+    else{
+      lb = 2.5
+      lb_mat[i,3] = lb
+      ub_mat[i,3] = ub
+      dataParams_dtn[i,c(5,6)] <- mom
+      
+      #Set the lower bound back to 0
+      lb=0
+    }
+  }
+  else{
+    #Solve using a lower bound of 0
+    lb_mat[i,3] = 0
+    ub_mat[i,3] = 5
+    dataParams_dtn[i,c(5,6)] <- mom
+  }
+  
+  mom <- c(points$utilization[i],points$util_pfa_var5[i])
+  #check if utilization is 5 with 0 uncertainty
+  if ((points$utilization[i] == 5 & points$util_pfa_var5[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,4] = 5
+    ub_mat[i,4] = 5
+    dataParams_dtn[i,c(3,4)] <- NA
+  }
+  else{
+    #Solve using a lower bound of 0
+    lb_mat[i,4] = 0
+    ub_mat[i,4] = 5
+    dataParams_dtn[i,c(7,8)] <- mom
+  }
+}
+rm(mom)
+
+# setting NAs for utilization 0 because this will have no uncertainty.
+dataParams_dtn[which(points$utilization == 0),7] <- NA
+dataParams_dtn[which(points$utilization == 0),8] <- NA
+
+roots1_dtn <- matrix(NA,10,3) #Percentiles to find roots for
+for(i in ind_use){
+  params <- dataParams_dtn[i,]
+  
+  #Determine how to search for the root:
+  #First check for utilization 0. All roots for this are 0.
+  if (is.na(dataParams_dtn[i,7]) == TRUE){
+    roots1_dtn[i,1] = roots1_dtn[i,2] = roots1_dtn[i,3] = 0.0
+  }else if (any(lb_mat[i,] != 0)){
+    #The lower bound is non-zero for some terms. Solve for the value using only the smallest values.
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.05
+    roots1_dtn[i,1] <- uniroot(solveQuant_dtn,interval=c(min(lb_mat[i,]),5))$root
+    
+    if (roots1_dtn[i,1] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots1_dtn[i,1] <- uniroot(solveQuant_dtn,interval=c(min(lb_mat[i,]),5))$root
+    }
+    
+    #Next Percentile
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.50
+    roots1_dtn[i,2] <- uniroot(solveQuant_dtn,interval=c(min(lb_mat[i,]),5))$root
+    
+    if (roots1_dtn[i,2] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots1_dtn[i,2] <- uniroot(solveQuant_dtn,interval=c(min(lb_mat[i,]),5))$root
+    }
+    
+    #Next Percentile
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.95
+    roots1_dtn[i,3] <- uniroot(solveQuant_dtn,interval=c(min(lb_mat[i,]),5))$root
+    
+    if (roots1_dtn[i,3] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots1_dtn[i,3] <- uniroot(solveQuant_dtn,interval=c(min(lb_mat[i,]),5))$root
+    }
+  }else{
+    #The lower bound is 0 for all risk factors.
+    ind_params = which(lb_mat[i,] == 0)
+    
+    ps <- 0.05
+    roots1_dtn[i,1] <- uniroot(solveQuant_dtn,interval=c(min(lb_mat[i,]),5))$root
+    
+    ps <- 0.5
+    roots1_dtn[i,2] <- uniroot(solveQuant_dtn,interval=c(min(lb_mat[i,]),5))$root
+    
+    ps <- 0.95
+    roots1_dtn[i,3] <- uniroot(solveQuant_dtn,interval=c(min(lb_mat[i,]),5))$root
+  }
+}
+rm(params, ps)
+
+#Truncated Folded Normal Distribution
+# solving for the Beta distribution parameters
+dataParams_ftn <- matrix(NA,10,4*2) #4 is for the number of RFs. 2 is number of parameters. 10 is number of places
+#set the lower bound as 0 and the upper bound as 5
+lb = 0
+ub = 5
+#Record the value of the lower and upper bounds in a matrix
+lb_mat = matrix(0, nrow=nrow(points), ncol=ncol(dataParams)/2)
+ub_mat = matrix(0, nrow=nrow(points), ncol=ncol(dataParams)/2)
+for(i in ind_use){
+  
+  mom <- c(points$thermal[i],points$th_pfa_var5[i])
+  #check if thermal is 5 with 0 uncertainty
+  if ((points$thermal[i] == 5 & points$th_pfa_var5[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,1] = 5
+    ub_mat[i,1] = 5
+    #Set these parameters to NA because the roots are all 5
+    dataParams_ftn[i,c(1,2)] <- NA
+  }
+  else{
+    #Solve for the roots with a lower bound of 0
+    lb_mat[i,1] = 0
+    ub_mat[i,1] = 5
+    dataParams_ftn[i,c(1,2)] <- mom
+  }
+  
+  mom <- c(points$reservoir_rfc[i],points$re_pfa_var5_rfc[i])
+  #check if reservoir rfc is 5 with 0 uncertainty
+  if ((points$reservoir_rfc[i] == 5 & points$re_pfa_var5_rfc[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,2] = 5
+    ub_mat[i,2] = 5
+    dataParams_ftn[i,c(3,4)] <- NA
+  }
+  else{
+    #Solve for the roots with a lower bound of 0
+    lb_mat[i,2] = 0
+    ub_mat[i,2] = 5
+    dataParams_ftn[i,c(3,4)] <- mom
+  }
+  
+  mom <- c(points$seismic[i],points$se_pfa_var5[i])
+  #check if either seismic stress or earthquake is a 5 with no uncertainty
+  if ((points$seis_eq_pred[i] > 25000 & points$seis_eq_err[i] == 0) | (points$seis_stress_pred[i] > 25 & points$seis_stress_err[i] == 0)){
+    #Need to find the lower bound.
+    if ((points$seis_eq_pred[i] > 25000 & points$seis_eq_err[i] == 0) & (points$seis_stress_pred[i] > 25 & points$seis_stress_err[i] == 0)){
+      lb_mat[i,3] = 5
+      ub_mat[i,3] = 5
+      #These have no need to be fit because the lower bound is a 5. Set parameters to NA.
+      dataParams_ftn[i,5] <- NA
+      dataParams_ftn[i,6] <- NA
+    }
+    else{
+      lb = 2.5
+      lb_mat[i,3] = lb
+      ub_mat[i,3] = ub
+      dataParams_ftn[i,c(5,6)] <- mom
+      
+      #Set the lower bound back to 0
+      lb=0
+    }
+  }
+  else{
+    #Solve using a lower bound of 0
+    lb_mat[i,3] = 0
+    ub_mat[i,3] = 5
+    dataParams_ftn[i,c(5,6)] <- mom
+  }
+  
+  mom <- c(points$utilization[i],points$util_pfa_var5[i])
+  #check if utilization is 5 with 0 uncertainty
+  if ((points$utilization[i] == 5 & points$util_pfa_var5[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,4] = 5
+    ub_mat[i,4] = 5
+    dataParams_ftn[i,c(3,4)] <- NA
+  }
+  else{
+    #Solve using a lower bound of 0
+    lb_mat[i,4] = 0
+    ub_mat[i,4] = 5
+    dataParams_ftn[i,c(7,8)] <- mom
+  }
+}
+rm(mom)
+
+# setting NAs for utilization 0 because this will have no uncertainty.
+dataParams_ftn[which(points$utilization == 0),7] <- NA
+dataParams_ftn[which(points$utilization == 0),8] <- NA
+
+roots1_ftn <- matrix(NA,10,3) #Percentiles to find roots for
+for(i in ind_use){
+  params <- dataParams_ftn[i,]
+  
+  #Determine how to search for the root:
+  #First check for utilization 0. All roots for this are 0.
+  if (is.na(dataParams_ftn[i,7]) == TRUE){
+    roots1_ftn[i,1] = roots1_ftn[i,2] = roots1_ftn[i,3] = 0.0
+  }else if (any(lb_mat[i,] != 0)){
+    #The lower bound is non-zero for some terms. Solve for the value using only the smallest values.
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.05
+    roots1_ftn[i,1] <- uniroot(solveQuant_ftn,interval=c(min(lb_mat[i,]),5))$root
+    
+    if (roots1_ftn[i,1] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots1_ftn[i,1] <- uniroot(solveQuant_ftn,interval=c(min(lb_mat[i,]),5))$root
+    }
+    
+    #Next Percentile
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.50
+    roots1_ftn[i,2] <- uniroot(solveQuant_ftn,interval=c(min(lb_mat[i,]),5))$root
+    
+    if (roots1_ftn[i,2] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots1_ftn[i,2] <- uniroot(solveQuant_ftn,interval=c(min(lb_mat[i,]),5))$root
+    }
+    
+    #Next Percentile
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.95
+    roots1_ftn[i,3] <- uniroot(solveQuant_ftn,interval=c(min(lb_mat[i,]),5))$root
+    
+    if (roots1_ftn[i,3] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots1_ftn[i,3] <- uniroot(solveQuant_ftn,interval=c(min(lb_mat[i,]),5))$root
+    }
+  }else{
+    #The lower bound is 0 for all risk factors.
+    ind_params = which(lb_mat[i,] == 0)
+    
+    ps <- 0.05
+    roots1_ftn[i,1] <- uniroot(solveQuant_ftn,interval=c(min(lb_mat[i,]),5))$root
+    
+    ps <- 0.5
+    roots1_ftn[i,2] <- uniroot(solveQuant_ftn,interval=c(min(lb_mat[i,]),5))$root
+    
+    ps <- 0.95
+    roots1_ftn[i,3] <- uniroot(solveQuant_ftn,interval=c(min(lb_mat[i,]),5))$root
+  }
+}
+rm(params, ps)
+
 
 # loop for Monte Carlo
 right = Inf #Set to Inf for non-truncated Weibull plots
+seis = TRUE #Set to TRUE for doubly truncated normal condition
 for(i in 1:length(ind_use)){
   
   # setting seed
@@ -3002,6 +3493,8 @@ for(i in 1:length(ind_use)){
   par(xpd=T)
   if (right != Inf){
     name = 'scdist_trunc'
+  }else if (seis == TRUE){
+    name = 'scdist_s'
   }else{
     name = 'scdist'
   }
@@ -3087,19 +3580,36 @@ for(i in 1:length(ind_use)){
       )
     }
   }else{
-    if (lb_mat[ind_use[i],3] != 0){
-      lines(seq(lb_mat[ind_use[i],3],5+lb_mat[ind_use[i],3],0.01)
-            ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],6],scale=dataParams[ind_use[i],5])
-            ,col='royalblue'
-            ,lwd=2
-      )
-    }
-    else{
-      lines(seq(0,5,0.01)
-            ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],6],scale=dataParams[ind_use[i],5])
-            ,col='royalblue'
-            ,lwd=2
-      )
+    if (seis != TRUE){
+      if (lb_mat[ind_use[i],3] != 0){
+        lines(seq(lb_mat[ind_use[i],3],5+lb_mat[ind_use[i],3],0.01)
+              ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],6],scale=dataParams[ind_use[i],5])
+              ,col='royalblue'
+              ,lwd=2
+        )
+      }
+      else{
+        lines(seq(0,5,0.01)
+              ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],6],scale=dataParams[ind_use[i],5])
+              ,col='royalblue'
+              ,lwd=2
+        )
+      }
+    }else{
+      if (lb_mat[ind_use[i],3] != 0){
+        lines(seq(lb_mat[ind_use[i],3], ub_mat[ind_use[i],3],0.01)
+              ,dtnorm(seq(lb_mat[ind_use[i],3], ub_mat[ind_use[i],3],0.01), dataParams[ind_use[i],5], sqrt(dataParams[ind_use[i],6]), lb_mat[ind_use[i],3], ub_mat[ind_use[i],3])
+              ,col='royalblue'
+              ,lwd=2
+        )
+      }
+      else{
+        lines(seq(0,5,0.01)
+              ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],6],scale=dataParams[ind_use[i],5])
+              ,col='royalblue'
+              ,lwd=2
+        )
+      }
     }
   }
   points(points$seismic[ind_use[i]],0
@@ -3206,6 +3716,156 @@ for(i in 1:length(ind_use)){
          ,pch=19
   )
 
+  par(xpd=T)
+  dev.off()
+  
+  par(xpd=T)
+  png(paste('scdist_dtn',i,'.png',sep='')
+      ,height=6
+      ,width=6
+      ,units='in'
+      ,res=300
+  )
+  
+  par(mfrow=c(2,2)
+      ,oma=c(0.5,0.5,0.5,0.5)+0.1
+      ,mar=c(5,5,3,0)+0.1)
+  
+  hist(mat_mc[,1]
+       ,freq=F
+       ,xlim=c(0,5)
+       ,main="Reservoir"
+       ,xlab="SFF"
+  )
+  lines(seq(0,5,0.01)
+        ,dtnorm(seq(0,5,0.01),dataParams_dtn[ind_use[i],3],sqrt(dataParams_dtn[ind_use[i],4]), 0 , 5)
+        ,col='royalblue'
+        ,lwd=2
+  )
+  points(points$reservoir[ind_use[i]],0
+         ,pch=19
+  )
+  
+  hist(mat_mc[,2]
+       ,freq=F
+       ,xlim=c(0,5)
+       ,main="Thermal"
+       ,xlab="SFF"
+  )
+  lines(seq(0,5,0.01)
+        ,dtnorm(seq(0,5,0.01),dataParams_dtn[ind_use[i],1],sqrt(dataParams_dtn[ind_use[i],2]), 0 , 5)
+        ,col='royalblue'
+        ,lwd=2
+  )
+  points(points$thermal[ind_use[i]],0
+         ,pch=19
+  )
+  
+  hist(0.5*(mat_mc[,3]+mat_mc[,4])
+       ,freq=F
+       ,xlim=c(0,5)
+       ,main="Seismic"
+       ,xlab="SFF"
+  )
+  lines(seq(lb_mat[ind_use[i],3], ub_mat[ind_use[i],3],0.01)
+        ,dtnorm(seq(lb_mat[ind_use[i],3], ub_mat[ind_use[i],3],0.01), dataParams_dtn[ind_use[i],5], sqrt(dataParams_dtn[ind_use[i],6]), lb_mat[ind_use[i],3], ub_mat[ind_use[i],3])
+        ,col='royalblue'
+        ,lwd=2
+  )
+  points(points$seismic[ind_use[i]],0
+         ,pch=19
+  )
+  
+  hist(mat_mc[,5]
+       ,freq=F
+       ,xlim=c(0,5)
+       ,main="Utilization"
+       ,xlab="SFF"
+  )
+  lines(seq(0,5,0.01)
+        ,dtnorm(seq(0,5,0.01),dataParams_dtn[ind_use[i],7],sqrt(dataParams_dtn[ind_use[i],8]), 0, 5)
+        ,col='royalblue'
+        ,lwd=2
+  )
+  points(points$utilization[ind_use[i]],0
+         ,pch=19
+  )
+  
+  par(xpd=T)
+  dev.off()
+  
+  par(xpd=T)
+  png(paste('scdist_ftn',i,'.png',sep='')
+      ,height=6
+      ,width=6
+      ,units='in'
+      ,res=300
+  )
+  
+  par(mfrow=c(2,2)
+      ,oma=c(0.5,0.5,0.5,0.5)+0.1
+      ,mar=c(5,5,3,0)+0.1)
+  
+  hist(mat_mc[,1]
+       ,freq=F
+       ,xlim=c(0,5)
+       ,main="Reservoir"
+       ,xlab="SFF"
+  )
+  lines(seq(0,5,0.01)
+        ,dfoldnorm(seq(0,5,0.01), dataParams_ftn[ind_use[i],3], sqrt(dataParams_ftn[ind_use[i],4]))/(pfoldnorm(ub_mat[ind_use[i],2], dataParams_ftn[ind_use[i],3], sqrt(dataParams_ftn[ind_use[i],4])) - pfoldnorm(lb_mat[ind_use[i],2], dataParams_ftn[ind_use[i],3], sqrt(dataParams_ftn[ind_use[i],4])))
+        ,col='royalblue'
+        ,lwd=2
+  )
+  points(points$reservoir[ind_use[i]],0
+         ,pch=19
+  )
+  
+  hist(mat_mc[,2]
+       ,freq=F
+       ,xlim=c(0,5)
+       ,main="Thermal"
+       ,xlab="SFF"
+  )
+  lines(seq(0,5,0.01)
+        ,dfoldnorm(seq(0,5,0.01),dataParams_ftn[ind_use[i],1],sqrt(dataParams_ftn[ind_use[i],2]))/(pfoldnorm(ub_mat[ind_use[i],1], dataParams_ftn[ind_use[i],1], sqrt(dataParams_ftn[ind_use[i],2])) - pfoldnorm(lb_mat[ind_use[i],1], dataParams_ftn[ind_use[i],1], sqrt(dataParams_ftn[ind_use[i],2])))
+        ,col='royalblue'
+        ,lwd=2
+  )
+  points(points$thermal[ind_use[i]],0
+         ,pch=19
+  )
+  
+  hist(0.5*(mat_mc[,3]+mat_mc[,4])
+       ,freq=F
+       ,xlim=c(0,5)
+       ,main="Seismic"
+       ,xlab="SFF"
+  )
+  lines(seq(lb_mat[ind_use[i],3], ub_mat[ind_use[i],3],0.01)
+        ,dfoldnorm(seq(0, (ub_mat[ind_use[i],3] - lb_mat[ind_use[i],3]),0.01), (dataParams_ftn[ind_use[i],5] - lb_mat[ind_use[i],3]), sqrt(dataParams_ftn[ind_use[i],6]))/(pfoldnorm((ub_mat[ind_use[i],3] - lb_mat[ind_use[i],3]), (dataParams_ftn[ind_use[i],5] - lb_mat[ind_use[i],3]), sqrt(dataParams_ftn[ind_use[i],6])) - pfoldnorm(0, (dataParams_ftn[ind_use[i],5] - lb_mat[ind_use[i],3]), sqrt(dataParams_ftn[ind_use[i],6])))
+        ,col='royalblue'
+        ,lwd=2
+  )
+  points(points$seismic[ind_use[i]],0
+         ,pch=19
+  )
+  
+  hist(mat_mc[,5]
+       ,freq=F
+       ,xlim=c(0,5)
+       ,main="Utilization"
+       ,xlab="SFF"
+  )
+  lines(seq(0,5,0.01)
+        ,dfoldnorm(seq(0,5,0.01),dataParams_ftn[ind_use[i],7],sqrt(dataParams_ftn[ind_use[i],8]))/(pfoldnorm(ub_mat[ind_use[i],4], dataParams_ftn[ind_use[i],7], sqrt(dataParams_ftn[ind_use[i],8])) - pfoldnorm(lb_mat[ind_use[i],4], dataParams_ftn[ind_use[i],7], sqrt(dataParams_ftn[ind_use[i],8])))
+        ,col='royalblue'
+        ,lwd=2
+  )
+  points(points$utilization[ind_use[i]],0
+         ,pch=19
+  )
+  
   par(xpd=T)
   dev.off()
 }
@@ -3395,6 +4055,7 @@ rm(IndNA)
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
 points$y <- points$coords.x2
+points$names = names
 #Change for each different extracted2 variable.
 points[comb_names_5_rfc] <- NA 
 
@@ -3426,71 +4087,561 @@ rm(inds, ind_max, ind_max2, ind_max3, nm)
 
 # solving for the weibull distribution parameters
 dataParams <- matrix(NA,10,4*2) #4 is for the number of RFs
-dp2 <- matrix(NA,10,4)
+dp2 <- matrix(NA,10,4) #Number of iterations
+#set the lower bound of the Weibull as 0
+lb = 0
+#Set the right truncation point to Inf
+right = Inf
+#Record the value of the lower bound in a matrix
+lb_mat = matrix(0, nrow=nrow(points), ncol=ncol(dataParams)/2)
 for(i in ind_use){
   
   mom <- c(points$thermal[i],points$th_pfa_var5[i])
-  dataParams[i,c(1,2)] <- multiroot(solveWeibull,start=c(1,1))$root
-  dp2[i,1] <-  multiroot(solveWeibull,start=c(1,1))$iter
+  #check if thermal is 5 with 0 uncertainty
+  if ((points$thermal[i] == 5 & points$th_pfa_var5[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,1] = 5
+    dataParams[i,c(1,2)] <- NA
+    dp2[i,1] <-  NA
+  }
+  else{
+    #Use a 2 parameter Weibull because the lower bound will be 0
+    lb_mat[i,1] = 0
+    dataParams[i,c(1,2)] <- multiroot(solveWeibull,start=c(1,1), positive=TRUE)$root
+    dp2[i,1] <-  multiroot(solveWeibull,start=c(1,1), positive=TRUE)$iter
+  }
   
   mom <- c(points$reservoir_rfc[i],points$re_pfa_var5_rfc[i])
-  dataParams[i,c(3,4)] <- multiroot(solveWeibull,start=c(1,1))$root
-  dp2[i,2] <-  multiroot(solveWeibull,start=c(1,1))$iter
+  #check if reservoir rfc is 5 with 0 uncertainty
+  if ((points$reservoir_rfc[i] == 5 & points$re_pfa_var5_rfc[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,2] = 5
+    dataParams[i,c(3,4)] <- NA
+    dp2[i,2] <-  NA
+  }
+  else{
+    #Use a 2 parameter Weibull because the lower bound will be 0
+    lb_mat[i,2] = 0
+    dataParams[i,c(3,4)] <- multiroot(solveWeibull,start=c(1,2), positive=TRUE)$root
+    dp2[i,2] <-  multiroot(solveWeibull,start=c(1,2), positive=TRUE)$iter
+  }
   
   mom <- c(points$seismic[i],points$se_pfa_var5[i])
-  dataParams[i,c(5,6)] <- multiroot(solveWeibull,start=c(1,1))$root
-  dp2[i,3] <-  multiroot(solveWeibull,start=c(1,1))$iter
+  #check if either seismic stress or earthquake is a 5 with no uncertainty
+  if ((points$seis_eq_pred[i] > 25000 & points$seis_eq_err[i] == 0) | (points$seis_stress_pred[i] > 25 & points$seis_stress_err[i] == 0)){
+    #Use a 3 parameter Weibull. Need to find the lower bound.
+    if ((points$seis_eq_pred[i] > 25000 & points$seis_eq_err[i] == 0) & (points$seis_stress_pred[i] > 25 & points$seis_stress_err[i] == 0)){
+      lb_mat[i,3] = 5
+      #These have no need to be fit because the lower bound is a 5. Set parameters to NA.
+      dataParams[i,5] <- NA
+      dataParams[i,6] <- NA
+    }
+    else{
+      if (right != Inf){
+        if (points$seismic[i] == 5){
+          #No matter what the variance is, this distribution by definition of being truncated at 5 cannot be fit.
+          lb_mat[i,3] = 2.5
+          dataParams[i,5] <- NA
+          dataParams[i,6] <- NA
+        }else{
+          lb = 2.5
+          lb_mat[i,3] = lb
+          dataParams[i,c(5,6)] <- multiroot(solveWeibull, start=c(1,2), positive=TRUE)$root
+          dp2[i,3] <-  multiroot(solveWeibull,start=c(1,2), positive=TRUE)$iter
+          
+          if (dataParams[i,5] == 0 | dataParams[i,6] == 0){
+            #The lower bound is very close to 0, try fitting only 1 parameter with a fixed shape.
+            dataParams[i,6] <- 1.5
+            k = dataParams[i,6]
+            dataParams[i,5] <- uniroot(solveWeibull_u, interval=c(0.001,1000))$root
+            rm(k)
+          }
+          
+          lb=0
+        }
+      }else{
+        lb = 2.5
+        lb_mat[i,3] = lb
+        dataParams[i,c(5,6)] <- multiroot(solveWeibull, start=c(1,2), positive=TRUE)$root
+        dp2[i,3] <-  multiroot(solveWeibull,start=c(1,2), positive=TRUE)$iter
+        
+        if (dataParams[i,5] == 0 | dataParams[i,6] == 0){
+          #The lower bound is very close to 0, try fitting only 1 parameter with a fixed shape.
+          dataParams[i,6] <- 1.5
+          k = dataParams[i,6]
+          dataParams[i,5] <- uniroot(solveWeibull_u, interval=c(0.001,1000))$root
+          rm(k)
+        }
+        
+        lb=0
+      }
+    }
+  }
+  else{
+    #Use a 2 parameter Weibull because the lower bound will be 0
+    lb_mat[i,3] = 0
+    dataParams[i,c(5,6)] <- multiroot(solveWeibull,start=c(1,2), positive=TRUE)$root
+    dp2[i,3] <-  multiroot(solveWeibull,start=c(1,2), positive=TRUE)$iter
+  }
   
   mom <- c(points$utilization[i],points$util_pfa_var5[i])
-  dataParams[i,c(7,8)] <- multiroot(solveWeibull,start=c(1,1))$root
-  dp2[i,4] <-  multiroot(solveWeibull,start=c(1,1))$iter
+  #check if utilization is 5 with 0 uncertainty
+  if ((points$utilization[i] == 5 & points$util_pfa_var5[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,4] = 5
+    dataParams[i,c(3,4)] <- NA
+    dp2[i,2] <-  NA
+  }
+  else{
+    #Use a 2 parameter Weibull because the lower bound will be 0
+    lb_mat[i,4] = 0
+    dataParams[i,c(7,8)] <- multiroot(solveWeibull,start=c(1,2), positive=TRUE)$root
+    dp2[i,4] <-  multiroot(solveWeibull,start=c(1,2), positive=TRUE)$iter
+  }
 }
 rm(mom)
 
-# setting NAs for seismic 5 and utilization 0
-dataParams[which(dataParams[,5]  > 4.9999),5] <- NA
-dataParams[which(dataParams[,5] %in% NA),6] <- NA
+# setting NAs for utilization 0 because this will have no uncertainty.
+dataParams[which(points$utilization == 0),7] <- NA
+dataParams[which(points$utilization == 0),8] <- NA
 
-dataParams[which(dataParams[,7]<0),7] <- NA
-dataParams[which(dataParams[,7]%in% NA),8] <- NA
-
-roots1 <- matrix(NA,10,3) #All RFs
-roots2 <- matrix(NA,10,3) #Geologic Only
+roots1 <- matrix(NA,10,3) #Percentiles to find roots
 converge1 <- matrix(NA,10,3) #Iterations to converge
-converge2 <- matrix(NA,10,3)
 for(i in ind_use){
+  params <- dataParams[i,]
   
-  params <- dataParams[i,] #params is taken in solveQuant
-  
-  ps <- 0.05
-  roots1[i,1] <- uniroot(solveQuant,interval=c(0,5))$root
-  converge1[i,1] <- uniroot(solveQuant,interval=c(0,5))$iter
-  
-  ps <- 0.5
-  roots1[i,2] <- uniroot(solveQuant,interval=c(0,5))$root
-  converge1[i,2] <- uniroot(solveQuant,interval=c(0,5))$iter
-  
-  ps <- 0.95
-  roots1[i,3] <- uniroot(solveQuant,interval=c(0,5))$root
-  converge1[i,3] <- uniroot(solveQuant,interval=c(0,5))$iter
-  
-  params <- dataParams[i,seq(1,6,1)] #params is taken in solveQuant
-  
-  ps <- 0.05
-  roots2[i,1] <- uniroot(solveQuant,interval=c(0,5))$root
-  converge2[i,1] <- uniroot(solveQuant,interval=c(0,5))$iter
-  
-  ps <- 0.5
-  roots2[i,2] <- uniroot(solveQuant,interval=c(0,5))$root
-  converge2[i,2] <- uniroot(solveQuant,interval=c(0,5))$iter
-  
-  ps <- 0.95
-  roots2[i,3] <- uniroot(solveQuant,interval=c(0,5))$root
-  converge2[i,3] <- uniroot(solveQuant,interval=c(0,5))$iter
+  #Determine how to search for the root:
+  #First check for utilization 0. All roots for this are 0.
+  if (is.na(dataParams[i,7]) == TRUE){
+    roots1[i,1] = roots1[i,2] = roots1[i,3] = 0.0
+  }else if (any(lb_mat[i,] != 0)){
+    #The lower bound is non-zero for some terms. Solve for the value using only the smallest values.
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.05
+    roots1[i,1] <- uniroot(solveQuant,interval=c(min(lb_mat[i,]),5))$root
+    converge1[i,1] <- uniroot(solveQuant,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots1[i,1] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots1[i,1] <- uniroot(solveQuant,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge1[i,1] <- uniroot(solveQuant,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+    
+    #Next Percentile
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.50
+    roots1[i,2] <- uniroot(solveQuant,interval=c(min(lb_mat[i,]),5))$root
+    converge1[i,2] <- uniroot(solveQuant,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots1[i,2] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots1[i,2] <- uniroot(solveQuant,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge1[i,2] <- uniroot(solveQuant,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+    
+    #Next Percentile
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.95
+    roots1[i,3] <- uniroot(solveQuant,interval=c(min(lb_mat[i,]),5))$root
+    converge1[i,3] <- uniroot(solveQuant,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots1[i,3] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots1[i,3] <- uniroot(solveQuant,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge1[i,3] <- uniroot(solveQuant,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+  }else{
+    #The lower bound is 0 for all risk factors.
+    ind_params = which(lb_mat[i,] == 0)
+    
+    ps <- 0.05
+    roots1[i,1] <- uniroot(solveQuant,interval=c(0,5))$root
+    converge1[i,1] <- uniroot(solveQuant,interval=c(0,5))$iter
+    
+    ps <- 0.5
+    roots1[i,2] <- uniroot(solveQuant,interval=c(0,5))$root
+    converge1[i,2] <- uniroot(solveQuant,interval=c(0,5))$iter
+    
+    ps <- 0.95
+    roots1[i,3] <- uniroot(solveQuant,interval=c(0,5))$root
+    converge1[i,3] <- uniroot(solveQuant,interval=c(0,5))$iter
+  }
 }
 rm(params, ps)
 
+#Truncated Weibull
+dataParams_trunc <- matrix(NA,10,4*2) #4 is for the number of RFs
+right = 5.0
+lb = 0
+lb_mat = matrix(0, nrow=nrow(points), ncol=ncol(dataParams_trunc)/2)
+for(i in ind_use){
+  
+  mom <- c(points$thermal[i],points$th_pfa_var5[i])
+  #check if thermal is 5 with 0 uncertainty
+  if ((points$thermal[i] == 5 & points$th_pfa_var5[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,1] = 5
+    dataParams_trunc[i,c(1,2)] <- NA
+  }
+  else{
+    #Use a 2 parameter Weibull because the lower bound will be 0
+    lb_mat[i,1] = 0
+    dataParams_trunc[i,c(1,2)] <- multiroot(solveWeibull,start=c(1,1), positive=TRUE)$root
+  }
+  
+  mom <- c(points$reservoir_rfc[i],points$re_pfa_var5_rfc[i])
+  #check if reservoir rfc is 5 with 0 uncertainty
+  if ((points$reservoir_rfc[i] == 5 & points$re_pfa_var5_rfc[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,2] = 5
+    dataParams_trunc[i,c(3,4)] <- NA
+  }
+  else{
+    #Use a 2 parameter Weibull because the lower bound will be 0
+    lb_mat[i,2] = 0
+    dataParams_trunc[i,c(3,4)] <- multiroot(solveWeibull,start=c(1,2), positive=TRUE)$root
+  }
+  
+  mom <- c(points$seismic[i],points$se_pfa_var5[i])
+  #check if either seismic stress or earthquake is a 5 with no uncertainty
+  if ((points$seis_eq_pred[i] > 25000 & points$seis_eq_err[i] == 0) | (points$seis_stress_pred[i] > 25 & points$seis_stress_err[i] == 0)){
+    #Use a 3 parameter Weibull. Need to find the lower bound.
+    if ((points$seis_eq_pred[i] > 25000 & points$seis_eq_err[i] == 0) & (points$seis_stress_pred[i] > 25 & points$seis_stress_err[i] == 0)){
+      lb_mat[i,3] = 5
+      #These have no need to be fit because the lower bound is a 5. Set parameters to NA.
+      dataParams_trunc[i,5] <- NA
+      dataParams_trunc[i,6] <- NA
+    }
+    else{
+      if (right != Inf){
+        if (points$seismic[i] == 5){
+          #No matter what the variance is, this distribution by definition of being truncated at 5 cannot be fit.
+          lb_mat[i,3] = 2.5
+          dataParams_trunc[i,5] <- NA
+          dataParams_trunc[i,6] <- NA
+        }else{
+          lb = 2.5
+          lb_mat[i,3] = lb
+          dataParams_trunc[i,c(5,6)] <- multiroot(solveWeibull, start=c(1,2), positive=TRUE)$root
+          
+          # if (dataParams_trunc[i,5] == 0 | dataParams_trunc[i,6] == 0){
+          #   #The lower bound is very close to 0, try fitting only 1 parameter with a fixed shape.
+          #   dataParams_trunc[i,6] <- 1.5
+          #   k = dataParams_trunc[i,6]
+          #   dataParams_trunc[i,5] <- uniroot(solveWeibull_u, interval=c(0.001,1000))$root
+          #   rm(k)
+          # }
+          
+          lb=0
+        }
+      }else{
+        lb = 2.5
+        lb_mat[i,3] = lb
+        dataParams_trunc[i,c(5,6)] <- multiroot(solveWeibull, start=c(1,2), positive=TRUE)$root
+        
+        # if (dataParams_trunc[i,5] == 0 | dataParams_trunc[i,6] == 0){
+        #   #The lower bound is very close to 0, try fitting only 1 parameter with a fixed shape.
+        #   dataParams_trunc[i,6] <- 1.5
+        #   k = dataParams_trunc[i,6]
+        #   dataParams_trunc[i,5] <- uniroot(solveWeibull_u, interval=c(0.001,1000))$root
+        #   rm(k)
+        # }
+        
+        lb=0
+      }
+    }
+  }
+  else{
+    #Use a 2 parameter Weibull because the lower bound will be 0
+    lb_mat[i,3] = 0
+    dataParams_trunc[i,c(5,6)] <- multiroot(solveWeibull,start=c(1,2), positive=TRUE)$root
+  }
+  
+  mom <- c(points$utilization[i],points$util_pfa_var5[i])
+  #check if utilization is 5 with 0 uncertainty
+  if ((points$utilization[i] == 5 & points$util_pfa_var5[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,4] = 5
+    dataParams_trunc[i,c(3,4)] <- NA
+  }
+  else{
+    #Use a 2 parameter Weibull because the lower bound will be 0
+    lb_mat[i,4] = 0
+    dataParams_trunc[i,c(7,8)] <- multiroot(solveWeibull,start=c(1,2), positive=TRUE)$root
+  }
+}
+rm(mom)
+
+# setting NAs for utilization 0 because this will have no uncertainty.
+dataParams_trunc[which(points$utilization == 0),7] <- NA
+dataParams_trunc[which(points$utilization == 0),8] <- NA
+
+roots1_trunc <- matrix(NA,10,3) #Percentiles to find roots for
+for(i in ind_use){
+  params <- dataParams_trunc[i,]
+  
+  #Determine how to search for the root:
+  #First check for utilization 0. All roots for this are 0.
+  if (is.na(dataParams_trunc[i,7]) == TRUE){
+    roots1_trunc[i,1] = roots1_trunc[i,2] = roots1_trunc[i,3] = 0.0
+  }else if (any(lb_mat[i,] != 0)){
+    #The lower bound is non-zero for some terms. Solve for the value using only the smallest values.
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.05
+    roots1_trunc[i,1] <- uniroot(solveQuant,interval=c(min(lb_mat[i,]),5))$root
+    converge1[i,1] <- uniroot(solveQuant,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots1_trunc[i,1] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots1_trunc[i,1] <- uniroot(solveQuant,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge1[i,1] <- uniroot(solveQuant,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+    
+    #Next Percentile
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.50
+    roots1_trunc[i,2] <- uniroot(solveQuant,interval=c(min(lb_mat[i,]),5))$root
+    converge1[i,2] <- uniroot(solveQuant,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots1_trunc[i,2] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots1_trunc[i,2] <- uniroot(solveQuant,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge1[i,2] <- uniroot(solveQuant,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+    
+    #Next Percentile
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.95
+    roots1_trunc[i,3] <- uniroot(solveQuant,interval=c(min(lb_mat[i,]),5))$root
+    converge1[i,3] <- uniroot(solveQuant,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots1_trunc[i,3] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots1_trunc[i,3] <- uniroot(solveQuant,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge1[i,3] <- uniroot(solveQuant,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+  }else{
+    #The lower bound is 0 for all risk factors.
+    ind_params = which(lb_mat[i,] == 0)
+    
+    ps <- 0.05
+    roots1_trunc[i,1] <- uniroot(solveQuant,interval=c(0,5))$root
+    converge1[i,1] <- uniroot(solveQuant,interval=c(0,5))$iter
+    
+    ps <- 0.5
+    roots1_trunc[i,2] <- uniroot(solveQuant,interval=c(0,5))$root
+    converge1[i,2] <- uniroot(solveQuant,interval=c(0,5))$iter
+    
+    ps <- 0.95
+    roots1_trunc[i,3] <- uniroot(solveQuant,interval=c(0,5))$root
+    converge1[i,3] <- uniroot(solveQuant,interval=c(0,5))$iter
+  }
+}
+rm(params, ps)
+
+# solving for the Beta distribution parameters
+dataParams_Beta <- matrix(NA,10,4*2) #4 is for the number of RFs. 2 is number of parameters. 10 is number of places
+dpBeta <- matrix(NA,10,4) #Number of iterations
+#set the lower bound of the Beta as 0 and the upper bound as 5
+lb = 0
+ub = 5
+#Record the value of the lower and upper bounds in a matrix
+lb_mat = matrix(0, nrow=nrow(points), ncol=ncol(dataParams)/2)
+ub_mat = matrix(0, nrow=nrow(points), ncol=ncol(dataParams)/2)
+for(i in ind_use){
+  
+  mom <- c(points$thermal[i],points$th_pfa_var5[i])
+  #check if thermal is 5 with 0 uncertainty
+  if ((points$thermal[i] == 5 & points$th_pfa_var5[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,1] = 5
+    ub_mat[i,1] = 5
+    #Set these parameters to NA because the roots are all 5
+    dataParams_Beta[i,c(1,2)] <- NA
+    dpBeta[i,1] <-  NA
+  }
+  else{
+    #Solve for the roots with a lower bound of 0
+    lb_mat[i,1] = 0
+    ub_mat[i,1] = 5
+    dataParams_Beta[i,c(1,2)] <- multiroot(solveBeta,start=c(1,1), positive=TRUE)$root
+    dpBeta[i,1] <-  multiroot(solveBeta,start=c(1,1), positive=TRUE)$iter
+  }
+  
+  mom <- c(points$reservoir_rfc[i],points$re_pfa_var5_rfc[i])
+  #check if reservoir rfc is 5 with 0 uncertainty
+  if ((points$reservoir_rfc[i] == 5 & points$re_pfa_var5_rfc[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,2] = 5
+    ub_mat[i,2] = 5
+    dataParams_Beta[i,c(3,4)] <- NA
+    dpBeta[i,2] <-  NA
+  }
+  else{
+    #Solve for the roots with a lower bound of 0
+    lb_mat[i,2] = 0
+    ub_mat[i,2] = 5
+    dataParams_Beta[i,c(3,4)] <- multiroot(solveBeta,start=c(1,1), positive=TRUE)$root
+    dpBeta[i,2] <-  multiroot(solveBeta,start=c(1,1), positive=TRUE)$iter
+  }
+  
+  mom <- c(points$seismic[i],points$se_pfa_var5[i])
+  #check if either seismic stress or earthquake is a 5 with no uncertainty
+  if ((points$seis_eq_pred[i] > 25000 & points$seis_eq_err[i] == 0) | (points$seis_stress_pred[i] > 25 & points$seis_stress_err[i] == 0)){
+    #Need to find the lower bound.
+    if ((points$seis_eq_pred[i] > 25000 & points$seis_eq_err[i] == 0) & (points$seis_stress_pred[i] > 25 & points$seis_stress_err[i] == 0)){
+      lb_mat[i,3] = 5
+      ub_mat[i,3] = 5
+      #These have no need to be fit because the lower bound is a 5. Set parameters to NA.
+      dataParams_Beta[i,5] <- NA
+      dataParams_Beta[i,6] <- NA
+    }
+    else{
+      lb = 2.5
+      lb_mat[i,3] = lb
+      ub_mat[i,3] = ub
+      dataParams_Beta[i,c(5,6)] <- multiroot(solveBeta, start=c(1,1), positive=TRUE)$root
+      dpBeta[i,3] <-  multiroot(solveBeta,start=c(100,100), positive=TRUE)$iter
+      
+      if (dataParams_Beta[i,6] == 0){
+        #Did not converge. Try a fixed high alpha low beta
+        dataParams_Beta[i,c(5,6)] = c(100,0.001)
+      }
+      
+      if (dataParams_Beta[i,5] == 0){
+        #Did not converge. Try a fixed low alpha high beta
+        dataParams_Beta[i,c(5,6)] = rev(c(100,0.001))
+      }
+      
+      #Set the lower bound back to 0
+      lb=0
+    }
+  }
+  else{
+    #Solve using a lower bound of 0
+    lb_mat[i,3] = 0
+    ub_mat[i,3] = 5
+    dataParams_Beta[i,c(5,6)] <- multiroot(solveBeta,start=c(1,1), positive=TRUE)$root
+    dpBeta[i,3] <-  multiroot(solveBeta,start=c(1,1), positive=TRUE)$iter
+  }
+  
+  mom <- c(points$utilization[i],points$util_pfa_var5[i])
+  #check if utilization is 5 with 0 uncertainty
+  if ((points$utilization[i] == 5 & points$util_pfa_var5[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,4] = 5
+    ub_mat[i,4] = 5
+    dataParams_Beta[i,c(3,4)] <- NA
+    dpBeta[i,2] <-  NA
+  }
+  else{
+    #Solve using a lower bound of 0
+    lb_mat[i,4] = 0
+    ub_mat[i,4] = 5
+    dataParams_Beta[i,c(7,8)] <- multiroot(solveBeta,start=c(1,1), positive=TRUE)$root
+    dpBeta[i,4] <-  multiroot(solveBeta,start=c(1,1), positive=TRUE)$iter
+  }
+}
+rm(mom)
+
+# setting NAs for utilization 0 because this will have no uncertainty.
+dataParams_Beta[which(points$utilization == 0),7] <- NA
+dataParams_Beta[which(points$utilization == 0),8] <- NA
+
+roots1_Beta <- matrix(NA,10,3) #Percentiles to find roots for
+converge1_Beta <- matrix(NA,10,3) #Iterations to converge
+for(i in ind_use){
+  params <- dataParams_Beta[i,]
+  
+  #Determine how to search for the root:
+  #First check for utilization 0. All roots for this are 0.
+  if (is.na(dataParams_Beta[i,7]) == TRUE){
+    roots1_Beta[i,1] = roots1_Beta[i,2] = roots1_Beta[i,3] = 0.0
+  }else if (any(lb_mat[i,] != 0)){
+    #The lower bound is non-zero for some terms. Solve for the value using only the smallest values.
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.05
+    roots1_Beta[i,1] <- uniroot(solveQuant_Beta,interval=c(min(lb_mat[i,]),5))$root
+    converge1_Beta[i,1] <- uniroot(solveQuant_Beta,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots1_Beta[i,1] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots1_Beta[i,1] <- uniroot(solveQuant_Beta,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge1_Beta[i,1] <- uniroot(solveQuant_Beta,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+    
+    #Next Percentile
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.50
+    roots1_Beta[i,2] <- uniroot(solveQuant_Beta,interval=c(min(lb_mat[i,]),5))$root
+    converge1_Beta[i,2] <- uniroot(solveQuant_Beta,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots1_Beta[i,2] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots1_Beta[i,2] <- uniroot(solveQuant_Beta,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge1_Beta[i,2] <- uniroot(solveQuant_Beta,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+    
+    #Next Percentile
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.95
+    roots1_Beta[i,3] <- uniroot(solveQuant_Beta,interval=c(min(lb_mat[i,]),5))$root
+    converge1_Beta[i,3] <- uniroot(solveQuant_Beta,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots1_Beta[i,3] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots1_Beta[i,3] <- uniroot(solveQuant_Beta,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge1_Beta[i,3] <- uniroot(solveQuant_Beta,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+  }else{
+    #The lower bound is 0 for all risk factors.
+    ind_params = which(lb_mat[i,] == 0)
+    
+    ps <- 0.05
+    roots1_Beta[i,1] <- uniroot(solveQuant_Beta,interval=c(0,5))$root
+    converge1_Beta[i,1] <- uniroot(solveQuant_Beta,interval=c(0,5))$iter
+    
+    ps <- 0.5
+    roots1_Beta[i,2] <- uniroot(solveQuant_Beta,interval=c(0,5))$root
+    converge1_Beta[i,2] <- uniroot(solveQuant_Beta,interval=c(0,5))$iter
+    
+    ps <- 0.95
+    roots1_Beta[i,3] <- uniroot(solveQuant_Beta,interval=c(0,5))$root
+    converge1_Beta[i,3] <- uniroot(solveQuant_Beta,interval=c(0,5))$iter
+  }
+}
+rm(params, ps)
+
+
 # loop for Monte Carlo
+right = Inf #Set to Inf for non-truncated Weibull plots
 for(i in 1:length(ind_use)){
   
   # setting seed
@@ -3575,10 +4726,6 @@ for(i in 1:length(ind_use)){
   
   rand <- rnorm(rps,se_st_mean,se_st_se)
   
-  # Old Method - uses absolute value for rand
-  #rand[intersect(which(rand > 65.2),which(rand < 2*65.2))] <- 2*65.2 - rand[intersect(which(rand > 65.2),which(rand < 2*65.2))]
-  #rand[which(rand > 2*65.2)] <- rand[which(rand > 2*65.2)] - 2*65.2
-  
   # New Method:
   # Find the values that are negative and add 360 degrees to them until they are all positive.
   while (length(rand[which(rand < 0)]) != 0){
@@ -3609,9 +4756,6 @@ for(i in 1:length(ind_use)){
   
   mat_mc[,4] <- pfm5
   
-  #Is this missing????
-  #dist_vars[4,i] <- var(pfm5)
-  
   #Utilization:
   # generating random values
   rand <- rnorm(rps,points$util_pred[ind_use[i]],points$util_pred[ind_use[i]]*5/100) #5/100 is the 5% uncertainty that is assumed for utilization.
@@ -3628,18 +4772,10 @@ for(i in 1:length(ind_use)){
   
   mat_mc[,5] <- pfm5
   
-  #Is this missing????
-  #dist_vars[4,i] <- var(pfm5)
-  
   # calcuating overall distribution
   distsavg[,i] <- (mat_mc[,1] + mat_mc[,2] + 0.5*mat_mc[,3]+0.5*mat_mc[,4]+mat_mc[,5])/4
   distsgeomean[,i] <- (mat_mc[,1]*mat_mc[,2]*(0.5*mat_mc[,3]+0.5*mat_mc[,4])*mat_mc[,5])^(1/4)
   distsmin[,i] <- apply(cbind(mat_mc[,1],mat_mc[,2],0.5*mat_mc[,3]+0.5*mat_mc[,4],mat_mc[,5]),1,min)
-  
-  #Geologic
-  #distsavg_g[,i] <- (mat_mc[,1] + mat_mc[,2] + 0.5*mat_mc[,3]+0.5*mat_mc[,4])/3
-  #distsgeomean_g[,i] <- (mat_mc[,1]*mat_mc[,2]*(0.5*mat_mc[,3]+0.5*mat_mc[,4]))^(1/3)
-  #distsmin_g[,i] <- apply(cbind(mat_mc[,1],mat_mc[,2],0.5*mat_mc[,3]+0.5*mat_mc[,4]),1,min)
   
   #Fraction of time each RF is the minimum for each city
   for(j in 1:rps){
@@ -3675,87 +4811,221 @@ for(i in 1:length(ind_use)){
   seMean[i] <-  mean(0.5*(mat_mc[,3]+mat_mc[,4]))
   utMean[i] <-  mean(mat_mc[,5])
   
-  # print(mean(mat_mc[,1]))
-  # print(mean(mat_mc[,2]))
-  # print(mean(mat_mc[,3]))
-  # print(mean(mat_mc[,4]))
-  # print(mean(mat_mc[,5]))
+  reMed[i] <- median(mat_mc[,1])
+  thMed[i] <-  median(mat_mc[,2])
+  seMed[i] <-  median(0.5*(mat_mc[,3]+mat_mc[,4]))
+  utMed[i] <-  median(mat_mc[,5])
   
-  setwd(wd_image)
-  par(xpd=T)
-  png(paste('scdist',i,'.png',sep='')
-      ,height=6
-      ,width=6
-      ,units='in'
-      ,res=300
-  )
-  
-  par(mfrow=c(2,2)
-      ,oma=c(0.5,0.5,0.5,0.5)+0.1
-      ,mar=c(5,5,3,0)+0.1)
-  
-  hist(mat_mc[,1]
-       ,freq=F
-       ,xlim=c(0,5)
-       ,main="Reservoir"
-       ,xlab="SFF"
-  )
-  lines(seq(0,5,0.01)
-        ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],4],scale=dataParams[ind_use[i],3])
-        ,col='royalblue'
-        ,lwd=2
-  )
-  points(points$reservoir[ind_use[i]],0
-         ,pch=19
-  )
-  
-  hist(mat_mc[,2]
-       ,freq=F
-       ,xlim=c(0,5)
-       ,main="Thermal"
-       ,xlab="SFF"
-  )
-  lines(seq(0,5,0.01)
-        ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],2],scale=dataParams[ind_use[i],1])
-        ,col='royalblue'
-        ,lwd=2
-  )
-  points(points$thermal[ind_use[i]],0
-         ,pch=19
-  )
-  
-  hist(0.5*(mat_mc[,3]+mat_mc[,4])
-       ,freq=F
-       ,xlim=c(0,5)
-       ,main="Seismic"
-       ,xlab="SFF"
-  )
-  lines(seq(0,5,0.01)
-        ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],6],scale=dataParams[ind_use[i],5])
-        ,col='royalblue'
-        ,lwd=2
-  )
-  points(points$seismic[ind_use[i]],0
-         ,pch=19
-  )
-  
-  hist(mat_mc[,5]
-       ,freq=F
-       ,xlim=c(0,5)
-       ,main="Utilization"
-       ,xlab="SFF"
-  )
-  lines(seq(0,5,0.01)
-        ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],8],scale=dataParams[ind_use[i],7])
-        ,col='royalblue'
-        ,lwd=2
-  )
-  points(points$utilization[ind_use[i]],0
-         ,pch=19
-  )
-  
-  par(xpd=T)
-  dev.off()
+  # setwd(wd_image)
+  # par(xpd=T)
+  # if (right != Inf){
+  #   name = 'scdist_trunc'
+  # }else{
+  #   name = 'scdist'
+  # }
+  # png(paste(name,i,'.png',sep='')
+  #     ,height=6
+  #     ,width=6
+  #     ,units='in'
+  #     ,res=300
+  # )
+  # 
+  # par(mfrow=c(2,2)
+  #     ,oma=c(0.5,0.5,0.5,0.5)+0.1
+  #     ,mar=c(5,5,3,0)+0.1)
+  # 
+  # hist(mat_mc[,1]
+  #      ,freq=F
+  #      ,xlim=c(0,5)
+  #      ,main="Reservoir"
+  #      ,xlab="SFF"
+  # )
+  # if (right != Inf){
+  #   #Truncated Weibull pdf
+  #   lines(seq(0,5,0.01)
+  #         ,dweibull(seq(0,5,0.01),shape=dataParams_trunc[ind_use[i],4],scale=dataParams_trunc[ind_use[i],3])/pweibull(5,shape=dataParams_trunc[ind_use[i],4],scale=dataParams_trunc[ind_use[i],3])
+  #         ,col='royalblue'
+  #         ,lwd=2
+  #   )
+  # }else{
+  #   lines(seq(0,5,0.01)
+  #         ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],4],scale=dataParams[ind_use[i],3])
+  #         ,col='royalblue'
+  #         ,lwd=2
+  #   )
+  # }
+  # points(points$reservoir[ind_use[i]],0
+  #        ,pch=19
+  # )
+  # 
+  # hist(mat_mc[,2]
+  #      ,freq=F
+  #      ,xlim=c(0,5)
+  #      ,main="Thermal"
+  #      ,xlab="SFF"
+  # )
+  # if (right != Inf){
+  #   #Truncated Weibull pdf
+  #   lines(seq(0,5,0.01)
+  #         ,dweibull(seq(0,5,0.01),shape=dataParams_trunc[ind_use[i],2],scale=dataParams_trunc[ind_use[i],1])/pweibull(5,shape=dataParams_trunc[ind_use[i],2],scale=dataParams_trunc[ind_use[i],1])
+  #         ,col='royalblue'
+  #         ,lwd=2
+  #   )
+  # }else{
+  #   lines(seq(0,5,0.01)
+  #         ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],2],scale=dataParams[ind_use[i],1])
+  #         ,col='royalblue'
+  #         ,lwd=2
+  #   )
+  # }
+  # points(points$thermal[ind_use[i]],0
+  #        ,pch=19
+  # )
+  # 
+  # hist(0.5*(mat_mc[,3]+mat_mc[,4])
+  #      ,freq=F
+  #      ,xlim=c(0,5)
+  #      ,main="Seismic"
+  #      ,xlab="SFF"
+  # )
+  # if (right != Inf){
+  #   #Use truncated Weibull pdf
+  #   if (lb_mat[ind_use[i],3] != 0){
+  #     lines(seq(lb_mat[ind_use[i],3],right,0.01)
+  #           ,dweibull(seq(0,(right - lb_mat[ind_use[i],3]),0.01),shape=dataParams_trunc[ind_use[i],6],scale=dataParams_trunc[ind_use[i],5])/pweibull((right - lb_mat[ind_use[i],3]), shape=dataParams_trunc[ind_use[i],6],scale=dataParams_trunc[ind_use[i],5])
+  #           ,col='royalblue'
+  #           ,lwd=2
+  #     )
+  #   }
+  #   else{
+  #     lines(seq(0,5,0.01)
+  #           ,dweibull(seq(0,5,0.01),shape=dataParams_trunc[ind_use[i],6],scale=dataParams_trunc[ind_use[i],5])/pweibull(5,shape=dataParams_trunc[ind_use[i],6],scale=dataParams_trunc[ind_use[i],5])
+  #           ,col='royalblue'
+  #           ,lwd=2
+  #     )
+  #   }
+  # }else{
+  #   if (lb_mat[ind_use[i],3] != 0){
+  #     lines(seq(lb_mat[ind_use[i],3],5+lb_mat[ind_use[i],3],0.01)
+  #           ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],6],scale=dataParams[ind_use[i],5])
+  #           ,col='royalblue'
+  #           ,lwd=2
+  #     )
+  #   }
+  #   else{
+  #     lines(seq(0,5,0.01)
+  #           ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],6],scale=dataParams[ind_use[i],5])
+  #           ,col='royalblue'
+  #           ,lwd=2
+  #     )
+  #   }
+  # }
+  # points(points$seismic[ind_use[i]],0
+  #        ,pch=19
+  # )
+  # 
+  # hist(mat_mc[,5]
+  #      ,freq=F
+  #      ,xlim=c(0,5)
+  #      ,main="Utilization"
+  #      ,xlab="SFF"
+  # )
+  # if (right != Inf){
+  #   #Truncated Weibull pdf
+  #   lines(seq(0,5,0.01)
+  #         ,dweibull(seq(0,5,0.01),shape=dataParams_trunc[ind_use[i],8],scale=dataParams_trunc[ind_use[i],7])/pweibull(5,shape=dataParams_trunc[ind_use[i],8],scale=dataParams_trunc[ind_use[i],7])
+  #         ,col='royalblue'
+  #         ,lwd=2
+  #   )
+  # }else{
+  #   lines(seq(0,5,0.01)
+  #         ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],8],scale=dataParams[ind_use[i],7])
+  #         ,col='royalblue'
+  #         ,lwd=2
+  #   )
+  # }
+  # points(points$utilization[ind_use[i]],0
+  #        ,pch=19
+  # )
+  # 
+  # par(xpd=T)
+  # dev.off()
+  # 
+  # setwd(wd_image)
+  # par(xpd=T)
+  # png(paste('scdist_Beta',i,'.png',sep='')
+  #     ,height=6
+  #     ,width=6
+  #     ,units='in'
+  #     ,res=300
+  # )
+  # 
+  # par(mfrow=c(2,2)
+  #     ,oma=c(0.5,0.5,0.5,0.5)+0.1
+  #     ,mar=c(5,5,3,0)+0.1)
+  # 
+  # hist(mat_mc[,1]
+  #      ,freq=F
+  #      ,xlim=c(0,5)
+  #      ,main="Reservoir"
+  #      ,xlab="SFF"
+  # )
+  # lines(seq(0,5,0.01)
+  #       ,dBeta_ab(seq(0,5,0.01),dataParams_Beta[ind_use[i],3],dataParams_Beta[ind_use[i],4], 0, 5)
+  #       ,col='royalblue'
+  #       ,lwd=2
+  # )
+  # points(points$reservoir[ind_use[i]],0
+  #        ,pch=19
+  # )
+  # 
+  # hist(mat_mc[,2]
+  #      ,freq=F
+  #      ,xlim=c(0,5)
+  #      ,main="Thermal"
+  #      ,xlab="SFF"
+  # )
+  # lines(seq(0,5,0.01)
+  #       ,dBeta_ab(seq(0,5,0.01),dataParams_Beta[ind_use[i],1],dataParams_Beta[ind_use[i],2], 0, 5)
+  #       ,col='royalblue'
+  #       ,lwd=2
+  # )
+  # points(points$thermal[ind_use[i]],0
+  #        ,pch=19
+  # )
+  # 
+  # hist(0.5*(mat_mc[,3]+mat_mc[,4])
+  #      ,freq=F
+  #      ,xlim=c(0,5)
+  #      ,main="Seismic"
+  #      ,xlab="SFF"
+  # )
+  # lines(seq(lb_mat[ind_use[i],3], ub_mat[ind_use[i],3],0.01)
+  #       ,dBeta_ab(seq(lb_mat[ind_use[i],3], ub_mat[ind_use[i],3],0.01), dataParams_Beta[ind_use[i],5], dataParams_Beta[ind_use[i],6], lb_mat[ind_use[i],3], ub_mat[ind_use[i],3])
+  #       ,col='royalblue'
+  #       ,lwd=2
+  # )
+  # points(points$seismic[ind_use[i]],0
+  #        ,pch=19
+  # )
+  # 
+  # hist(mat_mc[,5]
+  #      ,freq=F
+  #      ,xlim=c(0,5)
+  #      ,main="Utilization"
+  #      ,xlab="SFF"
+  # )
+  # lines(seq(0,5,0.01)
+  #       ,dBeta_ab(seq(0,5,0.01),dataParams_Beta[ind_use[i],7],dataParams_Beta[ind_use[i],8], 0, 5)
+  #       ,col='royalblue'
+  #       ,lwd=2
+  # )
+  # points(points$utilization[ind_use[i]],0
+  #        ,pch=19
+  # )
+  # 
+  # par(xpd=T)
+  # dev.off()
 }
 rm(rand, pfm5, i)
 
@@ -3790,7 +5060,7 @@ for(i in 1:ncol(distsgeomean)){
 par(xpd=TRUE)
 text(seq(1,9,1)
      ,rep(-0.5,9)
-     ,names
+     ,names[ind_use]
      ,adj=0
      ,srt=270)
 text(-1.2,5
@@ -3857,7 +5127,7 @@ rect(0,-2,10,-0.64
      ,border='white')
 text(seq(1,9,1)
      ,rep(-0.7,9)
-     ,names
+     ,names[ind_use]
      ,adj=0
      ,srt=270)
 
@@ -3902,14 +5172,9 @@ lines(c(2,2)
       ,c(0,5)
       ,col='black')
 
-names <- NULL
-points$names <- c('Corning, NY', 'Elmira, NY', 'Ithaca, NY', 'Jamestown, NY'
-                  ,'Mansfield, PA', 'Meadville, PA','Sayre, PA'
-                  ,'Charleston, WV', 'Morgantown, WV', 'Pineville, WV')
-
 #Track NA indices:
 IndNA = vector('numeric', length=nrow(points))
-
+namesNA <- NULL
 # loop to add lines to plots
 for(i in 1:nrow(points)){
   
@@ -3925,7 +5190,7 @@ for(i in 1:nrow(points)){
           ,check
           ,lwd=3
           ,col=cols[i])
-    names <- c(names,points$names[i])
+    namesNA <- c(namesNA,points$names[i])
   }
   else{
     #Keep a record of the NA indexes
@@ -3950,7 +5215,7 @@ text(-0.35,0
      ,col='firebrick'
      ,font=2)
 legend(x=3.2,y=5
-       ,legend=names
+       ,legend=namesNA
        ,col=cols[-which(IndNA == 1)]
        ,lwd=3
        ,lty=1
@@ -5081,7 +6346,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-#### RPIw Geomean ####
+#### RPIw Geometric Mean ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -6772,7 +8037,7 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-#### RPIg Geomean ####
+#### RPIg Geometric Mean ####
 # points of interest
 points <- as.data.frame(poi2)
 points$x <- points$coords.x1
@@ -8138,6 +9403,1169 @@ for(i in ind_use){
 }
 rm(params, ps)
 
+# Seismic Doubly Truncated Normal when lb = 2.5, all else Weibull - Used for paper
+dataParams <- matrix(NA,10,3*2) #4 is for the number of RFs
+dp2 <- matrix(NA,10,3) #Number of iterations
+#set the lower bound of the Weibull as 0
+lb = 0
+#Set the right truncation point to Inf
+right = Inf
+#Record the value of the lower bound in a matrix
+lb_mat = matrix(0, nrow=nrow(points), ncol=ncol(dataParams)/2)
+for(i in ind_use){
+  
+  mom <- c(points$thermal[i],points$th_pfa_var5[i])
+  #check if thermal is 5 with 0 uncertainty
+  if ((points$thermal[i] == 5 & points$th_pfa_var5[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,1] = 5
+    dataParams[i,c(1,2)] <- NA
+    dp2[i,1] <-  NA
+  }
+  else{
+    #Use a 2 parameter Weibull because the lower bound will be 0
+    lb_mat[i,1] = 0
+    dataParams[i,c(1,2)] <- multiroot(solveWeibull,start=c(1,1), positive=TRUE)$root
+    dp2[i,1] <-  multiroot(solveWeibull,start=c(1,1), positive=TRUE)$iter
+  }
+  
+  mom <- c(points$reservoir_rfc[i],points$re_pfa_var5_rfc[i])
+  #check if reservoir rfc is 5 with 0 uncertainty
+  if ((points$reservoir_rfc[i] == 5 & points$re_pfa_var5_rfc[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,2] = 5
+    dataParams[i,c(3,4)] <- NA
+    dp2[i,2] <-  NA
+  }
+  else{
+    #Use a 2 parameter Weibull because the lower bound will be 0
+    lb_mat[i,2] = 0
+    dataParams[i,c(3,4)] <- multiroot(solveWeibull,start=c(1,2), positive=TRUE)$root
+    dp2[i,2] <-  multiroot(solveWeibull,start=c(1,2), positive=TRUE)$iter
+  }
+  
+  mom <- c(points$seismic[i],points$se_pfa_var5[i])
+  #check if either seismic stress or earthquake is a 5 with no uncertainty
+  if ((points$seis_eq_pred[i] > 25000 & points$seis_eq_err[i] == 0) | (points$seis_stress_pred[i] > 25 & points$seis_stress_err[i] == 0)){
+    #Use a 3 parameter Weibull. Need to find the lower bound.
+    if ((points$seis_eq_pred[i] > 25000 & points$seis_eq_err[i] == 0) & (points$seis_stress_pred[i] > 25 & points$seis_stress_err[i] == 0)){
+      lb_mat[i,3] = 5
+      #These have no need to be fit because the lower bound is a 5. Set parameters to NA.
+      dataParams[i,5] <- NA
+      dataParams[i,6] <- NA
+    }
+    else{
+      if (right != Inf){
+        if (points$seismic[i] == 5){
+          #No matter what the variance is, this distribution by definition of being truncated at 5 cannot be fit.
+          lb_mat[i,3] = 2.5
+          dataParams[i,5] <- NA
+          dataParams[i,6] <- NA
+        }else{
+          lb = 2.5
+          lb_mat[i,3] = lb
+          dataParams[i,c(5,6)] <- mom
+          dp2[i,3] <-  1
+          
+          lb=0
+        }
+      }else{
+        lb = 2.5
+        lb_mat[i,3] = lb
+        dataParams[i,c(5,6)] <- mom
+        dp2[i,3] <-  1
+        
+        lb=0
+      }
+    }
+  }
+  else{
+    #Use a 2 parameter Weibull because the lower bound will be 0
+    lb_mat[i,3] = 0
+    dataParams[i,c(5,6)] <- multiroot(solveWeibull,start=c(1,2), positive=TRUE)$root
+    dp2[i,3] <-  multiroot(solveWeibull,start=c(1,2), positive=TRUE)$iter
+  }
+}
+rm(mom)
+
+roots2 <- matrix(NA,10,3) #Percentiles to find roots
+converge2 <- matrix(NA,10,3) #Iterations to converge
+for(i in ind_use){
+  params <- dataParams[i,]
+  
+  #Determine how to search for the root:
+  if (any(lb_mat[i,] != 0)){
+    #The lower bound is non-zero for some terms. Solve for the value using only the smallest values.
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.05
+    roots2[i,1] <- uniroot(solveQuant_SpecialSeis,interval=c(min(lb_mat[i,]),5))$root
+    converge2[i,1] <- uniroot(solveQuant_SpecialSeis,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots2[i,1] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots2[i,1] <- uniroot(solveQuant_SpecialSeis,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge2[i,1] <- uniroot(solveQuant_SpecialSeis,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+    
+    #Next Percentile
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.50
+    roots2[i,2] <- uniroot(solveQuant_SpecialSeis,interval=c(min(lb_mat[i,]),5))$root
+    converge2[i,2] <- uniroot(solveQuant_SpecialSeis,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots2[i,2] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots2[i,2] <- uniroot(solveQuant_SpecialSeis,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge2[i,2] <- uniroot(solveQuant_SpecialSeis,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+    
+    #Next Percentile
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.95
+    roots2[i,3] <- uniroot(solveQuant_SpecialSeis,interval=c(min(lb_mat[i,]),5))$root
+    converge2[i,3] <- uniroot(solveQuant_SpecialSeis,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots2[i,3] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots2[i,3] <- uniroot(solveQuant_SpecialSeis,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge2[i,3] <- uniroot(solveQuant_SpecialSeis,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+  }else{
+    #The lower bound is 0 for all risk factors.
+    ind_params = which(lb_mat[i,] == 0)
+    
+    ps <- 0.05
+    roots2[i,1] <- uniroot(solveQuant_SpecialSeis,interval=c(0,5))$root
+    converge2[i,1] <- uniroot(solveQuant_SpecialSeis,interval=c(0,5))$iter
+    
+    ps <- 0.5
+    roots2[i,2] <- uniroot(solveQuant_SpecialSeis,interval=c(0,5))$root
+    converge2[i,2] <- uniroot(solveQuant_SpecialSeis,interval=c(0,5))$iter
+    
+    ps <- 0.95
+    roots2[i,3] <- uniroot(solveQuant_SpecialSeis,interval=c(0,5))$root
+    converge2[i,3] <- uniroot(solveQuant_SpecialSeis,interval=c(0,5))$iter
+  }
+}
+rm(params, ps)
+
+#Truncated Weibull
+dataParams_trunc <- matrix(NA,10,3*2) #4 is for the number of RFs
+right = 5.0
+lb = 0
+lb_mat = matrix(0, nrow=nrow(points), ncol=ncol(dataParams_trunc)/2)
+for(i in ind_use){
+  
+  mom <- c(points$thermal[i],points$th_pfa_var5[i])
+  #check if thermal is 5 with 0 uncertainty
+  if ((points$thermal[i] == 5 & points$th_pfa_var5[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,1] = 5
+    dataParams_trunc[i,c(1,2)] <- NA
+  }
+  else{
+    #Use a 2 parameter Weibull because the lower bound will be 0
+    lb_mat[i,1] = 0
+    dataParams_trunc[i,c(1,2)] <- multiroot(solveWeibull,start=c(1,1), positive=TRUE)$root
+  }
+  
+  mom <- c(points$reservoir_rfc[i],points$re_pfa_var5_rfc[i])
+  #check if reservoir rfc is 5 with 0 uncertainty
+  if ((points$reservoir_rfc[i] == 5 & points$re_pfa_var5_rfc[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,2] = 5
+    dataParams_trunc[i,c(3,4)] <- NA
+  }
+  else{
+    #Use a 2 parameter Weibull because the lower bound will be 0
+    lb_mat[i,2] = 0
+    dataParams_trunc[i,c(3,4)] <- multiroot(solveWeibull,start=c(1,2), positive=TRUE)$root
+  }
+  
+  mom <- c(points$seismic[i],points$se_pfa_var5[i])
+  #check if either seismic stress or earthquake is a 5 with no uncertainty
+  if ((points$seis_eq_pred[i] > 25000 & points$seis_eq_err[i] == 0) | (points$seis_stress_pred[i] > 25 & points$seis_stress_err[i] == 0)){
+    #Use a 3 parameter Weibull. Need to find the lower bound.
+    if ((points$seis_eq_pred[i] > 25000 & points$seis_eq_err[i] == 0) & (points$seis_stress_pred[i] > 25 & points$seis_stress_err[i] == 0)){
+      lb_mat[i,3] = 5
+      #These have no need to be fit because the lower bound is a 5. Set parameters to NA.
+      dataParams_trunc[i,5] <- NA
+      dataParams_trunc[i,6] <- NA
+    }
+    else{
+      if (right != Inf){
+        if (points$seismic[i] == 5){
+          #No matter what the variance is, this distribution by definition of being truncated at 5 cannot be fit.
+          lb_mat[i,3] = 2.5
+          dataParams_trunc[i,5] <- NA
+          dataParams_trunc[i,6] <- NA
+        }else{
+          lb = 2.5
+          lb_mat[i,3] = lb
+          dataParams_trunc[i,c(5,6)] <- multiroot(solveWeibull, start=c(1,2), positive=TRUE)$root
+          
+          # if (dataParams_trunc[i,5] == 0 | dataParams_trunc[i,6] == 0){
+          #   #The lower bound is very close to 0, try fitting only 1 parameter with a fixed shape.
+          #   dataParams_trunc[i,6] <- 1.5
+          #   k = dataParams_trunc[i,6]
+          #   dataParams_trunc[i,5] <- uniroot(solveWeibull_u, interval=c(0.001,1000))$root
+          #   rm(k)
+          # }
+          
+          lb=0
+        }
+      }else{
+        lb = 2.5
+        lb_mat[i,3] = lb
+        dataParams_trunc[i,c(5,6)] <- multiroot(solveWeibull, start=c(1,2), positive=TRUE)$root
+        
+        # if (dataParams_trunc[i,5] == 0 | dataParams_trunc[i,6] == 0){
+        #   #The lower bound is very close to 0, try fitting only 1 parameter with a fixed shape.
+        #   dataParams_trunc[i,6] <- 1.5
+        #   k = dataParams_trunc[i,6]
+        #   dataParams_trunc[i,5] <- uniroot(solveWeibull_u, interval=c(0.001,1000))$root
+        #   rm(k)
+        # }
+        
+        lb=0
+      }
+    }
+  }
+  else{
+    #Use a 2 parameter Weibull because the lower bound will be 0
+    lb_mat[i,3] = 0
+    dataParams_trunc[i,c(5,6)] <- multiroot(solveWeibull,start=c(1,2), positive=TRUE)$root
+  }
+}
+rm(mom)
+
+roots2_trunc <- matrix(NA,10,3) #Percentiles to find roots for
+for(i in ind_use){
+  params <- dataParams_trunc[i,]
+  
+  #Determine how to search for the root:
+  if (any(lb_mat[i,] != 0)){
+    #The lower bound is non-zero for some terms. Solve for the value using only the smallest values.
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.05
+    roots2_trunc[i,1] <- uniroot(solveQuant,interval=c(min(lb_mat[i,]),5))$root
+    
+    if (roots2_trunc[i,1] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots2_trunc[i,1] <- uniroot(solveQuant,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+    }
+    
+    #Next Percentile
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.50
+    roots2_trunc[i,2] <- uniroot(solveQuant,interval=c(min(lb_mat[i,]),5))$root
+    
+    if (roots2_trunc[i,2] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots2_trunc[i,2] <- uniroot(solveQuant,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+    }
+    
+    #Next Percentile
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.95
+    roots2_trunc[i,3] <- uniroot(solveQuant,interval=c(min(lb_mat[i,]),5))$root
+    
+    if (roots2_trunc[i,3] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots2_trunc[i,3] <- uniroot(solveQuant,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+    }
+  }else{
+    #The lower bound is 0 for all risk factors.
+    ind_params = which(lb_mat[i,] == 0)
+    
+    ps <- 0.05
+    roots2_trunc[i,1] <- uniroot(solveQuant,interval=c(0,5))$root
+    
+    ps <- 0.5
+    roots2_trunc[i,2] <- uniroot(solveQuant,interval=c(0,5))$root
+    
+    ps <- 0.95
+    roots2_trunc[i,3] <- uniroot(solveQuant,interval=c(0,5))$root
+  }
+}
+rm(params, ps)
+
+# solving for the Beta distribution parameters
+dataParams_Beta <- matrix(NA,10,4*2) #4 is for the number of RFs. 2 is number of parameters. 10 is number of places
+dpBeta <- matrix(NA,10,4) #Number of iterations
+#set the lower bound of the Beta as 0 and the upper bound as 5
+lb = 0
+ub = 5
+#Record the value of the lower and upper bounds in a matrix
+lb_mat = matrix(0, nrow=nrow(points), ncol=ncol(dataParams)/2)
+ub_mat = matrix(0, nrow=nrow(points), ncol=ncol(dataParams)/2)
+for(i in ind_use){
+  
+  mom <- c(points$thermal[i],points$th_pfa_var5[i])
+  #check if thermal is 5 with 0 uncertainty
+  if ((points$thermal[i] == 5 & points$th_pfa_var5[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,1] = 5
+    ub_mat[i,1] = 5
+    #Set these parameters to NA because the roots are all 5
+    dataParams_Beta[i,c(1,2)] <- NA
+    dpBeta[i,1] <-  NA
+  }
+  else{
+    #Solve for the roots with a lower bound of 0
+    lb_mat[i,1] = 0
+    ub_mat[i,1] = 5
+    dataParams_Beta[i,c(1,2)] <- multiroot(solveBeta,start=c(1,1), positive=TRUE)$root
+    dpBeta[i,1] <-  multiroot(solveBeta,start=c(1,1), positive=TRUE)$iter
+  }
+  
+  mom <- c(points$reservoir_rfc[i],points$re_pfa_var5_rfc[i])
+  #check if reservoir rfc is 5 with 0 uncertainty
+  if ((points$reservoir_rfc[i] == 5 & points$re_pfa_var5_rfc[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,2] = 5
+    ub_mat[i,2] = 5
+    dataParams_Beta[i,c(3,4)] <- NA
+    dpBeta[i,2] <-  NA
+  }
+  else{
+    #Solve for the roots with a lower bound of 0
+    lb_mat[i,2] = 0
+    ub_mat[i,2] = 5
+    dataParams_Beta[i,c(3,4)] <- multiroot(solveBeta,start=c(1,1), positive=TRUE)$root
+    dpBeta[i,2] <-  multiroot(solveBeta,start=c(1,1), positive=TRUE)$iter
+  }
+  
+  mom <- c(points$seismic[i],points$se_pfa_var5[i])
+  #check if either seismic stress or earthquake is a 5 with no uncertainty
+  if ((points$seis_eq_pred[i] > 25000 & points$seis_eq_err[i] == 0) | (points$seis_stress_pred[i] > 25 & points$seis_stress_err[i] == 0)){
+    #Need to find the lower bound.
+    if ((points$seis_eq_pred[i] > 25000 & points$seis_eq_err[i] == 0) & (points$seis_stress_pred[i] > 25 & points$seis_stress_err[i] == 0)){
+      lb_mat[i,3] = 5
+      ub_mat[i,3] = 5
+      #These have no need to be fit because the lower bound is a 5. Set parameters to NA.
+      dataParams_Beta[i,5] <- NA
+      dataParams_Beta[i,6] <- NA
+    }
+    else{
+      lb = 2.5
+      lb_mat[i,3] = lb
+      ub_mat[i,3] = ub
+      dataParams_Beta[i,c(5,6)] <- multiroot(solveBeta, start=c(1,1), positive=TRUE)$root
+      dpBeta[i,3] <-  multiroot(solveBeta,start=c(100,100), positive=TRUE)$iter
+      
+      if (dataParams_Beta[i,6] == 0){
+        #Did not converge. Try a fixed high alpha low beta
+        dataParams_Beta[i,c(5,6)] = c(100,0.001)
+      }
+      
+      if (dataParams_Beta[i,5] == 0){
+        #Did not converge. Try a fixed low alpha high beta
+        dataParams_Beta[i,c(5,6)] = rev(c(100,0.001))
+      }
+      
+      #Set the lower bound back to 0
+      lb=0
+    }
+  }
+  else{
+    #Solve using a lower bound of 0
+    lb_mat[i,3] = 0
+    ub_mat[i,3] = 5
+    dataParams_Beta[i,c(5,6)] <- multiroot(solveBeta,start=c(1,1), positive=TRUE)$root
+    dpBeta[i,3] <-  multiroot(solveBeta,start=c(1,1), positive=TRUE)$iter
+  }
+}
+rm(mom)
+
+roots2_Beta <- matrix(NA,10,3) #Percentiles to find roots for
+converge2_Beta <- matrix(NA,10,3) #Iterations to converge
+for(i in ind_use){
+  params <- dataParams_Beta[i,]
+  
+  #Determine how to search for the root:
+  if (any(lb_mat[i,] != 0)){
+    #The lower bound is non-zero for some terms. Solve for the value using only the smallest values.
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.05
+    roots2_Beta[i,1] <- uniroot(solveQuant_Beta,interval=c(min(lb_mat[i,]),5))$root
+    converge2_Beta[i,1] <- uniroot(solveQuant_Beta,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots2_Beta[i,1] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots2_Beta[i,1] <- uniroot(solveQuant_Beta,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge2_Beta[i,1] <- uniroot(solveQuant_Beta,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+    
+    #Next Percentile
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.50
+    roots2_Beta[i,2] <- uniroot(solveQuant_Beta,interval=c(min(lb_mat[i,]),5))$root
+    converge2_Beta[i,2] <- uniroot(solveQuant_Beta,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots2_Beta[i,2] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots2_Beta[i,2] <- uniroot(solveQuant_Beta,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge2_Beta[i,2] <- uniroot(solveQuant_Beta,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+    
+    #Next Percentile
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.95
+    roots2_Beta[i,3] <- uniroot(solveQuant_Beta,interval=c(min(lb_mat[i,]),5))$root
+    converge2_Beta[i,3] <- uniroot(solveQuant_Beta,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots2_Beta[i,3] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots2_Beta[i,3] <- uniroot(solveQuant_Beta,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge2_Beta[i,3] <- uniroot(solveQuant_Beta,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+  }else{
+    #The lower bound is 0 for all risk factors.
+    ind_params = which(lb_mat[i,] == 0)
+    
+    ps <- 0.05
+    roots2_Beta[i,1] <- uniroot(solveQuant_Beta,interval=c(0,5))$root
+    converge2_Beta[i,1] <- uniroot(solveQuant_Beta,interval=c(0,5))$iter
+    
+    ps <- 0.5
+    roots2_Beta[i,2] <- uniroot(solveQuant_Beta,interval=c(0,5))$root
+    converge2_Beta[i,2] <- uniroot(solveQuant_Beta,interval=c(0,5))$iter
+    
+    ps <- 0.95
+    roots2_Beta[i,3] <- uniroot(solveQuant_Beta,interval=c(0,5))$root
+    converge2_Beta[i,3] <- uniroot(solveQuant_Beta,interval=c(0,5))$iter
+  }
+}
+rm(params, ps)
+
+# loop for Monte Carlo
+right = Inf #Set to Inf for non-truncated Weibull plots
+seis = TRUE
+for(i in 1:length(ind_use)){
+  
+  # setting seed
+  set.seed(10)
+  
+  # initializing matrix
+  mat_mc <- matrix(0,rps,5) #5 is for the number of RFs, considering that seismic has 2 (stress and angle)
+  
+  # reservoir rfc MC
+  pfm5 <- rep(0,rps)
+  
+  res_mean <- log(points$res_pred_rfc_max2[ind_use[i]])
+  res_cv <- points$res_pred_rfc_max_err[ind_use[i]]
+  
+  sigma2 <- log(res_cv^2 + 1)
+  mu <- res_mean- sigma2/2
+  rand <- rnorm(rps,mu,sqrt(sigma2))
+  rm(mu)
+  
+  pfm5[rand < log(res_rfc_thresh5[1])] <-5
+  pfm5[rand > log(res_rfc_thresh5[6])] <- 0
+  pfm5[intersect(which(rand >= log(res_rfc_thresh5[1])),which(rand < log(res_rfc_thresh5[2])))] <- 5- (rand[intersect(which(rand >= log(res_rfc_thresh5[1])),which(rand < log(res_rfc_thresh5[2])))] - log(res_rfc_thresh5[1]))/(log(res_rfc_thresh5[2])-log(res_rfc_thresh5[1]))
+  pfm5[intersect(which(rand >= log(res_rfc_thresh5[2])),which(rand < log(res_rfc_thresh5[3])))] <- 4- (rand[intersect(which(rand >= log(res_rfc_thresh5[2])),which(rand < log(res_rfc_thresh5[3])))] - log(res_rfc_thresh5[2]))/(log(res_rfc_thresh5[3])-log(res_rfc_thresh5[2]))
+  pfm5[intersect(which(rand >= log(res_rfc_thresh5[3])),which(rand < log(res_rfc_thresh5[4])))] <- 3- (rand[intersect(which(rand >= log(res_rfc_thresh5[3])),which(rand < log(res_rfc_thresh5[4])))] - log(res_rfc_thresh5[3]))/(log(res_rfc_thresh5[4])-log(res_rfc_thresh5[3]))
+  pfm5[intersect(which(rand >= log(res_rfc_thresh5[4])),which(rand < log(res_rfc_thresh5[5])))] <- 2- (rand[intersect(which(rand >= log(res_rfc_thresh5[4])),which(rand < log(res_rfc_thresh5[5])))] - log(res_rfc_thresh5[4]))/(log(res_rfc_thresh5[5])-log(res_rfc_thresh5[4]))
+  pfm5[intersect(which(rand >= log(res_rfc_thresh5[5])),which(rand < log(res_rfc_thresh5[6])))] <- 1- (rand[intersect(which(rand >= log(res_rfc_thresh5[5])),which(rand < log(res_rfc_thresh5[6])))] - log(res_rfc_thresh5[5]))/(log(res_rfc_thresh5[6])-log(res_rfc_thresh5[5]))
+  
+  #Because the values are reversed, switch them.
+  pfm5 <- 5-pfm5
+  
+  mat_mc[,1] <- pfm5
+  
+  dist_vars[1,i] <- var(pfm5)
+  
+  # thermal new thresholds MC
+  pfm5 <- rep(0,rps)
+  
+  th_mean <- points$therm_pred[ind_use[i]]
+  th_se <- points$therm_err[ind_use[i]]
+  
+  rand <- rnorm(rps,th_mean,th_se)
+  
+  pfm5[rand < therm_thresh5[1]] <- 5
+  pfm5[rand > therm_thresh5[6]] <- 0
+  pfm5[intersect(which(rand >= therm_thresh5[1]),which(rand < therm_thresh5[2]))] <- 5 - (rand[intersect(which(rand >= therm_thresh5[1]),which(rand < therm_thresh5[2]))] - therm_thresh5[1])/(therm_thresh5[2]-therm_thresh5[1])
+  pfm5[intersect(which(rand >= therm_thresh5[2]),which(rand < therm_thresh5[3]))] <- 4- (rand[intersect(which(rand >= therm_thresh5[2]),which(rand < therm_thresh5[3]))] - therm_thresh5[2])/(therm_thresh5[3]-therm_thresh5[2])
+  pfm5[intersect(which(rand >= therm_thresh5[3]),which(rand < therm_thresh5[4]))] <- 3- (rand[intersect(which(rand >= therm_thresh5[3]),which(rand < therm_thresh5[4]))] - therm_thresh5[3])/(therm_thresh5[4]-therm_thresh5[3])
+  pfm5[intersect(which(rand >= therm_thresh5[4]),which(rand < therm_thresh5[5]))] <- 2- (rand[intersect(which(rand >= therm_thresh5[4]),which(rand < therm_thresh5[5]))] - therm_thresh5[4])/(therm_thresh5[5]-therm_thresh5[4])
+  pfm5[intersect(which(rand >= therm_thresh5[5]),which(rand < therm_thresh5[6]))] <- 1- (rand[intersect(which(rand >= therm_thresh5[5]),which(rand < therm_thresh5[6]))] - therm_thresh5[5])/(therm_thresh5[6]-therm_thresh5[5])
+  
+  mat_mc[,2] <- pfm5
+  
+  dist_vars[2,i] <- var(pfm5)
+  
+  # seismic earthquake MC
+  pfm5 <- rep(0,rps)
+  
+  se_eq_mean <- points$seis_eq_pred[ind_use[i]]
+  se_eq_se <- points$seis_eq_err[ind_use[i]]
+  
+  rand <- rnorm(rps,se_eq_mean,se_eq_se)
+  
+  pfm5[rand < seis_eq_thresh5[1]] <-5
+  pfm5[rand > seis_eq_thresh5[6]] <-0
+  pfm5[intersect(which(rand >= seis_eq_thresh5[1]),which(rand < seis_eq_thresh5[2]))] <- 5- (rand[intersect(which(rand >= seis_eq_thresh5[1]),which(rand < seis_eq_thresh5[2]))] - seis_eq_thresh5[1])/(seis_eq_thresh5[2]-seis_eq_thresh5[1])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[2]),which(rand < seis_eq_thresh5[3]))] <- 4- (rand[intersect(which(rand >= seis_eq_thresh5[2]),which(rand < seis_eq_thresh5[3]))] - seis_eq_thresh5[2])/(seis_eq_thresh5[3]-seis_eq_thresh5[2])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[3]),which(rand < seis_eq_thresh5[4]))] <- 3- (rand[intersect(which(rand >= seis_eq_thresh5[3]),which(rand < seis_eq_thresh5[4]))] - seis_eq_thresh5[3])/(seis_eq_thresh5[4]-seis_eq_thresh5[3])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[4]),which(rand < seis_eq_thresh5[5]))] <- 2- (rand[intersect(which(rand >= seis_eq_thresh5[4]),which(rand < seis_eq_thresh5[5]))] - seis_eq_thresh5[4])/(seis_eq_thresh5[5]-seis_eq_thresh5[4])
+  pfm5[intersect(which(rand >= seis_eq_thresh5[5]),which(rand < seis_eq_thresh5[6]))] <- 1- (rand[intersect(which(rand >= seis_eq_thresh5[5]),which(rand < seis_eq_thresh5[6]))] - seis_eq_thresh5[5])/(seis_eq_thresh5[6]-seis_eq_thresh5[5])
+  
+  #Because the values are reversed, switch them back here.
+  pfm5 <- 5-pfm5
+  
+  mat_mc[,3] <- pfm5
+  dist_vars[3,i] <- var(pfm5)
+  
+  # seismic stress angle MC
+  pfm5 <- rep(0,rps)
+  
+  se_st_mean <- points$NormAngs[ind_use[i]]
+  se_st_se <- points$seis_stress_err[ind_use[i]]
+  
+  rand <- rnorm(rps,se_st_mean,se_st_se)
+  
+  # New Method:
+  # Find the values that are negative and add 360 degrees to them until they are all positive.
+  while (length(rand[which(rand < 0)]) != 0){
+    rand[which(rand < 0)] = rand[which(rand < 0)] + 360
+  }
+  # Now convert all values to [0,180]
+  while (length(rand[which(rand > 180)]) != 0){
+    rand[which(rand > 180)] = rand[which(rand > 180)] - 180
+  }
+  # Now take all angles and convert them to a risk angle
+  a1 = abs(rand - critical_ang1)
+  a2 = abs(rand - critical_ang2)
+  # Bind them
+  b = rbind(a1, a2)
+  # Assign the minimum value (most risky) to those points
+  rand = apply(b, 2, min)
+  rm(b,a1,a2)
+  
+  pfm5[rand < seis_stress_thresh5[1]] <- 5
+  pfm5[intersect(which(rand >= seis_stress_thresh5[1]),which(rand < seis_stress_thresh5[2]))] <- 5- (rand[intersect(which(rand >= seis_stress_thresh5[1]),which(rand < seis_stress_thresh5[2]))] - seis_stress_thresh5[1])/(seis_stress_thresh5[2]-seis_stress_thresh5[1])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[2]),which(rand < seis_stress_thresh5[3]))] <- 4- (rand[intersect(which(rand >= seis_stress_thresh5[2]),which(rand < seis_stress_thresh5[3]))] - seis_stress_thresh5[2])/(seis_stress_thresh5[3]-seis_stress_thresh5[2])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[3]),which(rand < seis_stress_thresh5[4]))] <- 3- (rand[intersect(which(rand >= seis_stress_thresh5[3]),which(rand < seis_stress_thresh5[4]))] - seis_stress_thresh5[3])/(seis_stress_thresh5[4]-seis_stress_thresh5[3])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[4]),which(rand < seis_stress_thresh5[5]))] <- 2- (rand[intersect(which(rand >= seis_stress_thresh5[4]),which(rand < seis_stress_thresh5[5]))] - seis_stress_thresh5[4])/(seis_stress_thresh5[5]-seis_stress_thresh5[4])
+  pfm5[intersect(which(rand >= seis_stress_thresh5[5]),which(rand < seis_stress_thresh5[6]))] <- 1- (rand[intersect(which(rand >= seis_stress_thresh5[5]),which(rand < seis_stress_thresh5[6]))] - seis_stress_thresh5[5])/(seis_stress_thresh5[6]-seis_stress_thresh5[5])
+  
+  #Because the values are reversed, switch them back
+  pfm5 <- 5-pfm5
+  
+  mat_mc[,4] <- pfm5
+  
+  # calcuating overall distribution
+  distsavg_g[,i] <- (mat_mc[,1] + mat_mc[,2] + 0.5*mat_mc[,3]+0.5*mat_mc[,4])/3
+  distsgeomean_g[,i] <- (mat_mc[,1]*mat_mc[,2]*(0.5*mat_mc[,3]+0.5*mat_mc[,4]))^(1/3)
+  distsmin_g[,i] <- apply(cbind(mat_mc[,1],mat_mc[,2],0.5*mat_mc[,3]+0.5*mat_mc[,4]),1,min)
+  
+  reMean[i] <- mean(mat_mc[,1])
+  thMean[i] <-  mean(mat_mc[,2])
+  seMean[i] <-  mean(0.5*(mat_mc[,3]+mat_mc[,4]))
+  
+  reMed[i] <- median(mat_mc[,1])
+  thMed[i] <-  median(mat_mc[,2])
+  seMed[i] <-  median(0.5*(mat_mc[,3]+mat_mc[,4]))
+  
+  setwd(wd_image)
+  par(xpd=T)
+  if (right != Inf){
+    name = 'scdist_trunc_g'
+  }else if (seis == TRUE){
+    name = 'scdist_s_g'
+  }else{
+    name = 'scdist_g'
+  }
+  png(paste(name,i,'.png',sep='')
+      ,height=6
+      ,width=6
+      ,units='in'
+      ,res=300
+  )
+  
+  par(mfrow=c(2,2)
+      ,oma=c(0.5,0.5,0.5,0.5)+0.1
+      ,mar=c(5,5,3,0)+0.1)
+  
+  hist(mat_mc[,1]
+       ,freq=F
+       ,xlim=c(0,5)
+       ,main="Reservoir"
+       ,xlab="SFF"
+  )
+  if (right != Inf){
+    #Truncated Weibull pdf
+    lines(seq(0,5,0.01)
+          ,dweibull(seq(0,5,0.01),shape=dataParams_trunc[ind_use[i],4],scale=dataParams_trunc[ind_use[i],3])/pweibull(5,shape=dataParams_trunc[ind_use[i],4],scale=dataParams_trunc[ind_use[i],3])
+          ,col='royalblue'
+          ,lwd=2
+    )
+  }else{
+    lines(seq(0,5,0.01)
+          ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],4],scale=dataParams[ind_use[i],3])
+          ,col='royalblue'
+          ,lwd=2
+    )
+  }
+  points(points$reservoir[ind_use[i]],0
+         ,pch=19
+  )
+  
+  hist(mat_mc[,2]
+       ,freq=F
+       ,xlim=c(0,5)
+       ,main="Thermal"
+       ,xlab="SFF"
+  )
+  if (right != Inf){
+    #Truncated Weibull pdf
+    lines(seq(0,5,0.01)
+          ,dweibull(seq(0,5,0.01),shape=dataParams_trunc[ind_use[i],2],scale=dataParams_trunc[ind_use[i],1])/pweibull(5,shape=dataParams_trunc[ind_use[i],2],scale=dataParams_trunc[ind_use[i],1])
+          ,col='royalblue'
+          ,lwd=2
+    )
+  }else{
+    lines(seq(0,5,0.01)
+          ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],2],scale=dataParams[ind_use[i],1])
+          ,col='royalblue'
+          ,lwd=2
+    )
+  }
+  points(points$thermal[ind_use[i]],0
+         ,pch=19
+  )
+  
+  hist(0.5*(mat_mc[,3]+mat_mc[,4])
+       ,freq=F
+       ,xlim=c(0,5)
+       ,main="Seismic"
+       ,xlab="SFF"
+  )
+  if (right != Inf){
+    #Use truncated Weibull pdf
+    if (lb_mat[ind_use[i],3] != 0){
+      lines(seq(lb_mat[ind_use[i],3],right,0.01)
+            ,dweibull(seq(0,(right - lb_mat[ind_use[i],3]),0.01),shape=dataParams_trunc[ind_use[i],6],scale=dataParams_trunc[ind_use[i],5])/pweibull((right - lb_mat[ind_use[i],3]), shape=dataParams_trunc[ind_use[i],6],scale=dataParams_trunc[ind_use[i],5])
+            ,col='royalblue'
+            ,lwd=2
+      )
+    }
+    else{
+      lines(seq(0,5,0.01)
+            ,dweibull(seq(0,5,0.01),shape=dataParams_trunc[ind_use[i],6],scale=dataParams_trunc[ind_use[i],5])/pweibull(5,shape=dataParams_trunc[ind_use[i],6],scale=dataParams_trunc[ind_use[i],5])
+            ,col='royalblue'
+            ,lwd=2
+      )
+    }
+  }else{
+    if (seis != TRUE){
+      if (lb_mat[ind_use[i],3] != 0){
+        lines(seq(lb_mat[ind_use[i],3],5+lb_mat[ind_use[i],3],0.01)
+              ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],6],scale=dataParams[ind_use[i],5])
+              ,col='royalblue'
+              ,lwd=2
+        )
+      }
+      else{
+        lines(seq(0,5,0.01)
+              ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],6],scale=dataParams[ind_use[i],5])
+              ,col='royalblue'
+              ,lwd=2
+        )
+      }
+    }else{
+      if (lb_mat[ind_use[i],3] != 0){
+        lines(seq(lb_mat[ind_use[i],3], ub_mat[ind_use[i],3],0.01)
+              ,dtnorm(seq(lb_mat[ind_use[i],3], ub_mat[ind_use[i],3],0.01), dataParams[ind_use[i],5], sqrt(dataParams[ind_use[i],6]), lb_mat[ind_use[i],3], ub_mat[ind_use[i],3])
+              ,col='royalblue'
+              ,lwd=2
+        )
+      }
+      else{
+        lines(seq(0,5,0.01)
+              ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],6],scale=dataParams[ind_use[i],5])
+              ,col='royalblue'
+              ,lwd=2
+        )
+      }
+    }
+    
+  }
+  points(points$seismic[ind_use[i]],0
+         ,pch=19
+  )
+  
+  par(xpd=T)
+  dev.off()
+  
+  setwd(wd_image)
+  par(xpd=T)
+  png(paste('scdist_Beta_g',i,'.png',sep='')
+      ,height=6
+      ,width=6
+      ,units='in'
+      ,res=300
+  )
+  
+  par(mfrow=c(2,2)
+      ,oma=c(0.5,0.5,0.5,0.5)+0.1
+      ,mar=c(5,5,3,0)+0.1)
+  
+  hist(mat_mc[,1]
+       ,freq=F
+       ,xlim=c(0,5)
+       ,main="Reservoir"
+       ,xlab="SFF"
+  )
+  lines(seq(0,5,0.01)
+        ,dBeta_ab(seq(0,5,0.01),dataParams_Beta[ind_use[i],3],dataParams_Beta[ind_use[i],4], 0, 5)
+        ,col='royalblue'
+        ,lwd=2
+  )
+  points(points$reservoir[ind_use[i]],0
+         ,pch=19
+  )
+  
+  hist(mat_mc[,2]
+       ,freq=F
+       ,xlim=c(0,5)
+       ,main="Thermal"
+       ,xlab="SFF"
+  )
+  lines(seq(0,5,0.01)
+        ,dBeta_ab(seq(0,5,0.01),dataParams_Beta[ind_use[i],1],dataParams_Beta[ind_use[i],2], 0, 5)
+        ,col='royalblue'
+        ,lwd=2
+  )
+  points(points$thermal[ind_use[i]],0
+         ,pch=19
+  )
+  
+  hist(0.5*(mat_mc[,3]+mat_mc[,4])
+       ,freq=F
+       ,xlim=c(0,5)
+       ,main="Seismic"
+       ,xlab="SFF"
+  )
+  lines(seq(lb_mat[ind_use[i],3], ub_mat[ind_use[i],3],0.01)
+        ,dBeta_ab(seq(lb_mat[ind_use[i],3], ub_mat[ind_use[i],3],0.01), dataParams_Beta[ind_use[i],5], dataParams_Beta[ind_use[i],6], lb_mat[ind_use[i],3], ub_mat[ind_use[i],3])
+        ,col='royalblue'
+        ,lwd=2
+  )
+  points(points$seismic[ind_use[i]],0
+         ,pch=19
+  )
+  
+  par(xpd=T)
+  dev.off()
+}
+rm(rand, pfm5, i)
+
+# making boxplot
+cols <- c(brewer.pal(9,'Set1'))
+setwd(wd_image)
+png('boxplot_5_rfc_geo_a.png'
+    ,height=5
+    ,width=7
+    ,units='in'
+    ,res=300
+)
+par(mar=c(8,5,2,2))
+boxplot(NA
+        ,xlim=c(0,10)
+        ,ylim=c(0,5)
+        ,ylab='Combined Metric: Geologic Average'
+        ,yaxs='i'
+        ,yaxt='n'
+)
+
+for(i in 1:ncol(distsavg_g)){
+  
+  boxplot(distsavg_g[,i]
+          ,at=i
+          ,col=cols[i]
+          ,add=TRUE
+          ,pars=list(outcex=0.5,outpch=19)
+  )
+}
+par(xpd=TRUE)
+text(seq(1,9,1)
+     ,rep(-0.5,9)
+     ,names[ind_use]
+     ,adj=0
+     ,srt=270)
+text(-1.2,5
+     ,'Better'
+     ,adj=1
+     ,col='darkgreen'
+     ,font=2)
+text(-1.2,0
+     ,'Worse'
+     ,adj=1
+     ,col='firebrick'
+     ,font=2)
+par(xpd=FALSE)
+dev.off()
+
+# making violin plot
+#dummy variable
+dists2 <- as.data.frame(distsavg_g)
+
+setwd(wd_image)
+png('violin_5_rfc_geo_a.png'
+    ,height=5
+    ,width=7
+    ,units='in'
+    ,res=300
+)
+par(mar=c(8,5,2,2))
+
+vioplot(dists2[,1],dists2[,2],dists2[,3],dists2[,4],dists2[,5],dists2[,6],dists2[,7],dists2[,8],dists2[,9]
+        ,col=cols
+        #,xlim=c(0,10)
+        #,xlab=''
+        #,xaxt='n'
+        #,ylab='Combined Metric: Sum'
+        ,names=rep('',9)
+        ,ylim=c(0,5)
+        ,h=0.04
+        ,colMed='white'
+)
+
+par(xpd=TRUE)
+rect(-1,-1,0.12,17
+     ,col='white'
+     ,border='white')
+rect(0,-2,10,-0.64
+     ,col='white'
+     ,border='white')
+text(seq(1,9,1)
+     ,rep(-0.7,9)
+     ,names[ind_use]
+     ,adj=0
+     ,srt=270)
+
+text(-1
+     ,2.5
+     ,"Combined Metric: Geologic Average"
+     ,adj=0.5
+     ,srt=90)
+
+axis(2,at=seq(0,5,1))
+par(xpd=FALSE)
+dev.off()
+
+## making parallel axis plot
+# setting exporting parameters
+cols <- c(brewer.pal(9,'Set1'))
+cols[3:10] = c('black', cols[3:9])
+
+# setting working directory and name
+setwd(wd_image)
+png('parallel_axis_5_rfc_geo_a.png'
+    ,height=5
+    ,width=7
+    ,units='in'
+    ,res=300
+)
+par(xpd=FALSE)
+par(mar=c(3,5,1,12))
+plot(NA,NA
+     ,xlim=c(0,2)
+     ,ylim=c(0,5)
+     ,xaxs='i'
+     ,yaxs='i'
+     ,ylab='Favorability'
+     ,xlab=''
+     ,xaxt='n')
+# making vertical lines for the middle objectives
+lines(c(1,1)
+      ,c(0,5)
+      ,col='black')
+
+#Track NA indices:
+IndNA = vector('numeric', length=nrow(points))
+namesNA <- NULL
+
+# loop to add lines to plots
+for(i in 1:nrow(points)){
+  
+  # check for NA values
+  check <- c(points$reservoir_rfc[i]
+             ,points$thermal[i]
+             ,points$seismic[i])
+  # plot lines only if there are no NAs
+  if(sum(is.na(check)) == 0){
+    
+    lines(seq(0,2,1)
+          ,check
+          ,lwd=3
+          ,col=cols[i])
+    namesNA <- c(namesNA,points$names[i])
+  }
+  else{
+    #Keep a record of the NA indexes
+    IndNA[i] = 1
+  }
+}
+rm(check)
+
+par(xpd=TRUE)
+text(c(0,1,2)
+     ,c(-0.3)
+     ,c('Reservoir','Thermal','Seismic')
+     ,adj=0.5)
+text(-0.25,5
+     ,'Better'
+     ,adj=1
+     ,col='darkgreen'
+     ,font=2)
+text(-0.25,0
+     ,'Worse'
+     ,adj=1
+     ,col='firebrick'
+     ,font=2)
+legend(x=2.0,y=5
+       ,legend=namesNA
+       ,col=cols[-which(IndNA == 1)]
+       ,lwd=3
+       ,lty=1
+       ,bty='n'
+       ,pch=NA)
+par(xpd=FALSE)
+dev.off()
+rm(IndNA)
+
+#### RFC Geologic Geometric Mean ####
+#Change for each different extracted2 variable.
+points[comb_names_5_rfc] <- NA 
+
+# extracting the values corresponding to the maximum within 10 km for points
+for(i in 1:nrow(points)){
+  nm <- paste('dist',i,sep='')
+  inds <- which(extracted2_df_5_rfc_geo_g[nm] < 10000)
+  
+  if(length(inds) != 0){
+    if(length(inds) == 1){
+      #One max for geomean for rfc
+      ind_max <- which(extracted2_df_5_rfc_geo_g$co_5_0_125_p_rfc_geo[inds] %in% max(extracted2_df_5_rfc_geo_g$co_5_0_125_p_rfc_geo[inds]))
+      
+      points[i,c(comb_names_5_rfc,'x','y')] <- extracted2_df_5_rfc_geo_g[inds[ind_max],seq(1,length(c(comb_names_5_rfc,'x','y')),1)]
+    }else{
+      #Find all points
+      ind_max <- which(extracted2_df_5_rfc_geo_g$co_5_0_125_p_rfc_geo[inds] %in% max(extracted2_df_5_rfc_geo_g$co_5_0_125_p_rfc_geo[inds]))
+      #Take the value with the lowest uncertainty.
+      ind_max2 <- which(extracted2_df_5_rfc_geo_g$co_pfa_sd5_geomean_rfc_geo[inds][ind_max] %in% min(extracted2_df_5_rfc_geo_g$co_pfa_sd5_geomean_rfc_geo[inds][ind_max]))
+      #If there are more than 1, then take the one with the shortest distance to the point. If there are still more than 1, take the first one:
+      ind_max3 <- which(extracted2_df_5_rfc_geo_g[nm][inds[ind_max][ind_max2],] %in% min(extracted2_df_5_rfc_geo_g[nm][inds[ind_max][ind_max2],]))[1]
+      
+      points[i,c(comb_names_5_rfc,'x','y')] <- extracted2_df_5_rfc_geo_g[inds[ind_max][ind_max2][ind_max3],seq(1,length(c(comb_names_5_rfc,'x','y')),1)]
+    }
+  }
+}
+points$util_err <- 5
+rm(inds, ind_max, ind_max2, ind_max3, nm)
+
+# solving for the weibull distribution parameters
+dataParams <- matrix(NA,10,3*2) #4 is for the number of RFs
+dp2 <- matrix(NA,10,3) #Number of iterations
+#set the lower bound of the Weibull as 0
+lb = 0
+#Set the right truncation point to Inf
+right = Inf
+#Record the value of the lower bound in a matrix
+lb_mat = matrix(0, nrow=nrow(points), ncol=ncol(dataParams)/2)
+for(i in ind_use){
+  
+  mom <- c(points$thermal[i],points$th_pfa_var5[i])
+  #check if thermal is 5 with 0 uncertainty
+  if ((points$thermal[i] == 5 & points$th_pfa_var5[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,1] = 5
+    dataParams[i,c(1,2)] <- NA
+    dp2[i,1] <-  NA
+  }
+  else{
+    #Use a 2 parameter Weibull because the lower bound will be 0
+    lb_mat[i,1] = 0
+    dataParams[i,c(1,2)] <- multiroot(solveWeibull,start=c(1,1), positive=TRUE)$root
+    dp2[i,1] <-  multiroot(solveWeibull,start=c(1,1), positive=TRUE)$iter
+  }
+  
+  mom <- c(points$reservoir_rfc[i],points$re_pfa_var5_rfc[i])
+  #check if reservoir rfc is 5 with 0 uncertainty
+  if ((points$reservoir_rfc[i] == 5 & points$re_pfa_var5_rfc[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,2] = 5
+    dataParams[i,c(3,4)] <- NA
+    dp2[i,2] <-  NA
+  }
+  else{
+    #Use a 2 parameter Weibull because the lower bound will be 0
+    lb_mat[i,2] = 0
+    dataParams[i,c(3,4)] <- multiroot(solveWeibull,start=c(1,2), positive=TRUE)$root
+    dp2[i,2] <-  multiroot(solveWeibull,start=c(1,2), positive=TRUE)$iter
+  }
+  
+  mom <- c(points$seismic[i],points$se_pfa_var5[i])
+  #check if either seismic stress or earthquake is a 5 with no uncertainty
+  if ((points$seis_eq_pred[i] > 25000 & points$seis_eq_err[i] == 0) | (points$seis_stress_pred[i] > 25 & points$seis_stress_err[i] == 0)){
+    #Use a 3 parameter Weibull. Need to find the lower bound.
+    if ((points$seis_eq_pred[i] > 25000 & points$seis_eq_err[i] == 0) & (points$seis_stress_pred[i] > 25 & points$seis_stress_err[i] == 0)){
+      lb_mat[i,3] = 5
+      #These have no need to be fit because the lower bound is a 5. Set parameters to NA.
+      dataParams[i,5] <- NA
+      dataParams[i,6] <- NA
+    }
+    else{
+      if (right != Inf){
+        if (points$seismic[i] == 5){
+          #No matter what the variance is, this distribution by definition of being truncated at 5 cannot be fit.
+          lb_mat[i,3] = 2.5
+          dataParams[i,5] <- NA
+          dataParams[i,6] <- NA
+        }else{
+          lb = 2.5
+          lb_mat[i,3] = lb
+          dataParams[i,c(5,6)] <- multiroot(solveWeibull, start=c(1,2), positive=TRUE)$root
+          dp2[i,3] <-  multiroot(solveWeibull,start=c(1,2), positive=TRUE)$iter
+          
+          if (dataParams[i,5] == 0 | dataParams[i,6] == 0){
+            #The lower bound is very close to 0, try fitting only 1 parameter with a fixed shape.
+            dataParams[i,6] <- 1.5
+            k = dataParams[i,6]
+            dataParams[i,5] <- uniroot(solveWeibull_u, interval=c(0.001,1000))$root
+            rm(k)
+          }
+          
+          lb=0
+        }
+      }else{
+        lb = 2.5
+        lb_mat[i,3] = lb
+        dataParams[i,c(5,6)] <- multiroot(solveWeibull, start=c(1,2), positive=TRUE)$root
+        dp2[i,3] <-  multiroot(solveWeibull,start=c(1,2), positive=TRUE)$iter
+        
+        if (dataParams[i,5] == 0 | dataParams[i,6] == 0){
+          #The lower bound is very close to 0, try fitting only 1 parameter with a fixed shape.
+          dataParams[i,6] <- 1.5
+          k = dataParams[i,6]
+          dataParams[i,5] <- uniroot(solveWeibull_u, interval=c(0.001,1000))$root
+          rm(k)
+        }
+        
+        lb=0
+      }
+    }
+  }
+  else{
+    #Use a 2 parameter Weibull because the lower bound will be 0
+    lb_mat[i,3] = 0
+    dataParams[i,c(5,6)] <- multiroot(solveWeibull,start=c(1,2), positive=TRUE)$root
+    dp2[i,3] <-  multiroot(solveWeibull,start=c(1,2), positive=TRUE)$iter
+  }
+}
+rm(mom)
+
+roots2 <- matrix(NA,10,3) #Percentiles to find roots
+converge2 <- matrix(NA,10,3) #Iterations to converge
+for(i in ind_use){
+  params <- dataParams[i,]
+  
+  #Determine how to search for the root:
+  if (any(lb_mat[i,] != 0)){
+    #The lower bound is non-zero for some terms. Solve for the value using only the smallest values.
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.05
+    roots2[i,1] <- uniroot(solveQuant,interval=c(min(lb_mat[i,]),5))$root
+    converge2[i,1] <- uniroot(solveQuant,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots2[i,1] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots2[i,1] <- uniroot(solveQuant,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge2[i,1] <- uniroot(solveQuant,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+    
+    #Next Percentile
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.50
+    roots2[i,2] <- uniroot(solveQuant,interval=c(min(lb_mat[i,]),5))$root
+    converge2[i,2] <- uniroot(solveQuant,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots2[i,2] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots2[i,2] <- uniroot(solveQuant,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge2[i,2] <- uniroot(solveQuant,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+    
+    #Next Percentile
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.95
+    roots2[i,3] <- uniroot(solveQuant,interval=c(min(lb_mat[i,]),5))$root
+    converge2[i,3] <- uniroot(solveQuant,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots2[i,3] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots2[i,3] <- uniroot(solveQuant,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge2[i,3] <- uniroot(solveQuant,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+  }else{
+    #The lower bound is 0 for all risk factors.
+    ind_params = which(lb_mat[i,] == 0)
+    
+    ps <- 0.05
+    roots2[i,1] <- uniroot(solveQuant,interval=c(0,5))$root
+    converge2[i,1] <- uniroot(solveQuant,interval=c(0,5))$iter
+    
+    ps <- 0.5
+    roots2[i,2] <- uniroot(solveQuant,interval=c(0,5))$root
+    converge2[i,2] <- uniroot(solveQuant,interval=c(0,5))$iter
+    
+    ps <- 0.95
+    roots2[i,3] <- uniroot(solveQuant,interval=c(0,5))$root
+    converge2[i,3] <- uniroot(solveQuant,interval=c(0,5))$iter
+  }
+}
+rm(params, ps)
+
 #Truncated Weibull
 dataParams_trunc <- matrix(NA,10,3*2) #4 is for the number of RFs
 right = 5.0
@@ -8750,9 +11178,10 @@ for(i in 1:length(ind_use)){
 rm(rand, pfm5, i)
 
 # making boxplot
+#Set all places with a 0 to NA. 
 cols <- c(brewer.pal(9,'Set1'))
 setwd(wd_image)
-png('boxplot_5_rfc_geo_a.png'
+png('boxplot_5_rfc_geo_g.png'
     ,height=5
     ,width=7
     ,units='in'
@@ -8762,14 +11191,14 @@ par(mar=c(8,5,2,2))
 boxplot(NA
         ,xlim=c(0,10)
         ,ylim=c(0,5)
-        ,ylab='Combined Metric: Geologic Average'
+        ,ylab='Combined Metric: Geologic Geomean'
         ,yaxs='i'
         ,yaxt='n'
 )
 
-for(i in 1:ncol(distsavg_g)){
+for(i in 1:ncol(distsgeomean_g)){
   
-  boxplot(distsavg_g[,i]
+  boxplot(distsgeomean_g[,i]
           ,at=i
           ,col=cols[i]
           ,add=TRUE
@@ -8796,11 +11225,8 @@ par(xpd=FALSE)
 dev.off()
 
 # making violin plot
-#dummy variable
-dists2 <- as.data.frame(distsavg_g)
-
-setwd(wd_image)
-png('violin_5_rfc_geo_a.png'
+dists2 = as.data.frame(distsgeomean_g)
+png('violin_5_rfc_geo_g.png'
     ,height=5
     ,width=7
     ,units='in'
@@ -8835,7 +11261,7 @@ text(seq(1,9,1)
 
 text(-1
      ,2.5
-     ,"Combined Metric: Geologic Average"
+     ,"Combined Metric: Geologic Geomean"
      ,adj=0.5
      ,srt=90)
 
@@ -8850,7 +11276,7 @@ cols[3:10] = c('black', cols[3:9])
 
 # setting working directory and name
 setwd(wd_image)
-png('parallel_axis_5_rfc_geo_a.png'
+png('parallel_axis_5_rfc_geo_g.png'
     ,height=5
     ,width=7
     ,units='in'
@@ -8924,433 +11350,17 @@ par(xpd=FALSE)
 dev.off()
 rm(IndNA)
 
-#### RFC Geologic Geometric Mean ####
-# points of interest
-points <- as.data.frame(poi2)
-points$x <- points$coords.x1
-points$y <- points$coords.x2
-#Change for each different extracted2 variable.
-points[comb_names_5_rfc] <- NA 
-
-# extracting the values corresponding to the maximum within 10 km for points
-for(i in 1:nrow(points)){
-  nm <- paste('dist',i,sep='')
-  inds <- which(extracted2_df_5_rfc_geo_g[nm] < 10000)
-  
-  if(length(inds) != 0){
-    if(length(inds) == 1){
-      #One max for geomean for rfc
-      ind_max <- which(extracted2_df_5_rfc_geo_g$co_5_0_125_p_rfc_geo[inds] %in% max(extracted2_df_5_rfc_geo_g$co_5_0_125_p_rfc_geo[inds]))
-      
-      points[i,c(comb_names_5_rfc,'x','y')] <- extracted2_df_5_rfc_geo_g[inds[ind_max],seq(1,length(c(comb_names_5_rfc,'x','y')),1)]
-    }else{
-      #Find all points
-      ind_max <- which(extracted2_df_5_rfc_geo_g$co_5_0_125_p_rfc_geo[inds] %in% max(extracted2_df_5_rfc_geo_g$co_5_0_125_p_rfc_geo[inds]))
-      #Take the value with the lowest uncertainty.
-      ind_max2 <- which(extracted2_df_5_rfc_geo_g$co_pfa_sd5_geomean_rfc_geo[inds][ind_max] %in% min(extracted2_df_5_rfc_geo_g$co_pfa_sd5_geomean_rfc_geo[inds][ind_max]))
-      #If there are more than 1, then take the one with the shortest distance to the point. If there are still more than 1, take the first one:
-      ind_max3 <- which(extracted2_df_5_rfc_geo_g[nm][inds[ind_max][ind_max2],] %in% min(extracted2_df_5_rfc_geo_g[nm][inds[ind_max][ind_max2],]))[1]
-      
-      points[i,c(comb_names_5_rfc,'x','y')] <- extracted2_df_5_rfc_geo_g[inds[ind_max][ind_max2][ind_max3],seq(1,length(c(comb_names_5_rfc,'x','y')),1)]
-    }
-  }
-}
-points$util_err <- 5
-rm(inds, ind_max, ind_max2, ind_max3, nm)
-
-# solving for the weibull distribution parameters
-dataParams <- matrix(NA,10,4*2) #4 is for the number of RFs
-dp2 <- matrix(NA,10,4)
-for(i in ind_use){
-  
-  mom <- c(points$thermal[i],points$th_pfa_var5[i])
-  dataParams[i,c(1,2)] <- multiroot(solveWeibull,start=c(1,1))$root
-  dp2[i,1] <-  multiroot(solveWeibull,start=c(1,1))$iter
-  
-  mom <- c(points$reservoir_rfc[i],points$re_pfa_var5_rfc[i])
-  dataParams[i,c(3,4)] <- multiroot(solveWeibull,start=c(1,1))$root
-  dp2[i,2] <-  multiroot(solveWeibull,start=c(1,1))$iter
-  
-  mom <- c(points$seismic[i],points$se_pfa_var5[i])
-  dataParams[i,c(5,6)] <- multiroot(solveWeibull,start=c(1,1))$root
-  dp2[i,3] <-  multiroot(solveWeibull,start=c(1,1))$iter
-}
-rm(mom)
-
-# setting NAs for seismic 5 and utilization 0
-dataParams[which(dataParams[,5]  > 4.9999),5] <- NA
-dataParams[which(dataParams[,5] %in% NA),6] <- NA
-
-roots1 <- matrix(NA,10,3) #All RFs
-roots2 <- matrix(NA,10,3) #Geologic Only
-converge1 <- matrix(NA,10,3) #Iterations to converge
-converge2 <- matrix(NA,10,3)
-for(i in ind_use){
-  
-  params <- dataParams[i,] #params is taken in solveQuant
-  
-  ps <- 0.05
-  roots1[i,1] <- uniroot(solveQuant,interval=c(0,5))$root
-  converge1[i,1] <- uniroot(solveQuant,interval=c(0,5))$iter
-  
-  ps <- 0.5
-  roots1[i,2] <- uniroot(solveQuant,interval=c(0,5))$root
-  converge1[i,2] <- uniroot(solveQuant,interval=c(0,5))$iter
-  
-  ps <- 0.95
-  roots1[i,3] <- uniroot(solveQuant,interval=c(0,5))$root
-  converge1[i,3] <- uniroot(solveQuant,interval=c(0,5))$iter
-  
-  params <- dataParams[i,seq(1,6,1)] #params is taken in solveQuant
-  
-  ps <- 0.05
-  roots2[i,1] <- uniroot(solveQuant,interval=c(0,5))$root
-  converge2[i,1] <- uniroot(solveQuant,interval=c(0,5))$iter
-  
-  ps <- 0.5
-  roots2[i,2] <- uniroot(solveQuant,interval=c(0,5))$root
-  converge2[i,2] <- uniroot(solveQuant,interval=c(0,5))$iter
-  
-  ps <- 0.95
-  roots2[i,3] <- uniroot(solveQuant,interval=c(0,5))$root
-  converge2[i,3] <- uniroot(solveQuant,interval=c(0,5))$iter
-}
-rm(params, ps)
-
-# loop for Monte Carlo
-for(i in 1:length(ind_use)){
-  
-  # setting seed
-  set.seed(10)
-  
-  # initializing matrix
-  mat_mc <- matrix(0,rps,4) #4 is for the number of RFs, considering that seismic has 2 (stress and angle)
-  
-  # reservoir rfc MC
-  pfm5 <- rep(0,rps)
-  
-  res_mean <- log(points$res_pred_rfc_max2[ind_use[i]])
-  res_cv <- points$res_pred_rfc_max_err[ind_use[i]]
-  
-  sigma2 <- log(res_cv^2 + 1)
-  mu <- res_mean- sigma2/2
-  rand <- rnorm(rps,mu,sqrt(sigma2))
-  rm(mu)
-  
-  pfm5[rand < log(res_rfc_thresh5[1])] <-5
-  pfm5[rand > log(res_rfc_thresh5[6])] <- 0
-  pfm5[intersect(which(rand >= log(res_rfc_thresh5[1])),which(rand < log(res_rfc_thresh5[2])))] <- 5- (rand[intersect(which(rand >= log(res_rfc_thresh5[1])),which(rand < log(res_rfc_thresh5[2])))] - log(res_rfc_thresh5[1]))/(log(res_rfc_thresh5[2])-log(res_rfc_thresh5[1]))
-  pfm5[intersect(which(rand >= log(res_rfc_thresh5[2])),which(rand < log(res_rfc_thresh5[3])))] <- 4- (rand[intersect(which(rand >= log(res_rfc_thresh5[2])),which(rand < log(res_rfc_thresh5[3])))] - log(res_rfc_thresh5[2]))/(log(res_rfc_thresh5[3])-log(res_rfc_thresh5[2]))
-  pfm5[intersect(which(rand >= log(res_rfc_thresh5[3])),which(rand < log(res_rfc_thresh5[4])))] <- 3- (rand[intersect(which(rand >= log(res_rfc_thresh5[3])),which(rand < log(res_rfc_thresh5[4])))] - log(res_rfc_thresh5[3]))/(log(res_rfc_thresh5[4])-log(res_rfc_thresh5[3]))
-  pfm5[intersect(which(rand >= log(res_rfc_thresh5[4])),which(rand < log(res_rfc_thresh5[5])))] <- 2- (rand[intersect(which(rand >= log(res_rfc_thresh5[4])),which(rand < log(res_rfc_thresh5[5])))] - log(res_rfc_thresh5[4]))/(log(res_rfc_thresh5[5])-log(res_rfc_thresh5[4]))
-  pfm5[intersect(which(rand >= log(res_rfc_thresh5[5])),which(rand < log(res_rfc_thresh5[6])))] <- 1- (rand[intersect(which(rand >= log(res_rfc_thresh5[5])),which(rand < log(res_rfc_thresh5[6])))] - log(res_rfc_thresh5[5]))/(log(res_rfc_thresh5[6])-log(res_rfc_thresh5[5]))
-  
-  #Because the values are reversed, switch them.
-  pfm5 <- 5-pfm5
-  
-  mat_mc[,1] <- pfm5
-  
-  dist_vars[1,i] <- var(pfm5)
-  
-  # thermal new thresholds MC
-  pfm5 <- rep(0,rps)
-  
-  th_mean <- points$therm_pred[ind_use[i]]
-  th_se <- points$therm_err[ind_use[i]]
-  
-  rand <- rnorm(rps,th_mean,th_se)
-  
-  pfm5[rand < therm_thresh5[1]] <- 5
-  pfm5[rand > therm_thresh5[6]] <- 0
-  pfm5[intersect(which(rand >= therm_thresh5[1]),which(rand < therm_thresh5[2]))] <- 5 - (rand[intersect(which(rand >= therm_thresh5[1]),which(rand < therm_thresh5[2]))] - therm_thresh5[1])/(therm_thresh5[2]-therm_thresh5[1])
-  pfm5[intersect(which(rand >= therm_thresh5[2]),which(rand < therm_thresh5[3]))] <- 4- (rand[intersect(which(rand >= therm_thresh5[2]),which(rand < therm_thresh5[3]))] - therm_thresh5[2])/(therm_thresh5[3]-therm_thresh5[2])
-  pfm5[intersect(which(rand >= therm_thresh5[3]),which(rand < therm_thresh5[4]))] <- 3- (rand[intersect(which(rand >= therm_thresh5[3]),which(rand < therm_thresh5[4]))] - therm_thresh5[3])/(therm_thresh5[4]-therm_thresh5[3])
-  pfm5[intersect(which(rand >= therm_thresh5[4]),which(rand < therm_thresh5[5]))] <- 2- (rand[intersect(which(rand >= therm_thresh5[4]),which(rand < therm_thresh5[5]))] - therm_thresh5[4])/(therm_thresh5[5]-therm_thresh5[4])
-  pfm5[intersect(which(rand >= therm_thresh5[5]),which(rand < therm_thresh5[6]))] <- 1- (rand[intersect(which(rand >= therm_thresh5[5]),which(rand < therm_thresh5[6]))] - therm_thresh5[5])/(therm_thresh5[6]-therm_thresh5[5])
-  
-  mat_mc[,2] <- pfm5
-  
-  dist_vars[2,i] <- var(pfm5)
-  
-  # seismic earthquake MC
-  pfm5 <- rep(0,rps)
-  
-  se_eq_mean <- points$seis_eq_pred[ind_use[i]]
-  se_eq_se <- points$seis_eq_err[ind_use[i]]
-  
-  rand <- rnorm(rps,se_eq_mean,se_eq_se)
-  
-  pfm5[rand < seis_eq_thresh5[1]] <-5
-  pfm5[rand > seis_eq_thresh5[6]] <-0
-  pfm5[intersect(which(rand >= seis_eq_thresh5[1]),which(rand < seis_eq_thresh5[2]))] <- 5- (rand[intersect(which(rand >= seis_eq_thresh5[1]),which(rand < seis_eq_thresh5[2]))] - seis_eq_thresh5[1])/(seis_eq_thresh5[2]-seis_eq_thresh5[1])
-  pfm5[intersect(which(rand >= seis_eq_thresh5[2]),which(rand < seis_eq_thresh5[3]))] <- 4- (rand[intersect(which(rand >= seis_eq_thresh5[2]),which(rand < seis_eq_thresh5[3]))] - seis_eq_thresh5[2])/(seis_eq_thresh5[3]-seis_eq_thresh5[2])
-  pfm5[intersect(which(rand >= seis_eq_thresh5[3]),which(rand < seis_eq_thresh5[4]))] <- 3- (rand[intersect(which(rand >= seis_eq_thresh5[3]),which(rand < seis_eq_thresh5[4]))] - seis_eq_thresh5[3])/(seis_eq_thresh5[4]-seis_eq_thresh5[3])
-  pfm5[intersect(which(rand >= seis_eq_thresh5[4]),which(rand < seis_eq_thresh5[5]))] <- 2- (rand[intersect(which(rand >= seis_eq_thresh5[4]),which(rand < seis_eq_thresh5[5]))] - seis_eq_thresh5[4])/(seis_eq_thresh5[5]-seis_eq_thresh5[4])
-  pfm5[intersect(which(rand >= seis_eq_thresh5[5]),which(rand < seis_eq_thresh5[6]))] <- 1- (rand[intersect(which(rand >= seis_eq_thresh5[5]),which(rand < seis_eq_thresh5[6]))] - seis_eq_thresh5[5])/(seis_eq_thresh5[6]-seis_eq_thresh5[5])
-  
-  #Because the values are reversed, switch them back here.
-  pfm5 <- 5-pfm5
-  
-  mat_mc[,3] <- pfm5
-  dist_vars[3,i] <- var(pfm5)
-  
-  # seismic stress angle MC
-  pfm5 <- rep(0,rps)
-  
-  se_st_mean <- points$NormAngs[ind_use[i]]
-  se_st_se <- points$seis_stress_err[ind_use[i]]
-  
-  rand <- rnorm(rps,se_st_mean,se_st_se)
-  
-  # Old Method - uses absolute value for rand
-  #rand[intersect(which(rand > 65.2),which(rand < 2*65.2))] <- 2*65.2 - rand[intersect(which(rand > 65.2),which(rand < 2*65.2))]
-  #rand[which(rand > 2*65.2)] <- rand[which(rand > 2*65.2)] - 2*65.2
-  
-  # New Method:
-  # Find the values that are negative and add 360 degrees to them until they are all positive.
-  while (length(rand[which(rand < 0)]) != 0){
-    rand[which(rand < 0)] = rand[which(rand < 0)] + 360
-  }
-  # Now convert all values to [0,180]
-  while (length(rand[which(rand > 180)]) != 0){
-    rand[which(rand > 180)] = rand[which(rand > 180)] - 180
-  }
-  # Now take all angles and convert them to a risk angle
-  a1 = abs(rand - critical_ang1)
-  a2 = abs(rand - critical_ang2)
-  # Bind them
-  b = rbind(a1, a2)
-  # Assign the minimum value (most risky) to those points
-  rand = apply(b, 2, min)
-  rm(b,a1,a2)
-  
-  pfm5[rand < seis_stress_thresh5[1]] <- 5
-  pfm5[intersect(which(rand >= seis_stress_thresh5[1]),which(rand < seis_stress_thresh5[2]))] <- 5- (rand[intersect(which(rand >= seis_stress_thresh5[1]),which(rand < seis_stress_thresh5[2]))] - seis_stress_thresh5[1])/(seis_stress_thresh5[2]-seis_stress_thresh5[1])
-  pfm5[intersect(which(rand >= seis_stress_thresh5[2]),which(rand < seis_stress_thresh5[3]))] <- 4- (rand[intersect(which(rand >= seis_stress_thresh5[2]),which(rand < seis_stress_thresh5[3]))] - seis_stress_thresh5[2])/(seis_stress_thresh5[3]-seis_stress_thresh5[2])
-  pfm5[intersect(which(rand >= seis_stress_thresh5[3]),which(rand < seis_stress_thresh5[4]))] <- 3- (rand[intersect(which(rand >= seis_stress_thresh5[3]),which(rand < seis_stress_thresh5[4]))] - seis_stress_thresh5[3])/(seis_stress_thresh5[4]-seis_stress_thresh5[3])
-  pfm5[intersect(which(rand >= seis_stress_thresh5[4]),which(rand < seis_stress_thresh5[5]))] <- 2- (rand[intersect(which(rand >= seis_stress_thresh5[4]),which(rand < seis_stress_thresh5[5]))] - seis_stress_thresh5[4])/(seis_stress_thresh5[5]-seis_stress_thresh5[4])
-  pfm5[intersect(which(rand >= seis_stress_thresh5[5]),which(rand < seis_stress_thresh5[6]))] <- 1- (rand[intersect(which(rand >= seis_stress_thresh5[5]),which(rand < seis_stress_thresh5[6]))] - seis_stress_thresh5[5])/(seis_stress_thresh5[6]-seis_stress_thresh5[5])
-  
-  #Because the values are reversed, switch them back
-  pfm5 <- 5-pfm5
-  
-  mat_mc[,4] <- pfm5
-  
-  #Is this missing????
-  #dist_vars[4,i] <- var(pfm5)
-
-  
-  # calcuating overall distribution
-  #Geologic
-  distsavg_g[,i] <- (mat_mc[,1] + mat_mc[,2] + 0.5*mat_mc[,3]+0.5*mat_mc[,4])/3
-  distsgeomean_g[,i] <- (mat_mc[,1]*mat_mc[,2]*(0.5*mat_mc[,3]+0.5*mat_mc[,4]))^(1/3)
-  distsmin_g[,i] <- apply(cbind(mat_mc[,1],mat_mc[,2],0.5*mat_mc[,3]+0.5*mat_mc[,4]),1,min)
-  
-  #Fraction of time each RF is the minimum for each city
-  for(j in 1:rps){
-    if(distsmin_g[j,i] == mat_mc[j,1]){
-      minRe_g[i] <- minRe_g[i] + 1
-    }
-    if(distsmin_g[j,i] == mat_mc[j,2]){
-      minTh_g[i] <- minTh_g[i] + 1
-    }
-    if(distsmin_g[j,i] == 0.5*(mat_mc[j,3]+mat_mc[j,4])){
-      minSe_g[i] <- minSe_g[i] + 1
-    }
-  }
-  rm(j)
-  
-  reMean[i] <- mean(mat_mc[,1])
-  thMean[i] <-  mean(mat_mc[,2])
-  seMean[i] <-  mean(0.5*(mat_mc[,3]+mat_mc[,4]))
-  
-  # setwd(wd_image)
-  # par(xpd=T)
-  # png(paste('scdist',i,'.png',sep='')
-  #     ,height=6
-  #     ,width=6
-  #     ,units='in'
-  #     ,res=300
-  # )
-  # 
-  # par(mfrow=c(2,2)
-  #     ,oma=c(0.5,0.5,0.5,0.5)+0.1
-  #     ,mar=c(5,5,3,0)+0.1)
-  # 
-  # hist(mat_mc[,1]
-  #      ,freq=F
-  #      ,xlim=c(0,5)
-  #      ,main="Reservoir"
-  #      ,xlab="SFF"
-  # )
-  # lines(seq(0,5,0.01)
-  #       ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],4],scale=dataParams[ind_use[i],3])
-  #       ,col='royalblue'
-  #       ,lwd=2
-  # )
-  # points(points$reservoir[ind_use[i]],0
-  #        ,pch=19
-  # )
-  # 
-  # hist(mat_mc[,2]
-  #      ,freq=F
-  #      ,xlim=c(0,5)
-  #      ,main="Thermal"
-  #      ,xlab="SFF"
-  # )
-  # lines(seq(0,5,0.01)
-  #       ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],2],scale=dataParams[ind_use[i],1])
-  #       ,col='royalblue'
-  #       ,lwd=2
-  # )
-  # points(points$thermal[ind_use[i]],0
-  #        ,pch=19
-  # )
-  # 
-  # hist(0.5*(mat_mc[,3]+mat_mc[,4])
-  #      ,freq=F
-  #      ,xlim=c(0,5)
-  #      ,main="Seismic"
-  #      ,xlab="SFF"
-  # )
-  # lines(seq(0,5,0.01)
-  #       ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],6],scale=dataParams[ind_use[i],5])
-  #       ,col='royalblue'
-  #       ,lwd=2
-  # )
-  # points(points$seismic[ind_use[i]],0
-  #        ,pch=19
-  # )
-  # 
-  # hist(mat_mc[,5]
-  #      ,freq=F
-  #      ,xlim=c(0,5)
-  #      ,main="Utilization"
-  #      ,xlab="SFF"
-  # )
-  # lines(seq(0,5,0.01)
-  #       ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],8],scale=dataParams[ind_use[i],7])
-  #       ,col='royalblue'
-  #       ,lwd=2
-  # )
-  # points(points$utilization[ind_use[i]],0
-  #        ,pch=19
-  # )
-  # 
-  # par(xpd=T)
-  # dev.off()
-}
-rm(rand, pfm5, i)
-
-# making boxplot
-#Set all places with a 0 to NA. 
-cols <- c(brewer.pal(9,'Set1'))
-setwd(wd_image)
-png('boxplot_5_rfc_geo_g.png'
-    ,height=5
-    ,width=7
-    ,units='in'
-    ,res=300
-)
-par(mar=c(8,5,2,2))
-boxplot(NA
-        ,xlim=c(0,10)
-        ,ylim=c(0,5)
-        ,ylab='Combined Metric: Geologic Geomean'
-        ,yaxs='i'
-        ,yaxt='n'
-)
-
-for(i in 1:ncol(distsgeomean_g)){
-  
-  boxplot(distsgeomean_g[,i]
-          ,at=i
-          ,col=cols[i]
-          ,add=TRUE
-          ,pars=list(outcex=0.5,outpch=19)
-  )
-}
-par(xpd=TRUE)
-text(seq(1,9,1)
-     ,rep(-0.5,9)
-     ,names
-     ,adj=0
-     ,srt=270)
-text(-1.2,5
-     ,'Better'
-     ,adj=1
-     ,col='darkgreen'
-     ,font=2)
-text(-1.2,0
-     ,'Worse'
-     ,adj=1
-     ,col='firebrick'
-     ,font=2)
-par(xpd=FALSE)
-dev.off()
-
-# making violin plot
-dists2 = as.data.frame(distsgeomean_g)
-png('violin_5_rfc_geo_g.png'
-    ,height=5
-    ,width=7
-    ,units='in'
-    ,res=300
-)
-par(mar=c(8,5,2,2))
-
-vioplot(dists2[,1],dists2[,2],dists2[,3],dists2[,4],dists2[,5],dists2[,6],dists2[,7],dists2[,8],dists2[,9]
-        ,col=cols
-        #,xlim=c(0,10)
-        #,xlab=''
-        #,xaxt='n'
-        #,ylab='Combined Metric: Sum'
-        ,names=rep('',9)
-        ,ylim=c(0,5)
-        ,h=0.04
-        ,colMed='white'
-)
-
-par(xpd=TRUE)
-rect(-1,-1,0.12,17
-     ,col='white'
-     ,border='white')
-rect(0,-2,10,-0.64
-     ,col='white'
-     ,border='white')
-text(seq(1,9,1)
-     ,rep(-0.7,9)
-     ,names
-     ,adj=0
-     ,srt=270)
-
-text(-1
-     ,2.5
-     ,"Combined Metric: Geologic Geomean"
-     ,adj=0.5
-     ,srt=90)
-
-axis(2,at=seq(0,5,1))
-par(xpd=FALSE)
-dev.off()
-
-## making parallel axis plot
-# setting exporting parameters
-cols <- c(brewer.pal(9,'Set1'))
-cols[3:10] = c('black', cols[3:9])
-
-# setting working directory and name
-setwd(wd_image)
-png('parallel_axis_5_rfc_geo_g.png'
+#With utilization
+png('parallel_axis_5_rfc_geo_g_util.png'
     ,height=5
     ,width=7
     ,units='in'
     ,res=300
 )
 par(xpd=FALSE)
-par(mar=c(3,5,1,12))
+par(mar=c(3,5,1,10))
 plot(NA,NA
-     ,xlim=c(0,2)
+     ,xlim=c(0,3)
      ,ylim=c(0,5)
      ,xaxs='i'
      ,yaxs='i'
@@ -9361,14 +11371,13 @@ plot(NA,NA
 lines(c(1,1)
       ,c(0,5)
       ,col='black')
-
-names <- NULL
-points$names <- c('Corning, NY', 'Elmira, NY', 'Ithaca, NY', 'Jamestown, NY'
-                  ,'Mansfield, PA', 'Meadville, PA','Sayre, PA'
-                  ,'Charleston, WV', 'Morgantown, WV', 'Pineville, WV')
+lines(c(2,2)
+      ,c(0,5)
+      ,col='black')
 
 #Track NA indices:
 IndNA = vector('numeric', length=nrow(points))
+namesNA <- NULL
 
 # loop to add lines to plots
 for(i in 1:nrow(points)){
@@ -9380,11 +11389,11 @@ for(i in 1:nrow(points)){
   # plot lines only if there are no NAs
   if(sum(is.na(check)) == 0){
     
-    lines(seq(0,2,1)
-          ,check
+    lines(seq(0,3,1)
+          ,c(check, points$utilization[i])
           ,lwd=3
           ,col=cols[i])
-    names <- c(names,points$names[i])
+    namesNA <- c(namesNA,points$names[i])
   }
   else{
     #Keep a record of the NA indexes
@@ -9394,22 +11403,22 @@ for(i in 1:nrow(points)){
 rm(check)
 
 par(xpd=TRUE)
-text(c(0,1,2)
+text(c(0,1,2,3)
      ,c(-0.3)
-     ,c('Reservoir','Thermal','Seismic')
+     ,c('Reservoir','Thermal','Seismic', 'Utilization')
      ,adj=0.5)
-text(-0.25,5
+text(-0.35,5
      ,'Better'
      ,adj=1
      ,col='darkgreen'
      ,font=2)
-text(-0.25,0
+text(-0.35,0
      ,'Worse'
      ,adj=1
      ,col='firebrick'
      ,font=2)
-legend(x=2.0,y=5
-       ,legend=names
+legend(x=3.0,y=5
+       ,legend=namesNA
        ,col=cols[-which(IndNA == 1)]
        ,lwd=3
        ,lty=1
@@ -9418,6 +11427,7 @@ legend(x=2.0,y=5
 par(xpd=FALSE)
 dev.off()
 rm(IndNA)
+
 
 #### RFC Geologic Minimum ####
 # points of interest
@@ -13925,7 +15935,7 @@ rm(IndNA)
 # all variables
 setwd(wd_image)
 par(mar=c(1,1,1,1)*0.1)
-png('three_panel2_all_med_beta_trunc_rfc.png'
+png('three_panel2_all_med_beta_trunc_dtn_ftn_rfc.png'
      ,height=6
      ,width=6
      ,units='in'
@@ -13935,11 +15945,13 @@ png('three_panel2_all_med_beta_trunc_rfc.png'
 par(mfrow=c(1,5)
      ,oma=c(1,0,0,3)+0.1
      ,mar=c(5,0,0,0)+0.1)
-dshift1 <- 0.4
-dshift2 <- 0.2
-dshift3 <- 0.2
-dshift4 <- 0.2
- 
+dshift1 <- 0.15
+dshift2 <- 0.15
+dshift3 <- 0.15
+dshift4 <- 0.15
+dshift5 <- 0.15
+dshift6 <- 0.15
+
 plot(NA,NA
       ,xlim=c(0,1)
       ,ylim=c(0,length(ind_use))
@@ -13988,6 +16000,14 @@ for(i in 1:length(ind_use)){
      lines(roots1[ind_use[i],c(1,3)],c(i-1+dshift1+dshift2,i-1+dshift1+dshift2)
            ,lwd=2
            ,col='black')
+     #Truncated folded normal
+     lines(roots1_ftn[ind_use[i],c(1,3)],c(i-1+dshift1+dshift2+dshift3+dshift4+dshift5+dshift6,i-1+dshift1+dshift2+dshift3+dshift4+dshift5+dshift6)
+           ,lwd=2
+           ,col='orange4')
+     #Doubly truncated normal
+     lines(roots1_dtn[ind_use[i],c(1,3)],c(i-1+dshift1+dshift2+dshift3+dshift4+dshift5,i-1+dshift1+dshift2+dshift3+dshift4+dshift5)
+           ,lwd=2
+           ,col='purple4')
      #Beta
      lines(roots1_Beta[ind_use[i],c(1,3)],c(i-1+dshift1+dshift2+dshift3+dshift4,i-1+dshift1+dshift2+dshift3+dshift4)
            ,lwd=2
@@ -14018,6 +16038,18 @@ for(i in 1:length(ind_use)){
    points(roots1_Beta[ind_use[i],2],i-1+dshift1+dshift2+dshift3+dshift4
           ,pch=3
           ,col='red'
+          ,cex=1.5
+   )
+   
+   points(roots1_dtn[ind_use[i],2],i-1+dshift1+dshift2+dshift3+dshift4+dshift5
+          ,pch=3
+          ,col='purple'
+          ,cex=1.5
+   )
+   
+   points(roots1_ftn[ind_use[i],2],i-1+dshift1+dshift2+dshift3+dshift4+dshift5+dshift6
+          ,pch=3
+          ,col='orange'
           ,cex=1.5
    )
    
@@ -14176,14 +16208,246 @@ plot(NA,NA
 # )
 
 legend('right'
-        ,legend=c('3 Parameter \n Weibull Mean', 'Monte Carlo \n Mean','3 Parameter \n Weibull Median','Truncated \n Weibull Median','Beta Median', 'Monte Carlo \n Median','Truncated \n Weibull 90% PI','3 Parameter \n Weibull 90% PI','Beta \n 90% PI','Monte Carlo \n 90% PI')
-        ,pch=c(4,4,3,3,3,3,NA,NA,NA,NA)
-        ,col=c('black','gray48','blue','springgreen','red','skyblue','black','darkgreen','red4','gray48')
-        ,lwd=c(NA,NA,NA,NA,NA,NA,2,2,2,2)
+        ,legend=c('Approximate \n Mean', 'Monte Carlo \n Mean','3 Parameter \n Weibull Median','Truncated \n Weibull Median','Beta Median','Truncated \n Normal Median','Folded \n Normal Median','Monte Carlo \n Median','Approximate \n 90% PI','Truncated \n Weibull 90% PI','Beta \n 90% PI','Truncated \n Normal 90% PI','Folded \n Normal 90% PI','Monte Carlo \n 90% PI')
+        ,pch=c(4,4,3,3,3,3,3,3,NA,NA,NA,NA,NA,NA)
+        ,col=c('black','gray48','blue','springgreen','red','purple','orange','skyblue','black','darkgreen','red4','purple4','orange4','gray48')
+        ,lwd=c(NA,NA,NA,NA,NA,NA,NA,NA,2,2,2,2,2,2)
         ,y.intersp = 1.5
 )
 par(xpd=F)
 dev.off()
+
+
+par(mar=c(1,1,1,1)*0.1)
+png('three_panel2_all_med.png'
+    ,height=6
+    ,width=6
+    ,units='in'
+    ,res=300
+)
+
+par(mfrow=c(1,5)
+    ,oma=c(1,0,0,3)+0.1
+    ,mar=c(5,0,0,0)+0.1)
+dshift1 <- 0.4
+dshift2 <- 0.2
+
+plot(NA,NA
+     ,xlim=c(0,1)
+     ,ylim=c(0,length(ind_use))
+     ,xaxt='n'
+     ,yaxt='n'
+     ,ylab=''
+     ,xlab=''
+     ,bty='n')
+par(xpd=T)
+for(i in 1:length(ind_use)){
+  text(x=1,y=i-0.5
+       ,labels=names[ind_use[i]]
+       ,adj=1
+       ,cex=1.2)
+  
+}
+par(xpd=F)
+
+plot(NA,NA
+     ,xlim=c(0,5)
+     ,ylim=c(0,length(ind_use))
+     ,main=''
+     ,xlab='Minimum'
+     ,yaxt='n'
+     ,ylab=''
+     ,cex.lab=1.2)
+grid(ny=NA)
+for(i in 1:length(ind_use)){
+  
+  res_mean <- points$reservoir_rfc[ind_use[i]]
+  #res_var <- points$re_pfa_var5[ind_use[i]]
+  
+  therm_mean <- points$thermal[ind_use[i]]
+  #therm_var <- points$th_pfa_var5[ind_use[i]]
+  
+  seis_mean <- points$seismic[ind_use[i]]
+  #seis_var <- points$se_pfa_var5[ind_use[i]]
+  
+  util_mean <- points$utilization[ind_use[i]]
+  
+  # calculating empirical quantiles
+  empQuant <- quantile(distsmin[,i],c(0.05,0.95))
+  
+  # calculated values
+  if(max(is.na(dataParams[ind_use[i],c(7,8)])) == 0){
+    lines(roots1[ind_use[i],c(1,3)],c(i-1+dshift1+dshift2,i-1+dshift1+dshift2)
+          ,lwd=2
+          ,col='black')
+  }
+  
+  points(min(res_mean,therm_mean,seis_mean,util_mean),i-1+dshift1+dshift2
+         ,pch=4
+         ,col='black'
+         ,cex=1.5
+  )
+  
+  points(roots1[ind_use[i],2],i-1+dshift1+dshift2
+         ,pch=3
+         ,col='blue'
+         ,cex=1.5
+  )
+  
+  # empirical values
+  lines(c(as.numeric(empQuant)),c(i-1+dshift1,i-1+dshift1)
+        ,lwd=2
+        ,col='gray48'
+  )
+  
+  points(mean(distsmin[,i]),i-1+dshift1
+         ,pch=4
+         ,col='gray48'
+         ,cex=1.5
+  )
+  
+  points(median(distsmin[,i]),i-1+dshift1
+         ,pch=3
+         ,col='skyblue'
+         ,cex=1.5
+  )
+}
+
+plot(NA,NA
+     ,xlim=c(0,5)
+     ,ylim=c(0,length(ind_use))
+     ,main=''
+     ,xlab='Geometric Mean'
+     ,yaxt='n'
+     ,ylab=''
+     ,cex.lab=1.2)
+grid(ny=NA)
+for(i in 1:length(ind_use)){
+  
+  # calculating empirical quantiles
+  empQuant <- quantile(distsgeomean[,i],c(0.05,0.95))
+  
+  #extracting values value
+  res_mean <- points$reservoir_rfc[ind_use[i]]
+  res_var_ls <- points$re_pfa_var5_rfc_ls[ind_use[i]]
+  
+  therm_mean <- points$thermal[ind_use[i]]
+  therm_var_ls <- points$th_pfa_var5_ls[ind_use[i]]
+  
+  seis_mean <- points$seismic[ind_use[i]]
+  seis_var_ls <- points$se_pfa_var5_ls[ind_use[i]]
+  if(is.na(seis_var_ls)){
+    seis_var_ls <- 0
+  }
+  
+  util_mean <- points$utilization[ind_use[i]]
+  util_var_ls <- points$util_pfa_var5_ls[ind_use[i]]
+  
+  var_geomean_ls <- (1/16)*(res_var_ls + therm_var_ls + seis_var_ls + util_var_ls)
+  mean_geomean_ls <- 0.25*(log(res_mean) + log(therm_mean) + log(seis_mean) + log(util_mean))
+  
+  theoQuants <- exp(qnorm(c(0.05,0.95),mean_geomean_ls,sqrt(var_geomean_ls)))
+  
+  # calculated values
+  lines(theoQuants,c(i-1+dshift1+dshift2,i-1+dshift1+dshift2)
+        ,lwd=2
+        ,col='black'
+  )
+  
+  points(exp(mean_geomean_ls),i-1+dshift1+dshift2
+         ,pch=4
+         ,col='black'
+         ,cex=1.5
+  )
+  
+  # empirical values
+  lines(c(as.numeric(empQuant)),c(i-1+dshift1,i-1+dshift1)
+        ,lwd=2
+        ,col='gray48'
+  )
+  
+  points(mean(distsgeomean[,i]),i-1+dshift1
+         ,pch=4
+         ,col='gray48'
+         ,cex=1.5
+  )
+}
+
+
+plot(NA,NA
+     ,xlim=c(0,5)
+     ,ylim=c(0,length(ind_use))
+     ,main=''
+     ,xlab='Average'
+     ,yaxt='n'
+     ,ylab=''
+     ,cex.lab=1.2)
+grid(ny=NA)
+for(i in 1:length(ind_use)){
+  
+  # calculating empirical quantiles
+  empQuant <- quantile(distsavg[,i],c(0.05,0.95))
+  
+  #extracting values value
+  res_mean <- points$reservoir_rfc[ind_use[i]]
+  res_var <- points$re_pfa_var5_rfc[ind_use[i]]
+  
+  therm_mean <- points$thermal[ind_use[i]]
+  therm_var <- points$th_pfa_var5[ind_use[i]]
+  
+  seis_mean <- points$seismic[ind_use[i]]
+  seis_var <- points$se_pfa_var5[ind_use[i]]
+  
+  util_mean <- points$utilization[ind_use[i]]
+  util_var <- points$util_pfa_var5[ind_use[i]]
+  
+  var_avg <- (1/16)*(seis_var + res_var + therm_var + util_var)
+  mean_avg <- (res_mean + therm_mean + seis_mean + util_mean)/4
+  
+  # calculated values seis_mean
+  lines(qnorm(c(0.05,0.95),mean_avg,sqrt(var_avg)),c(i-1+dshift1+dshift2,i-1+dshift1+dshift2)
+        ,lwd=2
+        ,col='black'
+  )
+  
+  points(mean_avg,i-1+dshift1+dshift2
+         ,pch=4
+         ,col='black'
+         ,cex=1.5
+  )
+  
+  # empirical values
+  lines(c(as.numeric(empQuant)),c(i-1+dshift1,i-1+dshift1)
+        ,lwd=2
+        ,col='gray48'
+  )
+  
+  points(mean(distsavg[,i]),i-1+dshift1
+         ,pch=4
+         ,col='gray48'
+         ,cex=1.5
+  )
+}
+
+plot(NA,NA
+     ,xlim=c(0,1)
+     ,ylim=c(0,length(ind_use))
+     ,xaxt='n'
+     ,yaxt='n'
+     ,ylab=''
+     ,xlab=''
+     ,bty='n')
+
+legend('right'
+       ,legend=c('Approximate \n Mean', 'Monte Carlo \n Mean','3 Parameter \n Weibull Median', 'Monte Carlo \n Median','Approximate \n 90% PI','Monte Carlo \n 90% PI')
+       ,pch=c(4,4,3,3,NA,NA)
+       ,col=c('black','gray48','blue','skyblue','black','gray48')
+       ,lwd=c(NA,NA,NA,NA,2,2)
+       ,y.intersp = 1.5
+)
+par(xpd=F)
+dev.off()
+
  
 #### Geologic Only #### 
 setwd(wd_image)
@@ -14251,6 +16515,12 @@ for(i in 1:length(ind_use)){
          ,col='black'
          ,cex=1.5
   )
+  
+  points(roots2[ind_use[i],2],i-1+dshift1+dshift2
+         ,pch=3
+         ,col='blue'
+         ,cex=1.5
+  )
 
   # empirical values
   lines(c(as.numeric(empQuant)),c(i-1+dshift1,i-1+dshift1)
@@ -14261,6 +16531,11 @@ for(i in 1:length(ind_use)){
   points(mean(distsmin_g[,i]),i-1+dshift1
          ,pch=4
          ,col='gray48'
+         ,cex=1.5
+  )
+  points(median(distsmin_g[,i]),i-1+dshift1
+         ,pch=3
+         ,col='skyblue'
          ,cex=1.5
   )
 }
@@ -14387,10 +16662,10 @@ plot(NA,NA
      ,bty='n')
 
 legend('center'
-       ,legend=c('Favorability \n Metric Value','Monte Carlo \n Mean','Approximate \n 90% PI','Monte Carlo \n 90% PI')
-       ,pch=c(4,4,NA,NA)
-       ,col=c('black','gray48','black','gray48')
-       ,lwd=c(NA,NA,2,2)
+       ,legend=c('Approximate \n Mean','Monte Carlo \n Mean','3 Parameter \n Weibull Median','Monte Carlo \n Median','Approximate \n 90% PI','Monte Carlo \n 90% PI')
+       ,pch=c(4,4,3,3,NA,NA)
+       ,col=c('black','gray48','blue','skyblue','black','gray48')
+       ,lwd=c(NA,NA,NA,NA,2,2)
        ,y.intersp = 1.5
 )
 par(xpd=F)
@@ -14463,11 +16738,11 @@ for(i in 1:length(ind_use)){
          ,cex=1.5
   )
   
-  points(roots1[ind_use[i],2],i-1+dshift1
-         ,pch=5
-         ,col='black'
-         ,cex=1.5
-  )
+  # points(roots1[ind_use[i],2],i-1+dshift1
+  #        ,pch=5
+  #        ,col='black'
+  #        ,cex=1.5
+  # )
 
   # calculating empirical quantiles
   empQuant <- quantile(distsgeomean[,i],c(0.05,0.95))
@@ -14858,6 +17133,10 @@ axis(2
      ,labels=c(0,1,2,3,4,5))
 dev.off()
 
+#Correlations
+cor(extract_pts3$co_p_5[inds_gtr0]^.25, extract_pts3$co_s_5[inds_gtr0]/4)
+cor(extract_pts3$co_p_5[inds_gtr0]^.25, extract_pts3$co_m_5[inds_gtr0])
+cor(extract_pts3$co_m_5[inds_gtr0], extract_pts3$co_s_5[inds_gtr0]/4)
 
 #### RPIw ####
 combined_all_rasters <- stack(c(th_5_0_5_NA,re_5_0_5_NA_RPIw,se_5_0_5_a,ut5_5_0_5_NA))
