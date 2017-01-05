@@ -211,11 +211,11 @@ for (i in 1:length(kvec)){
 rm(betaDist1, betaDist2, normDist, tDist10, tDist8, tDist6, tDist4, tDist2,k,i)
 rm(beta1Out, beta2Out, normOut, t10Out, t8Out, t6Out, t4Out, t2Out)
 
-#Export the results
+#Export the results----
 write.csv(Results, file =  "TypeIError_25_100k.csv", row.names = TRUE)
 write.csv(ResultsLarge, file =  "TypeIError_PI.csv", row.names = TRUE)
 
-#Parallel - Slow ----
+#Parallel - Slow, use the implementation above. Saving for reference only. ----
 #Function for testing the outlier identification
 outID = function(data, #dataframe to test for outliers
                  vec,  #column name (string) containing the data to be tested.
