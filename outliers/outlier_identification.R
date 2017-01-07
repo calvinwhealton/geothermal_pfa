@@ -1,6 +1,6 @@
 # code to run outlier identification
 
-# function inputs are:
+# outlier_iden function inputs are:
 # X         dataframe of values including
 #             x_coord    x coordinate
 #             y_coord    y coordinate
@@ -17,14 +17,15 @@
 # rad_eval  radius used for local evaluation
 # box_size  size of box for gridded local search
 # pt_min    minimum number of points to evaluate local outliers
-# rad_max   maximum radus to use in search
+# rad_max   maximum radius to use in search
 # k_glob    constant used for outlier identification
 # k_loc     constant used for local outlier identification
 # wts       weights for distance in each direction
 # type      type of quantile estimation algorithm
+
 # rad_eval, rad_max, and box_size are assumed to be units of km, but can be specified for any coordinate system
 
-# function output is:
+# outlier_iden function output is:
 # X         dataframe of all input with additional columns for
 #             outs = 1 for outlier, outs = 0 for non-outlier
 #             
@@ -33,18 +34,94 @@
 # 0   no errors
 # 1   some of pt_eval points outside of rad_max
 # 2   fewer than pt_min within rad_eval
+
+# Additional inputs are available in the select_out_algo function, which calls outlier_iden:
+# Threshold   Exclude all points with values less than Threshold
+# OutVarName  Desired column name for the tested variable in the output file
+# InVarName   Column name of the thermal variable in Data. May be the same as OutVarName.
+# X_coordName Column name of the UTM longitude in Data.
+# Y_coordName Column name of the UTM latitude in Data. 
+
+# select_out_algo function output is:
+# TestedOutliers    List containing a dataframe of the outliers and
+#                   a dataframe of the not outliers.
+
+#### Functions ####
+# Function used to set up the dataframe column names and run the outlier analysis. 
+# All options for outlier identification Are available in this function.
+# There is an option to set a threshold, below which all values will be dropped before the outlier identification. 
+# The default is to drop all negative values.
+select_out_algo <- function(Data,    # Dataframe to be tested for outliers
+                            OutVarName,      # Desired column name for the tested variable in the output file
+                            InVarName,       # Column name of the thermal variable in Data. May be the same as OutVarName.
+                            X_coordName,     # Column name of the UTM longitude in Data.
+                            Y_coordName,     # Column name of the UTM latitude in Data. 
+                            Threshold = 0.0, # Points in column InVarName less than Threshold will be dropped before outlier analysis. Default is 0.0.
+                            algo = 1,        # local detection algorithm
+                            outcri = 1,      # outlier criterion
+                            pt_eval = 25,    # minumum number of points to evaluate
+                            rad_eval = 16,   # radius used for local outlier identification (km)
+                            box_size = 32,   # edge length of the box (km)
+                            pt_min = 25,     # minimum number of points to evaluate local outliers
+                            rad_max = 16,    # maximum radius to search for local points (km)
+                            k_glob = 3,      # constant for quartile-median range in global analysis
+                            k_loc = 3,       # constant for quartile-median range in local analysis
+                            type = 7,        # type of quantile interpolation
+){
+  
+  #Rename columns based on the necessary inputs to the outlier identification function.
+  colnames(Data@data)[which(colnames(Data@data)==InVarName)] = "test"
+  colnames(Data@data)[which(colnames(Data@data)==X_coordName)] = "x_coord"
+  colnames(Data@data)[which(colnames(Data@data)==Y_coordName)] = "y_coord"
+  
+  #Remove all negative values. They are physically impossible and will affect the outlier identification.
+  if (length(which(Data@data[, "test"] <= Threshold)) > 0) {
+    Data = Data[-which(Data@data["test"] <= Threshold),] 
+  }
+  
+  #Run outlier identification
+  Outs = outlier_iden(Data
+                      , algo = algo          # local detection algorithm
+                      , outcri = outcri      # outlier criterion
+                      , pt_eval = pt_eval    # minumum number of points to evaluate
+                      , rad_eval = rad_eval  # radius used for local outlier identification (km)
+                      , box_size = box_size  # edge length of the box (km)
+                      , pt_min = pt_min      # minimum number of points to evaluate local outliers
+                      , rad_max = rad_max    # maximum radius to search for local points (km)
+                      , k_glob = k_glob      # constant for quartile-median range in global analysis
+                      , k_loc = k_loc        # constant for quartile-median range in local analysis
+                      , type = type)         # type of quantile interpolation
+  
+  #Change the column name of the UTM coordinates back to the original name.
+  colnames(Outs@data)[which(colnames(Outs@data)=="x_coord")] = X_coordName
+  colnames(Outs@data)[which(colnames(Outs@data)=="y_coord")] = Y_coordName
+  
+  #Rename the thermal variable column according to the OutVarName
+  colnames(Outs@data)[which(colnames(Outs@data)=="test")] = OutVarName
+  
+  #Split the data into Outliers and NotOutliers
+  NotOutliers = Outs[-which(Outs@data$outs != 0),]
+  Outliers = Outs[which(Outs@data$outs != 0),]
+  
+  #List for returning data
+  TestedOutliers = list("NotOutliers" = NotOutliers, "Outliers" = Outliers)
+  
+  return(TestedOutliers)
+}
+
+# Wrapper function that calls the outlier identification algorithm functions.
 outlier_iden <- function(X                # input dataframe
-                        , algo = 1        # local detection algorithm
-                        , outcri = 1      # outlier criterion
-                        , pt_eval = 25    # minumum number of points to evaluate
-                        , rad_eval = 16   # radius used for local outlier identification
-                        , box_size = 32   # edge length of the box
-                        , pt_min = 25     # minimum number of points to evaluate local outliers
-                        , rad_max = 16    # maximum radius to search for local points
-                        , k_glob = 3      # constant for quartile-median range in global analysis
-                        , k_loc = 3       # constant for quartile-median range in local analysis
-                        , type = 7        # type of quantile interpolation
-                        ){
+                         , algo = 1        # local detection algorithm
+                         , outcri = 1      # outlier criterion
+                         , pt_eval = 25    # minumum number of points to evaluate
+                         , rad_eval = 16   # radius used for local outlier identification
+                         , box_size = 32   # edge length of the box
+                         , pt_min = 25     # minimum number of points to evaluate local outliers
+                         , rad_max = 16    # maximum radius to search for local points
+                         , k_glob = 3      # constant for quartile-median range in global analysis
+                         , k_loc = 3       # constant for quartile-median range in local analysis
+                         , type = 7        # type of quantile interpolation
+){
   
   # checking that x and y coordinates are properly defined
   # printing error if the coordinates are not defined
@@ -72,14 +149,14 @@ outlier_iden <- function(X                # input dataframe
       }else if (algo == 2){  # case for finding points within rad_eval but must have points min_pts
         X <- outlier_loc_rad(X,rad_eval,pt_min,k_loc,type)
       }else if (algo == 3){ # case for algorithm using fixed-grid boxes
-       X <- outlier_log_grid(X,box_size,pt_min,type)
+        X <- outlier_log_grid(X,box_size,pt_min,type)
       }else{
-       print("Not a valid local outlier detection algorithm")
+        print("Not a valid local outlier detection algorithm")
       }
-     
-     # outlier identified as either low or high local outlier
-     X$outs <- X$out_loc_lo + X$out_loc_hi
-     
+      
+      # outlier identified as either low or high local outlier
+      X$outs <- X$out_loc_lo + X$out_loc_hi
+      
     }else if(outcri == 2){ # case for local and global outlier identification
       
       # finding local outliers
@@ -315,10 +392,9 @@ outlier_loc_grid <- function(X,box_size,pt_min,k_loc,type){
       }
     }
   } # end for loop
-
+  
   return(X)
 }
-
 
 # function for global outlier identification
 outlier_glob <- function(X,k_glob,type){
