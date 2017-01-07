@@ -40,6 +40,7 @@ library(Hmisc)        #For minor tick marks on plots
 library(circular)     #For the von Mises distribution
 library(ExtDist)      #For Generalized Beta distribution
 library(msm)          #For doubly truncated normal distribution
+library(VGAM)         #For folded normal distribution
 
 ##### defining working directories #####
 # need to be changed based on machine
@@ -1654,7 +1655,7 @@ uncer_temp <- stack(re_pfa_var5_rfc_ls,th_pfa_var5_ls,se_pfa_var5_ls,util_pfa_va
 uncer_temp[uncer_temp < 0] <- NA
 co_uncer_geomean1 <- calc(uncer_temp,fun=sum)
 co_uncer_geomean2 <- calc(co_uncer_geomean1,fun=function(x){return(x/16)})
-co_pfa_var5_geomean_rfc <- calc(stack(co_5_0_625_p_rfc,co_5_0_625_p_rfc,co_uncer_geomean2),fun=prod)
+co_pfa_var5_geomean_rfc <- calc(stack(co_5_0_625_p_rfc,co_5_0_625_p_rfc,co_uncer_geomean2),fun=prod) #Multiply by the squared scaled mean to transform to real space
 
 uncer_temp <- stack(re_pfa_var5_RPIw_ls,th_pfa_var5_ls,se_pfa_var5_ls,util_pfa_var5_ls)
 uncer_temp[uncer_temp < 0] <- NA
