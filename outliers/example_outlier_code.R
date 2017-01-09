@@ -261,42 +261,45 @@ cd_loc_glob_pt <- outlier_iden(X=cd_loc_glob_pt
                           , k_loc = 3  
                           , type = 7)
 
-# sensitivity analysis for points algorithm----
+# sensitivity analysis for local points algorithm----
 pts_sens <- c(10,25,50,100,200) # number of points for local neighborhood
-rad_sens <- c(4,8,16,32,64) # maximum size of radius
+rad_sens <- c(4000,8000,16000,32000,64000) # maximum size of radius
 
 outs_iden <- matrix(0,length(pts_sens),length(rad_sens)) # matrix to hold number of outliers
 outs_sparse <- matrix(0,length(pts_sens),length(rad_sens)) # number of points in sparse areas
 
-
+#Calculate Outliers
 for(i in 1:length(pts_sens)){
   for(j in 1:length(rad_sens)){
     sens_data <- cornell_data
     
     sens_data2 <- outlier_iden(X=sens_data
-                              , algo = 1
-                              , outcri = 1
-                              , pt_eval = pts_sens[i]
-                              , rad_eval = 16
-                              , box_size = 32
-                              , pt_min = 25
-                              , rad_max = rad_sens[j]
-                              , k_glob = 3 
-                              , k_loc = 3  
-                              , type = 7)
+                               , algo = 1
+                               , outcri = 1
+                               , pt_eval = pts_sens[i]
+                               , rad_eval = 16000
+                               , box_size = 32000
+                               , pt_min = 25
+                               , rad_max = rad_sens[j]
+                               , k_glob = 3 
+                               , k_loc = 3  
+                               , type = 7)
     
     outs_iden[i,j] <- sum(sens_data2$outs)
-    outs_sparse[i,j] <- sum(is.na(sens_data2$out_loc_lb)+1-1)
+    outs_sparse[i,j] <- sum(sens_data2$out_loc_error)
   }
 }
 
 # creating plot
 setEPS()
-postscript("outlier_sens.eps")
+postscript(file = "outlier_sens.eps", title = "Sensitivity Outliers Local Points", width = 5, height = 5)
 
+#Make color ramp
+Pal = colorRampPalette(c('red', 'orange', 'yellow', 'green', 'blue', 'purple'))
+cols <- Pal(max(outs_iden)+1)
 
-cols <- topo.colors(766)
-par(mar =c(4.5,4.5,2,12)+0.1) 
+#Set plotting margins
+par(mar =c(3,3,0,9)+0.1)
 
 data <- matrix(0,length(pts_sens)*length(rad_sens),4)
 
@@ -305,51 +308,53 @@ for(i in 1:length(rad_sens)){
   
   data[c(inds),1] <- outs_iden[,i]
   data[c(inds),2] <- outs_sparse[,i]
-  data[c(inds),3] <- c(10,25,50,100,200)
-  data[c(inds),4] <- rad_sens[i]
+  data[c(inds),3] <- pts_sens
+  data[c(inds),4] <- rad_sens[i]/1000 #Convert to km for plotting position
 }
 
 dataplot <- data.frame(data)
 
 colnames(dataplot) <- c("iden", "sparse", "pts", "rad")
 
+#Changing the plotting location for pts = 10 to 12.5 for equal spacing in log base 2
+dataplot$pts[dataplot$pts == 10] = 12.5
+
+#Assigning color and size of points
 dataplot$cols <- cols[dataplot$iden+1]
-dataplot$cex <- sqrt(8919 - dataplot$sparse)/30
+dataplot$cex <- sqrt(nrow(DataTest) - dataplot$sparse)/30
 
 plot(dataplot$pts
      , log(dataplot$rad, base=2)
      , log='x'
-     , cex = 1.02*sqrt(8919)/30
+     , cex = 1.02*sqrt(nrow(DataTest))/30
      , col = "black"
      , pch = 19
      , ylab = "Max Radius (km)"
      , xlab = "Points to Evaluate"
      , xaxt = "n"
      , yaxt = "n"
-     , ylim = c(1.5,6.5)
-     , xlim = c(7,300)
-     )
-
+     , ylim = c(1.9,6.1)
+     , xlim = c(10.85,230)
+     , line = 2
+)
 points(dataplot$pts
-     , log(dataplot$rad, base=2)
-     , cex = 0.98*sqrt(8919)/30
-     , col = "white"
-     , pch = 19
+       , log(dataplot$rad, base=2)
+       , cex = 0.98*sqrt(nrow(DataTest))/30
+       , col = "white"
+       , pch = 19
+)
+points(dataplot$pts # x value
+       , log(dataplot$rad, base=2)   # y value
+       , cex = dataplot$cex
+       , col = dataplot$cols
+       , pch = 19
 )
 
-points(dataplot$pts # x value
-    , log(dataplot$rad, base=2)   # y value
-    , cex = dataplot$cex
-    , col = dataplot$cols
-    , pch = 19
-  )
-
-axis(1, at=c(10,25,50,100,200), labels=c("10", "25", "50", "100", "200") )
-axis(2, at=c(2,3,4,5,6), labels=c("4", "8", "16", "32", "64") )
-
-
+axis(1, at=c(12.5, pts_sens[-1]), labels=pts_sens, padj = -0.5)
+axis(2, at=seq(2,6,1), labels=rad_sens/1000, padj = 0.5)
 
 par(xpd = TRUE)
+#Saving commented out legends for size of points legend entries
 # legend(x = 300
 #        , y = 6 # location
 #        , legend=c("% Tested", "(size)", "20", "40", "60", "80", "100", "% Outs of All Data", "(color)", "0", "2", "4", "6", "8") # legend entries
@@ -368,21 +373,17 @@ par(xpd = TRUE)
 #        , pt.cex = c(0, sqrt(8919/5)/30, sqrt(8919*2/5)/30, sqrt(8919*3/5)/30, sqrt(8919*4/5)/30, sqrt(8919)/30)
 # ) # colors
 
-
-legend(x = 400
-       , y = 6.5 # location
-       , legend=c("# Outs/ # All (%)", "0", "1", "2", "3", "4",  "5", "6", "7", "8") # legend entries
-       , pch = c(NA, 19, 19, 19, 19, 19, 19, 19, 19, 19)
-       , col=c(NA, cols[1], cols[91], cols[179], cols[269], cols[358],  cols[447], cols[537], cols[626], cols[714]  )
+legend(x = 300
+       , y = 6 # location
+       , legend=c("# Outs/ # All (%)", seq(0,8,1)) # legend entries
+       , pch = c(NA, rep(19,9))
+       , col = c(NA, cols[round(max(outs_iden)/(max(outs_iden)/nrow(DataTest))*seq(0,0.08,0.01),0) + 1])
        , ncol = 1
-) # colors
-
-text(x=400
-     , y = 1+ c(2.5,2.1, 1.7, 1.1)
+)
+text(x=300
+     , y = 0.75 + c(2.5,2.1, 1.7, 1.1)
      , labels=c("Point size is ", "  proportional to %", "  of data tested.", "Black circle is 100%.")
      , adj = c(0,0)
-     )
-
+)
 
 dev.off()
-
