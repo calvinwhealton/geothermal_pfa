@@ -14,16 +14,16 @@
 #             2   only local and global outliers removed
 #             3   only global outliers removed
 # pt_eval   number of points to evaulate local outliers
-# rad_eval  radius used for local evaluation
-# box_size  size of box for gridded local search
+# rad_eval  radius used for local evaluation (m)
+# box_size  size of box for gridded local search (m)
 # pt_min    minimum number of points to evaluate local outliers
-# rad_max   maximum radius to use in search
+# rad_max   maximum radius to use in search (m)
 # k_glob    constant used for outlier identification
 # k_loc     constant used for local outlier identification
 # wts       weights for distance in each direction
 # type      type of quantile estimation algorithm
 
-# rad_eval, rad_max, and box_size are assumed to be units of km, but can be specified for any coordinate system
+# rad_eval, rad_max, and box_size are assumed to be units of m, but can be specified for any coordinate system
 
 # outlier_iden function output is:
 # X         dataframe of all input with additional columns for
@@ -51,7 +51,7 @@
 # All options for outlier identification Are available in this function.
 # There is an option to set a threshold, below which all values will be dropped before the outlier identification. 
 # The default is to drop all negative values.
-select_out_algo <- function(Data,    # Dataframe to be tested for outliers
+select_out_algo <- function(Data,            # Dataframe to be tested for outliers
                             OutVarName,      # Desired column name for the tested variable in the output file
                             InVarName,       # Column name of the thermal variable in Data. May be the same as OutVarName.
                             X_coordName,     # Column name of the UTM longitude in Data.
@@ -60,13 +60,13 @@ select_out_algo <- function(Data,    # Dataframe to be tested for outliers
                             algo = 1,        # local detection algorithm
                             outcri = 1,      # outlier criterion
                             pt_eval = 25,    # minumum number of points to evaluate
-                            rad_eval = 16,   # radius used for local outlier identification (km)
-                            box_size = 32,   # edge length of the box (km)
+                            rad_eval = 16000,# radius used for local outlier identification (m)
+                            box_size = 32000,# edge length of the box (m)
                             pt_min = 25,     # minimum number of points to evaluate local outliers
-                            rad_max = 16,    # maximum radius to search for local points (km)
+                            rad_max = 16000, # maximum radius to search for local points (m)
                             k_glob = 3,      # constant for quartile-median range in global analysis
                             k_loc = 3,       # constant for quartile-median range in local analysis
-                            type = 7,        # type of quantile interpolation
+                            type = 7         # type of quantile interpolation
 ){
   
   #Rename columns based on the necessary inputs to the outlier identification function.
@@ -74,7 +74,7 @@ select_out_algo <- function(Data,    # Dataframe to be tested for outliers
   colnames(Data@data)[which(colnames(Data@data)==X_coordName)] = "x_coord"
   colnames(Data@data)[which(colnames(Data@data)==Y_coordName)] = "y_coord"
   
-  #Remove all negative values. They are physically impossible and will affect the outlier identification.
+  #Remove all values less than Threshold.
   if (length(which(Data@data[, "test"] <= Threshold)) > 0) {
     Data = Data[-which(Data@data["test"] <= Threshold),] 
   }
@@ -84,10 +84,10 @@ select_out_algo <- function(Data,    # Dataframe to be tested for outliers
                       , algo = algo          # local detection algorithm
                       , outcri = outcri      # outlier criterion
                       , pt_eval = pt_eval    # minumum number of points to evaluate
-                      , rad_eval = rad_eval  # radius used for local outlier identification (km)
-                      , box_size = box_size  # edge length of the box (km)
+                      , rad_eval = rad_eval  # radius used for local outlier identification (m)
+                      , box_size = box_size  # edge length of the box (m)
                       , pt_min = pt_min      # minimum number of points to evaluate local outliers
-                      , rad_max = rad_max    # maximum radius to search for local points (km)
+                      , rad_max = rad_max    # maximum radius to search for local points (m)
                       , k_glob = k_glob      # constant for quartile-median range in global analysis
                       , k_loc = k_loc        # constant for quartile-median range in local analysis
                       , type = type)         # type of quantile interpolation
@@ -100,7 +100,7 @@ select_out_algo <- function(Data,    # Dataframe to be tested for outliers
   colnames(Outs@data)[which(colnames(Outs@data)=="test")] = OutVarName
   
   #Split the data into Outliers and NotOutliers
-  NotOutliers = Outs[-which(Outs@data$outs != 0),]
+  NotOutliers = Outs[which(Outs@data$outs == 0),]
   Outliers = Outs[which(Outs@data$outs != 0),]
   
   #List for returning data
@@ -114,10 +114,10 @@ outlier_iden <- function(X                # input dataframe
                          , algo = 1        # local detection algorithm
                          , outcri = 1      # outlier criterion
                          , pt_eval = 25    # minumum number of points to evaluate
-                         , rad_eval = 16   # radius used for local outlier identification
-                         , box_size = 32   # edge length of the box
+                         , rad_eval = 16000# radius used for local outlier identification
+                         , box_size = 32000# edge length of the box
                          , pt_min = 25     # minimum number of points to evaluate local outliers
-                         , rad_max = 16    # maximum radius to search for local points
+                         , rad_max = 16000 # maximum radius to search for local points
                          , k_glob = 3      # constant for quartile-median range in global analysis
                          , k_loc = 3       # constant for quartile-median range in local analysis
                          , type = 7        # type of quantile interpolation
@@ -419,3 +419,117 @@ outlier_glob <- function(X,k_glob,type){
   
   return(X)
 }
+
+#### Sensitivity Analysis for Local Points Algorithm ####
+library(rgdal)
+#Load data
+DataTest = readOGR(dsn = "C:\\Users\\Jared\\Documents\\Cornell\\Research\\Masters - Spatial Assessment\\Figures", layer = "DataForOutlierTesting", stringsAsFactors = FALSE)
+
+pts_sens <- c(10,25,50,100,200) # number of points for local neighborhood
+rad_sens <- c(4000,8000,16000,32000,64000) # maximum size of radius
+
+outs_iden <- matrix(0,length(pts_sens),length(rad_sens)) # matrix to hold number of outliers
+outs_sparse <- matrix(0,length(pts_sens),length(rad_sens)) # number of points in sparse areas
+
+#Calculate Outliers
+for(i in 1:length(pts_sens)){
+  for(j in 1:length(rad_sens)){
+    sens_data <- DataTest
+    sens_data2 <- select_out_algo(Data = sens_data,
+                                  OutVarName = "Qs",
+                                  InVarName = "Qs",
+                                  X_coordName = "POINT_X",
+                                  Y_coordName = "POINT_Y",
+                                  Threshold = 0.0,
+                                  algo = 1,
+                                  outcri = 1,
+                                  pt_eval = pts_sens[i],
+                                  rad_eval = 16000,
+                                  box_size = 32000,
+                                  pt_min = 25,
+                                  rad_max = rad_sens[j],
+                                  k_glob = 3,
+                                  k_loc = 3,
+                                  type = 7)
+    
+    outs_iden[i,j] <- nrow(sens_data2$Outliers)
+    outs_sparse[i,j] <- sum(sens_data2$NotOutliers$out_loc_error)
+  }
+}
+
+# creating plot
+setwd("C:\\Users\\Jared\\Documents\\Cornell\\Research\\Publications\\ESDA")
+setEPS()
+postscript(file = "outlier_sens.eps", title = "Sensitivity Outliers Local Points", width = 5, height = 5)
+
+#Make color ramp
+Pal = colorRampPalette(c('red', 'orange', 'yellow', 'green', 'blue', 'purple'))
+cols <- Pal(max(outs_iden)+1)
+par(mar =c(3,3,0,9)+0.1) 
+
+data <- matrix(0,length(pts_sens)*length(rad_sens),4)
+
+for(i in 1:length(rad_sens)){
+  inds <- seq((i-1)*length(rad_sens)+1,i*length(rad_sens), by=1)
+  
+  data[c(inds),1] <- outs_iden[,i]
+  data[c(inds),2] <- outs_sparse[,i]
+  data[c(inds),3] <- pts_sens
+  data[c(inds),4] <- rad_sens[i]/1000
+}
+
+dataplot <- data.frame(data)
+
+colnames(dataplot) <- c("iden", "sparse", "pts", "rad")
+
+#Changing the plotting location for pts = 10 to 12.5 for equal spacing in log base 2
+dataplot$pts[dataplot$pts == 10] = 12.5
+
+#Assigning color and size of points
+dataplot$cols <- cols[dataplot$iden+1]
+dataplot$cex <- sqrt(nrow(DataTest) - dataplot$sparse)/30
+
+plot(dataplot$pts
+     , log(dataplot$rad, base=2)
+     , log='x'
+     , cex = 1.02*sqrt(nrow(DataTest))/30
+     , col = "black"
+     , pch = 19
+     , ylab = "Max Radius (km)"
+     , xlab = "Points to Evaluate"
+     , xaxt = "n"
+     , yaxt = "n"
+     , ylim = c(1.9,6.1)
+     , xlim = c(10.85,230)
+     , line = 2
+)
+points(dataplot$pts
+       , log(dataplot$rad, base=2)
+       , cex = 0.98*sqrt(nrow(DataTest))/30
+       , col = "white"
+       , pch = 19
+)
+points(dataplot$pts # x value
+       , log(dataplot$rad, base=2)   # y value
+       , cex = dataplot$cex
+       , col = dataplot$cols
+       , pch = 19
+)
+
+axis(1, at=c(12.5, pts_sens[-1]), labels=pts_sens, padj = -0.5)
+axis(2, at=seq(2,6,1), labels=rad_sens/1000, padj = 0.5)
+
+par(xpd = TRUE)
+legend(x = 300
+       , y = 6 # location
+       , legend=c("# Outs/ # All (%)", seq(0,8,1)) # legend entries
+       , pch = c(NA, rep(19,9))
+       , col = c(NA, cols[round(max(outs_iden)/(max(outs_iden)/nrow(DataTest))*seq(0,0.08,0.01),0) + 1])
+       , ncol = 1
+       )
+text(x=300
+     , y = 0.75 + c(2.5,2.1, 1.7, 1.1)
+     , labels=c("Point size is ", "  proportional to %", "  of data tested.", "Black circle is 100%.")
+     , adj = c(0,0)
+     )
+dev.off()
