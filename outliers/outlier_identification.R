@@ -22,6 +22,9 @@
 # k_loc     constant used for local outlier identification
 # wts       weights for distance in each direction
 # type      type of quantile estimation algorithm
+# min_val   minimum value of an attribute for neighborhood points (e.g. minimum well depth) (m)
+# max_val   maximum value of an attribute for neighborhood points (e.g. maximum well depth)(m)
+# rank      rank of the point within neighborhood for the attribute (e.g. 1-shallowest, 25-deepest)
 
 # rad_eval, rad_max, and box_size are assumed to be units of m, but can be specified for any coordinate system
 
@@ -51,57 +54,79 @@
 # All options for outlier identification Are available in this function.
 # There is an option to set a threshold, below which all values will be dropped before the outlier identification. 
 # The default is to drop all negative values.
-select_out_algo <- function(Data,            # Dataframe to be tested for outliers
-                            OutVarName,      # Desired column name for the tested variable in the output file
-                            InVarName,       # Column name of the thermal variable in Data. May be the same as OutVarName.
-                            X_coordName,     # Column name of the UTM longitude in Data.
-                            Y_coordName,     # Column name of the UTM latitude in Data. 
-                            Threshold = 0.0, # Points in column InVarName less than Threshold will be dropped before outlier analysis. Default is 0.0.
-                            algo = 1,        # local detection algorithm
-                            outcri = 1,      # outlier criterion
-                            pt_eval = 25,    # minumum number of points to evaluate
-                            rad_eval = 16000,# radius used for local outlier identification (m)
-                            box_size = 32000,# edge length of the box (m)
-                            pt_min = 25,     # minimum number of points to evaluate local outliers
-                            rad_max = 16000, # maximum radius to search for local points (m)
-                            k_glob = 3,      # constant for quartile-median range in global analysis
-                            k_loc = 3,       # constant for quartile-median range in local analysis
-                            type = 7         # type of quantile interpolation
+select_out_algo <- function(Data,             # Dataframe to be tested for outliers.
+                            OutVarName,       # Desired column name for the tested variable in the output file
+                            InVarName,        # Column name of the thermal variable in Data. May be the same as OutVarName.
+                            X_coordName,      # Column name of the UTM longitude in Data.
+                            Y_coordName,      # Column name of the UTM latitude in Data.
+                            CensorName = NA,  # Column name of the column corresponding to the min_val and max_val. If NA, does not get used.
+                            Threshold = 0.0,  # Points in column InVarName less than Threshold will be dropped before outlier analysis. Default is 0.0.
+                            algo = 1,         # local detection algorithm
+                            outcri = 1,       # outlier criterion
+                            pt_eval = 25,     # minumum number of points to evaluate
+                            rad_eval = 16000, # radius used for local outlier identification (m)
+                            box_size = 32000, # edge length of the box (m)
+                            pt_min = 25,      # minimum number of points to evaluate local outliers
+                            rad_max = 16000,  # maximum radius to search for local points (m)
+                            k_glob = 3,       # constant for quartile-median range in global analysis
+                            k_loc = 3,        # constant for quartile-median range in local analysis
+                            type = 7,         # type of quantile interpolation
+                            min_val = -Inf,   # minimum CensorName value of neighborhood points 
+                            max_val = Inf,    # maximum CensorName value of neighborhood points
+                            rank = FALSE      # rank of the point within neighborhood for the attribute
 ){
   
   #Rename columns based on the necessary inputs to the outlier identification function.
-  colnames(Data@data)[which(colnames(Data@data)==InVarName)] = "test"
-  colnames(Data@data)[which(colnames(Data@data)==X_coordName)] = "x_coord"
-  colnames(Data@data)[which(colnames(Data@data)==Y_coordName)] = "y_coord"
+  colnames(Data)[which(colnames(Data)==InVarName)] = "test"
+  colnames(Data)[which(colnames(Data)==X_coordName)] = "x_coord"
+  colnames(Data)[which(colnames(Data)==Y_coordName)] = "y_coord"
+  if (is.na(CensorName) == TRUE){
+    Data$censor = Data$test
+  }else{
+    OrigCensorName = CensorName
+    colnames(Data)[which(colnames(Data)==CensorName)] = "censor"
+  }
   
-  #Remove all values less than Threshold.
-  if (length(which(Data@data[, "test"] <= Threshold)) > 0) {
-    Data = Data[-which(Data@data["test"] <= Threshold),] 
+  #Remove all values less than or equal to Threshold.
+  if (length(which(Data[, "test"] <= Threshold)) > 0) {
+    Data = Data[-which(Data["test"] <= Threshold),] 
   }
   
   #Run outlier identification
   Outs = outlier_iden(Data
-                      , algo = algo          # local detection algorithm
-                      , outcri = outcri      # outlier criterion
-                      , pt_eval = pt_eval    # minumum number of points to evaluate
-                      , rad_eval = rad_eval  # radius used for local outlier identification (m)
-                      , box_size = box_size  # edge length of the box (m)
-                      , pt_min = pt_min      # minimum number of points to evaluate local outliers
-                      , rad_max = rad_max    # maximum radius to search for local points (m)
-                      , k_glob = k_glob      # constant for quartile-median range in global analysis
-                      , k_loc = k_loc        # constant for quartile-median range in local analysis
-                      , type = type)         # type of quantile interpolation
+                      , algo = algo            # local detection algorithm
+                      , outcri = outcri        # outlier criterion
+                      , pt_eval = pt_eval      # minumum number of points to evaluate
+                      , rad_eval = rad_eval    # radius used for local outlier identification (m)
+                      , box_size = box_size    # edge length of the box (m)
+                      , pt_min = pt_min        # minimum number of points to evaluate local outliers
+                      , rad_max = rad_max      # maximum radius to search for local points (m)
+                      , k_glob = k_glob        # constant for quartile-median range in global analysis
+                      , k_loc = k_loc          # constant for quartile-median range in local analysis
+                      , type = type            # type of quantile interpolation
+                      , min_val = min_val      # minimum value of an attribute for neighborhood points
+                      , max_val = max_val      # maximum value of an attribute for neighborhood points
+                      , rank = rank)           # rank of the point within neighborhood for the attribute
   
   #Change the column name of the UTM coordinates back to the original name.
-  colnames(Outs@data)[which(colnames(Outs@data)=="x_coord")] = X_coordName
-  colnames(Outs@data)[which(colnames(Outs@data)=="y_coord")] = Y_coordName
+  colnames(Outs)[which(colnames(Outs)=="x_coord")] = X_coordName
+  colnames(Outs)[which(colnames(Outs)=="y_coord")] = Y_coordName
   
   #Rename the thermal variable column according to the OutVarName
-  colnames(Outs@data)[which(colnames(Outs@data)=="test")] = OutVarName
+  colnames(Outs)[which(colnames(Outs)=="test")] = OutVarName
+  
+  #Rename the censored variable to its original name, or delete the column
+  if (is.na(CensorName) == TRUE){
+    #Delete the column
+    Outs = Outs[,-which(colnames(Outs)=='censor')]
+  }else{
+    #Change the name back to the original name
+    colnames(Outs)[which(colnames(Outs)=='censor')] = OrigCensorName
+  }
   
   #Split the data into Outliers and NotOutliers
-  NotOutliers = Outs[which(Outs@data$outs == 0),]
-  Outliers = Outs[which(Outs@data$outs != 0),]
+  NotOutliers = Outs[which(Outs$outs == 0),]
+  Outliers = Outs[which(Outs$outs != 0),]
   
   #List for returning data
   TestedOutliers = list("NotOutliers" = NotOutliers, "Outliers" = Outliers)
@@ -110,17 +135,20 @@ select_out_algo <- function(Data,            # Dataframe to be tested for outlie
 }
 
 # Wrapper function that calls the outlier identification algorithm functions.
-outlier_iden <- function(X                # input dataframe
-                         , algo = 1        # local detection algorithm
-                         , outcri = 1      # outlier criterion
-                         , pt_eval = 25    # minumum number of points to evaluate
-                         , rad_eval = 16000# radius used for local outlier identification
-                         , box_size = 32000# edge length of the box
-                         , pt_min = 25     # minimum number of points to evaluate local outliers
-                         , rad_max = 16000 # maximum radius to search for local points
-                         , k_glob = 3      # constant for quartile-median range in global analysis
-                         , k_loc = 3       # constant for quartile-median range in local analysis
-                         , type = 7        # type of quantile interpolation
+outlier_iden <- function(X                   # input dataframe
+                         , algo = 1          # local detection algorithm
+                         , outcri = 1        # outlier criterion
+                         , pt_eval = 25      # minumum number of points to evaluate
+                         , rad_eval = 16000  # radius used for local outlier identification
+                         , box_size = 32000  # edge length of the box
+                         , pt_min = 25       # minimum number of points to evaluate local outliers
+                         , rad_max = 16000   # maximum radius to search for local points
+                         , k_glob = 3        # constant for quartile-median range in global analysis
+                         , k_loc = 3         # constant for quartile-median range in local analysis
+                         , type = 7          # type of quantile interpolation
+                         , min_val = -Inf    # minimum value of censor for neighborhood points
+                         , max_val = Inf     # maximum value of censor neighborhood points
+                         , rank = FALSE      # rank of point within neighborhood according to censor attribute field
 ){
   
   # checking that x and y coordinates are properly defined
@@ -145,11 +173,11 @@ outlier_iden <- function(X                # input dataframe
     if(outcri == 1){ # case for local outlier identification only
       
       if(algo == 1){ # case for finding nearest pt_eval points within rad_max
-        X <- outlier_loc_pts(X,pt_eval,rad_max,k_loc,type)
+        X <- outlier_loc_pts(X,pt_eval,rad_max,k_loc,type,min_val,max_val,rank)
       }else if (algo == 2){  # case for finding points within rad_eval but must have points min_pts
         X <- outlier_loc_rad(X,rad_eval,pt_min,k_loc,type)
       }else if (algo == 3){ # case for algorithm using fixed-grid boxes
-        X <- outlier_log_grid(X,box_size,pt_min,type)
+        X <- outlier_loc_grid(X,box_size,pt_min,k_loc,type)
       }else{
         print("Not a valid local outlier detection algorithm")
       }
@@ -161,11 +189,11 @@ outlier_iden <- function(X                # input dataframe
       
       # finding local outliers
       if(algo == 1){ # case for finding nearest pt_eval points with-in rad_max
-        X <- outlier_loc_pts(X,pt_eval,rad_max,k_loc,type)
+        X <- outlier_loc_pts(X,pt_eval,rad_max,k_loc,type,min_val,max_val,rank)
       }else if (algo == 2){  # case for finding points within rad_eval but must have points min_pts
         X <- outlier_loc_rad(X,rad_eval,pt_min,k_loc,type)
       }else if (algo == 3){ # case for algorithm using fixed-grid boxes
-        X <- outlier_log_grid(X,box_size,pt_min,type)
+        X <- outlier_loc_grid(X,box_size,pt_min,k_loc,type)
       }else{
         print("Not a valid local outlier detection algorithm")
       }
@@ -195,18 +223,22 @@ outlier_iden <- function(X                # input dataframe
 # function for local outlier identification
 # finds pt_eval points that are within rad_max from tested point
 # does not calculate outliers when pt_eval has points outside rad_max
-outlier_loc_pts <- function(X,pt_eval,rad_max,k_loc,type){
+outlier_loc_pts <- function(X,pt_eval,rad_max,k_loc,type,min_val,max_val,rank){
   
   # initializing varaibles to hold flags and outputs
-  X$out_loc_lo <- 0 # low outlier
-  X$out_loc_hi <- 0 # high outlier
-  X$out_loc_lq <- NA # lower quartile
-  X$out_loc_uq <- NA # upper quartile
-  X$out_loc_mq <- NA # middle quartile
-  X$out_loc_rad <- 0 # radius of maximum distance
-  X$out_loc_lb <- NA # lower bound 
-  X$out_loc_ub <- NA # upper bound
-  X$out_loc_error <- 0 # error variable
+  X$out_loc_lo <- 0     # low outlier
+  X$out_loc_hi <- 0     # high outlier
+  X$out_loc_lq <- NA    # lower quartile
+  X$out_loc_uq <- NA    # upper quartile
+  X$out_loc_mq <- NA    # middle quartile
+  X$out_loc_rad <- 0    # radius of maximum distance
+  X$out_loc_lb <- NA    # lower bound 
+  X$out_loc_ub <- NA    # upper bound
+  X$out_loc_error <- 0  # error variable
+  if (rank == TRUE){
+    X$out_loc_drank <- 0  # rank of outlier for neighborhood according to censor attribute
+    X$out_loc_rmrank <- 0 # rank of outlier within rad_max according to censor attribute
+  }
   
   for(i in 1:nrow(X)){ # loop over all observations
     
@@ -217,9 +249,9 @@ outlier_loc_pts <- function(X,pt_eval,rad_max,k_loc,type){
     dist_vec[,1] <- sqrt((X$x_coord-X$x_coord[i])^2 + (X$y_coord-X$y_coord[i])^2)
     
     # finding the empirical quantile for removing, pt_eval is an input
-    dist_cutoff <- sort(dist_vec)[pt_eval]
+    dist_cutoff <- sort(dist_vec[which(X$censor >= min_val & X$censor <= max_val),])[pt_eval]
     
-    # storing the maximum distance of the nearest 25 points
+    # storing the maximum distance of the nearest 25 points greater than the min_val and less than the max_val
     X$out_loc_rad[i] <- dist_cutoff
     
     # evaluating if radius is too large to capture the points
@@ -231,10 +263,11 @@ outlier_loc_pts <- function(X,pt_eval,rad_max,k_loc,type){
     }else{ # case for points criterion satisfied within rad_max
       
       # finding the indices of the closest points, including the point tested
-      inds_within_cutoff <- which(dist_vec <= dist_cutoff)
+      inds_within_cutoff <- which(dist_vec[which(X$censor >= min_val & X$censor <= max_val),] <= dist_cutoff)
+      inds_within_radmax <- which(dist_vec[which(X$censor >= min_val & X$censor <= max_val),] <= rad_max)
       
       # finding quartiles
-      quarts <- as.numeric(quantile(X$test[inds_within_cutoff],probs=c(0.25,0.5,0.75),type=type))
+      quarts <- as.numeric(quantile(X$test[which(X$censor >= min_val & X$censor <= max_val)][inds_within_cutoff],probs=c(0.25,0.5,0.75),type=type))
       
       # storing quartile and bound values
       X$out_loc_lq[i] <- quarts[1]
@@ -249,15 +282,60 @@ outlier_loc_pts <- function(X,pt_eval,rad_max,k_loc,type){
         # flagging as a high outlier
         X$out_loc_hi[i] <- 1
         
+        if (rank == TRUE){
+          # computing the rank of this point relative to its neighbors and within rad_max
+          dpt = which(sort(X$censor[which(X$censor >= min_val & X$censor <= max_val)][inds_within_cutoff]) == X$censor[i])/length(X$censor[which(X$censor >= min_val & X$censor <= max_val)][inds_within_cutoff])
+          if(length(dpt) == 0){
+            #The attribute is not larger than the min_val. So, assign it a rank of 1.
+            X$out_loc_drank[i] <- 1
+          }
+          else if (length(dpt > 1)){
+            X$out_loc_drank[i] <- mean(dpt)
+          }else{
+            X$out_loc_drank[i] <- dpt
+          }
+          
+          dpt_rm = which(sort(X$censor[which(X$censor >= min_val & X$censor <= max_val)][inds_within_radmax]) == X$censor[i])/length(X$censor[which(X$censor >= min_val & X$censor <= max_val)][inds_within_radmax])
+          if(length(dpt_rm) == 0){
+            #The attribute is not larger than the min_val. So, assign it a rank of 1.
+            X$out_loc_rmrank[i] <- 1
+          }else if (length(dpt_rm > 1)){
+            X$out_loc_rmrank[i] <- mean(dpt_rm)
+          }else{
+            X$out_loc_rmrank[i] <- dpt_rm
+          }
+        }
+        
       }else if(X$test[i] < X$out_loc_lb[i]){ # testing low outliers
         
         # flagging as a low outlier
         X$out_loc_lo[i] <- 1
+        
+        if (rank == TRUE){
+          # computing the rank of this point relative to its neighbors
+          dpt = which(sort(X$censor[which(X$censor >= min_val & X$censor <= max_val)][inds_within_cutoff]) == X$censor[i])/length(X$censor[which(X$censor >= min_val & X$censor <= max_val)][inds_within_cutoff])
+          if(length(dpt) == 0){
+            #The attribute is not larger than the min_val. So, assign it a rank of 1.
+            X$out_loc_drank[i] <- 1
+          }else if (length(dpt > 1)){
+            X$out_loc_drank[i] <- mean(dpt)
+          }else{
+            X$out_loc_drank[i] <- dpt
+          }
+          
+          dpt_rm = which(sort(X$censor[which(X$censor >= min_val & X$censor <= max_val)][inds_within_radmax]) == X$censor[i])/length(X$censor[which(X$censor >= min_val & X$censor <= max_val)][inds_within_radmax])
+          if(length(dpt_rm) == 0){
+            #The attribute is not larger than the min_val. So, assign it a rank of 1.
+            X$out_loc_rmrank[i] <- 1
+          }else if (length(dpt_rm > 1)){
+            X$out_loc_rmrank[i] <- mean(dpt_rm)
+          }else{
+            X$out_loc_rmrank[i] <- dpt_rm
+          }
+        }
       }
     }
-    
   } # end for loop
-  
   return(X)
 }
 
