@@ -100,6 +100,7 @@ Results = as.data.frame(matrix(0, nrow = length(kvec), ncol = dists))
 colnames(Results) = c('Normal', 'Beta1', 'Beta2', 'T2', 'T4', 'T6', 'T8', 'T10')
 rownames(Results) = kvec
 ResultsLarge = Results 
+SDs = Results
 
 #Set the random seed
 set.seed(7523)
@@ -169,6 +170,8 @@ for (i in 1:length(kvec)){
   
   #Summarize the Type 1 Error rates for this k value
   Results[i,] = cbind(mean(normOut),mean(beta1Out), mean(beta2Out), mean(t2Out), mean(t4Out), mean(t6Out), mean(t8Out), mean(t10Out))*100
+  #Summarize the Standard Deviation of this k value
+  SDs[i,] = cbind(sd(normOut),sd(beta1Out), sd(beta2Out), sd(t2Out), sd(t4Out), sd(t6Out), sd(t8Out), sd(t10Out))*100
 }
 rm(betaDist1, betaDist2, normDist, tDist10, tDist8, tDist6, tDist4, tDist2,k)
 rm(beta1Out, beta2Out, normOut, t10Out, t8Out, t6Out, t4Out, t2Out)
