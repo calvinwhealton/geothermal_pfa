@@ -368,6 +368,8 @@ write.csv(ResultsLarge, file =  "TypeIError_PI.csv", row.names = TRUE)
 cols = c('black', 'red', 'purple', 'springgreen', 'white', 'green', 'white', 'darkgreen', 'blue', 'skyblue')
 #Line types for sample size
 ltys = seq(1,5,1)
+#Plot characters for sample size
+pchs = c(15, 18, 17, 16)
 
 #T and Normal on same plot, Beta on another
 sets = rbind(1,2)
@@ -377,68 +379,68 @@ layout(sets)
 par(mar = c(4,4.5,0.7,0.7), xaxs = 'i', yaxs = 'i')
 #Normal and T
 matplot(x = as.numeric(rownames(Results_n25[,c(1,4,6,8)])), y = Results_n25[,c(1,4,6,8)],
-        type = 'o', pch = 16, lty = ltys[3], col = cols[c(1,4,6,8)],
+        type = 'o', pch = pchs[1], lty = ltys[3], col = cols[c(1,4,6,8)],
         xlim = c(1,5), ylim = c(0,30), 
         xlab = 'k', ylab = 'Type I Error (%)', 
-        cex.axis = 1.5, cex.lab = 1.5, cex.main = 2)
+        cex.axis = 1.5, cex.lab = 1.5, cex.main = 2, cex = 0.7)
 #rect(par("usr")[1], par("usr")[3], par("usr")[2], par("usr")[4], col = "black")
 # matplot(x = as.numeric(rownames(Results_n25[,c(1,4,6,8)])), y = Results_n25[,c(1,4,6,8)],
-#         type = 'o', pch = 16, lty = ltys[3], col = cols[c(1,4,6,8)],
+#         type = 'o', pch = pchs[1], lty = ltys[3], col = cols[c(1,4,6,8)],
 #         xlim = c(1,5), ylim = c(0,30), 
 #         xlab = 'k', ylab = 'Type I Error (%)', 
-#         cex.axis = 1.5, cex.lab = 1.5, cex.main = 2, add = TRUE)
+#         cex.axis = 1.5, cex.lab = 1.5, cex.main = 2, add = TRUE, cex = 0.7)
 minor.tick(ny=5,nx=2)
 matplot(x = as.numeric(rownames(Results_n50[,c(1,4,6,8)])), y = Results_n50[,c(1,4,6,8)],
-        type = 'o', pch = 16, lty = ltys[4], col = cols[c(1,4,6,8)],
+        type = 'o', pch = pchs[2], lty = ltys[4], col = cols[c(1,4,6,8)],
         xlim = c(1,5), ylim = c(0,30), 
         xlab = '', ylab = '', axes = FALSE, add = TRUE)
 matplot(x = as.numeric(rownames(Results_n100[,c(1,4,6,8)])), y = Results_n100[,c(1,4,6,8)],
-        type = 'o', pch = 16, lty = ltys[2], col = cols[c(1,4,6,8)],
+        type = 'o', pch = pchs[3], lty = ltys[2], col = cols[c(1,4,6,8)],
         xlim = c(1,5), ylim = c(0,30), 
-        xlab = '', ylab = '', axes = FALSE, add = TRUE)
+        xlab = '', ylab = '', axes = FALSE, add = TRUE, cex = 0.7)
 # matplot(x = as.numeric(rownames(Results_n200[,c(1,4,6,8)])), y = Results_n200[,c(1,4,6,8)],
 #         type = 'o', pch = 16, lty = ltys[5], col = cols[c(1,4,6,8)],
 #         xlim = c(1,5), ylim = c(0,30), 
-#         xlab = '', ylab = '', axes = FALSE, add = TRUE)
+#         xlab = '', ylab = '', axes = FALSE, add = TRUE, cex = 0.7)
 matplot(x = as.numeric(rownames(ResultsLarge[,c(1,4,6,8)])), y = ResultsLarge[,c(1,4,6,8)],
-        type = 'o', pch = 16, lty = ltys[1], col = cols[c(1,4,6,8)],
+        type = 'o', pch = pchs[4], lty = ltys[1], col = cols[c(1,4,6,8)],
         xlim = c(1,5), ylim = c(0,30), 
-        xlab = '', ylab = '', axes = FALSE, add = TRUE)
+        xlab = '', ylab = '', axes = FALSE, add = TRUE, cex = 0.7)
 #legend('topright', legend = c('Normal', 't(2)', 't(4)','t(6)','t(8)','t(10)'), col = cols[c(1,4,6,8)], lty = 1)
 legend('right', legend = c('t(2)','t(6)','t(10)', 'Normal'), col = cols[c(4,6,8,1)], lty = 1, cex = 1.2)
-legend('topright', title = 'Number of Points', legend = c('25', '50','100','Perfect'), col = 'black', lty = c(3, 4, 2, 1), horiz = TRUE, cex = 1.2)
+legend('topright', title = 'Number of Points', legend = c('25', '50','100','Perfect'), col = 'black', lty = c(3, 4, 2, 1), pch = pchs, horiz = TRUE, cex = 1.2)
 
 #Beta
 matplot(x = as.numeric(rownames(Results_n25[,c(2,3,9,10)])), y = Results_n25[,c(2,3,9,10)],
-        type = 'o', pch = 16, lty = ltys[3], col = cols[c(2,3,9,10)],
+        type = 'o', pch = pchs[1], lty = ltys[3], col = cols[c(2,3,9,10)],
         xlim = c(1,5), ylim = c(0,20), 
         xlab = 'k', ylab = 'Type I Error (%)', 
-        cex.axis = 1.5, cex.lab = 1.5, cex.main = 2)
+        cex.axis = 1.5, cex.lab = 1.5, cex.main = 2, cex = 0.7)
 # rect(par("usr")[1], par("usr")[3], par("usr")[2], par("usr")[4], col = "black")
 # matplot(x = as.numeric(rownames(Results_n25[,c(2,3,9,10)])), y = Results_n25[,c(2,3,9,10)],
-#         type = 'o', pch = 16, lty = ltys[3], col = cols[c(2,3,9,10)],
+#         type = 'o', pch = pchs[1], lty = ltys[3], col = cols[c(2,3,9,10)],
 #         xlim = c(1,5), ylim = c(0,20), 
 #         xlab = 'k', ylab = 'Type I Error (%)', 
-#         cex.axis = 1.5, cex.lab = 1.5, cex.main = 2, add = TRUE)
+#         cex.axis = 1.5, cex.lab = 1.5, cex.main = 2, add = TRUE, cex = 0.7)
 minor.tick(ny=5,nx=2)
 matplot(x = as.numeric(rownames(Results_n50[,c(2,3,9,10)])), y = Results_n50[,c(2,3,9,10)],
-        type = 'o', pch = 16, lty = ltys[4], col = cols[c(2,3,9,10)],
+        type = 'o', pch = pchs[2], lty = ltys[4], col = cols[c(2,3,9,10)],
         xlim = c(1,5), ylim = c(0,20), 
-        xlab = '', ylab = '', axes = FALSE, add = TRUE)
+        xlab = '', ylab = '', axes = FALSE, add = TRUE, cex = 0.7)
 matplot(x = as.numeric(rownames(Results_n100[,c(2,3,9,10)])), y = Results_n100[,c(2,3,9,10)],
-        type = 'o', pch = 16, lty = ltys[2], col = cols[c(2,3,9,10)],
+        type = 'o', pch = pchs[3], lty = ltys[2], col = cols[c(2,3,9,10)],
         xlim = c(1,5), ylim = c(0,20), 
-        xlab = '', ylab = '', axes = FALSE, add = TRUE)
+        xlab = '', ylab = '', axes = FALSE, add = TRUE, cex = 0.7)
 # matplot(x = as.numeric(rownames(Results_n200[,c(2,3,9,10)])), y = Results_n200[,c(2,3,9,10)],
 #         type = 'o', pch = 16, lty = ltys[5], col = cols[c(2,3,9,10)],
 #         xlim = c(1,5), ylim = c(0,20), 
-#         xlab = '', ylab = '', axes = FALSE, add = TRUE)
+#         xlab = '', ylab = '', axes = FALSE, add = TRUE, cex = 0.7)
 matplot(x = as.numeric(rownames(ResultsLarge[,c(2,3,9,10)])), y = ResultsLarge[,c(2,3,9,10)],
-        type = 'o', pch = 16, lty = ltys[1], col = cols[c(2,3,9,10)],
+        type = 'o', pch = pchs[4], lty = ltys[1], col = cols[c(2,3,9,10)],
         xlim = c(1,5), ylim = c(0,20), 
-        xlab = '', ylab = '', axes = FALSE, add = TRUE)
-legend('right', legend = c('Beta(1,1)', 'Beta(2,2)', 'Gamma(1,1)', 'Gamma(2,2)'), col = cols[c(2,3,9,10)], lty = 1, cex = 1.2)
-legend('topright', title = 'Number of Points', legend = c('25', '50','100','Perfect'), col = 'black', lty = c(3, 4, 2, 1), horiz = TRUE, cex = 1.2)
+        xlab = '', ylab = '', axes = FALSE, add = TRUE, cex = 0.7)
+legend('right', legend = c('Beta(1,1)', 'Beta(2,2)', 'Gamma(1)', 'Gamma(2)'), col = cols[c(2,3,9,10)], lty = 1, cex = 1.2)
+legend('topright', title = 'Number of Points', legend = c('25', '50','100','Perfect'), col = 'black', lty = c(3, 4, 2, 1), pch = pchs, horiz = TRUE, cex = 1.2)
 #text(x = 1.1, y = 18, 'B', cex = 1.5)
 dev.off()
 
