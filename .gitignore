@@ -7,6 +7,10 @@ drillingfluid/.Rhistory
 
 *.png
 
+*.dat
+
+*.nit
+
 drillingfluid/dataProcessed5-28-2015.RData
 
 geothermal_bhts_outliers_documentation.aux
