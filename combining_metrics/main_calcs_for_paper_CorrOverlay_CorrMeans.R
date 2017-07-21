@@ -54,7 +54,7 @@ wd_raster_out <- paste(getwd(), '/Rasters/Rasters_out/CorrMeans', sep='')
 wd_raster_in <- paste(getwd(), '/Rasters/Rasters_in', sep='')
 
 # location to save images
-wd_image <- paste(getwd(), '/Results/CorrMeans', sep='')
+wd_image <- paste(getwd(), '/Results/CorrMeans/PaperGraphics', sep='')
 
 # location of code/scripts are stored
 wd_code <- paste(getwd(), '/combining_metrics', sep='')
@@ -138,6 +138,41 @@ source('saveRast.R')
 source('plotWeightBuf.R')
 source('rw_functions_lb.R') #Weibull and beta dists. Note that the new functions have not been added to all variables yet.
 
+#### Set Thresholds ####
+# Reservoirs
+res_rfc_min <- 0.001 # minimum for reservoir (both 3-color and 5-color)
+res_rfc_max <- 10000 # maximum for reservoir (both 3-color and 5-color)
+res_rfc_thresh5 <- c(res_rfc_min,c(1,10,100,1000),res_rfc_max)
+
+res_RPIw_min <- 0.0001 # minimum for reservoir (both 3-color and 5-color)
+res_RPIw_max <- 10    # maximum for reservoir (both 3-color and 5-color)
+res_RPIw_thresh5 <- c(res_RPIw_min,c(0.001,0.01,0.1,1.0),res_RPIw_max)
+
+res_RPIg_min <- 0.0001 # minimum for reservoir (both 3-color and 5-color)
+res_RPIg_max <- 10     # maximum for reservoir (both 3-color and 5-color)
+res_RPIg_thresh5 <- c(res_RPIg_min,c(0.001,0.01,0.1,1.0),res_RPIg_max)
+
+#Seismic Stress
+seis_stress_min <- 0.001 # to avoid problems with numerically zero values
+seis_stress_max <- 25
+seis_stress_thresh5<- c(seis_stress_min,c(5,10,15,20),seis_stress_max)
+
+# set critical angles:
+critical_ang1 = 65.2
+critical_ang2 = 114.8
+
+#Seismic angle
+seis_eq_min <- 0.001 # to avoid problems with numerically zero values
+seis_eq_max <- 25
+seis_eq_thresh5<- 10^3*c(seis_eq_min,c(5,10,15,20),seis_eq_max)
+
+#Thermal
+therm_thresh5 <- rev(c(5000,4000,3000,2500,2000,1000)) #3000 is about $6.4 mil/well and 23 C/km. 2500 is about $4.8 mil/well and 28C/km.
+
+#Utilization
+util_thresh5 <- c(5,12,13.5,16,20,25)
+
+
 ##### THERMAL ######
 # importing rasters, depth to 80 DegC and standard error of prediction
 therm_pred <- raster(paste(wd_raster_in,'/Thermal/d80cp-',sep=''))
@@ -191,6 +226,18 @@ makeMap (rast=th_5_0_5_NA
          ,numCol=5
          ,comTy=NA
          ,numRF=1)
+makeMap (rast=th_5_0_5_NA
+         ,plotnm='th_5_0_5_NA.tiff'
+         ,wd=wd_image
+         ,numCol=5
+         ,comTy=NA
+         ,numRF=1, leg2 = T, grey = F, County = F, RawThreshVals = therm_thresh5/1000, Unit = 'km', dpi = 300, FigFun = 'tiff')
+makeMap (rast=th_5_0_5_NA
+         ,plotnm='th_5_0_5_NA_Grey.tiff'
+         ,wd=wd_image
+         ,numCol=5
+         ,comTy=NA
+         ,numRF=1, leg2 = T, grey = T, County = F, RawThreshVals = therm_thresh5/1000, Unit = 'km', dpi = 600, FigFun = 'tiff')
 
 # making thermal uncertainty maps
 th_interp_tab5 <- as.matrix(read.xlsx(paste(wd_error_interp,'/th_pfvar5.xlsx',sep=''),1,header=FALSE))
@@ -243,6 +290,20 @@ makeMap (rast=calc(th_pfa_var5,fun=sqrt)
          ,comTy=NA
          ,numRF=1
          ,sdMap=TRUE)
+makeMap (rast=calc(th_pfa_var5,fun=sqrt)
+         ,plotnm='th_pfa_sd5.tiff'
+         ,wd=wd_image
+         ,numCol=5
+         ,comTy=NA
+         ,numRF=1
+         ,sdMap=TRUE, dpi = 300, FigFun = 'tiff')
+makeMap (rast=calc(th_pfa_var5,fun=sqrt)
+         ,plotnm='th_pfa_sd5_Grey.tiff'
+         ,wd=wd_image
+         ,numCol=5
+         ,comTy=NA
+         ,numRF=1
+         ,sdMap=TRUE, grey = T, County = F, dpi = 600, FigFun = 'tiff')
 
 saveRast(rast=calc(th_pfa_var5_ls,fun=sqrt)
          ,wd=wd_raster_out
@@ -254,6 +315,20 @@ makeMap (rast=calc(th_pfa_var5_ls,fun=sqrt)
          ,comTy=NA
          ,numRF=1
          ,sdMap=TRUE)
+makeMap (rast=calc(th_pfa_var5_ls,fun=sqrt)
+         ,plotnm='th_pfa_sd5_ls.tiff'
+         ,wd=wd_image
+         ,numCol=5
+         ,comTy=NA
+         ,numRF=1
+         ,sdMap=TRUE, dpi = 300, FigFun = 'tiff')
+makeMap (rast=calc(th_pfa_var5_ls,fun=sqrt)
+         ,plotnm='th_pfa_sd5_ls_Grey.tiff'
+         ,wd=wd_image
+         ,numCol=5
+         ,comTy=NA
+         ,numRF=1
+         ,sdMap=TRUE, grey = T, County = F, dpi = 600, FigFun = 'tiff')
 
 # deleting unneeded variables
 rm(th_ses,th_means,thvecPFvar5,std_thd80,mean_thd80)
@@ -510,6 +585,28 @@ makeMap(rast=re_5_0_5_NA_RPIg
         ,comTy=NA
         ,numRF=1)
 
+makeMap(rast=re_5_0_5_NA_rfc
+        ,plotnm='re_5_0_5_NA_rfc.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,leg2 = T
+        ,grey = F
+        ,County = F
+        ,Unit = 'mD-m'
+        ,dpi = 300
+        ,FigFun = 'tiff'
+        ,RawThreshVals = c(bquote(10^.(log10(res_rfc_thresh5)[1])),bquote(10^.(log10(res_rfc_thresh5)[2])),bquote(10^.(log10(res_rfc_thresh5)[3])),bquote(10^.(log10(res_rfc_thresh5)[4])),bquote(10^.(log10(res_rfc_thresh5)[5])),expression(10^4)))
+makeMap(rast=re_5_0_5_NA_rfc
+        ,plotnm='re_5_0_5_NA_rfc_Grey.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,leg2 = T, grey = T, County = F, Unit = 'mD-m', dpi = 300, FigFun = 'tiff',
+        RawThreshVals = c(bquote(10^.(log10(res_rfc_thresh5)[1])),bquote(10^.(log10(res_rfc_thresh5)[2])),bquote(10^.(log10(res_rfc_thresh5)[3])),bquote(10^.(log10(res_rfc_thresh5)[4])),bquote(10^.(log10(res_rfc_thresh5)[5])),expression(10^4)))
+
 # making uncertainty map
 # reading-in tables for interpolated values
 re_interp_tab5_rfc <- as.matrix(read.xlsx(paste(wd_error_interp,'/re_rfc_pfvar5.xlsx',sep=''),1,header=FALSE))
@@ -634,6 +731,21 @@ makeMap(rast=calc(re_pfa_var5_rfc,fun=sqrt)
          ,comTy=NA
          ,numRF=1
          ,sdMap=TRUE)
+makeMap(rast=calc(re_pfa_var5_rfc,fun=sqrt)
+        ,plotnm='re_pfa_sd5_rfc.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,sdMap=TRUE, dpi = 300, FigFun = 'tiff')
+makeMap(rast=calc(re_pfa_var5_rfc,fun=sqrt)
+        ,plotnm='re_pfa_sd5_rfc_Grey.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,sdMap=TRUE
+        ,grey = T, County = F, dpi = 600, FigFun = 'tiff')
 
 saveRast(rast=calc(re_pfa_var5_RPIw,fun=sqrt)
          ,wd=wd_raster_out
@@ -667,6 +779,21 @@ makeMap(rast=calc(re_pfa_var5_rfc_ls,fun=sqrt)
          ,comTy=NA
          ,numRF=1
          ,sdMap=TRUE)
+makeMap(rast=calc(re_pfa_var5_rfc_ls,fun=sqrt)
+        ,plotnm='re_pfa_sd5_rfc_ls.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,sdMap=TRUE, dpi = 300, FigFun = 'tiff')
+makeMap(rast=calc(re_pfa_var5_rfc_ls,fun=sqrt)
+        ,plotnm='re_pfa_sd5_rfc_ls_Grey.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,sdMap=TRUE
+        ,grey = T, County = F, dpi = 600, FigFun = 'tiff')
 
 saveRast(rast=calc(re_pfa_var5_RPIw_ls,fun=sqrt)
          ,wd=wd_raster_out
@@ -775,6 +902,21 @@ makeMap(rast=ut0_5_0_5_NA
         ,comTy=NA
         ,numRF=1
         ,sdMap=F)
+makeMap(rast=ut0_5_0_5_NA 
+        ,plotnm='ut0_5_0_5_NA.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,sdMap=F, leg2 = T, dpi = 300, FigFun = 'tiff', County = F, RawThreshVals = util_thresh5, Unit = '$/MMBTU')
+makeMap(rast=ut0_5_0_5_NA 
+        ,plotnm='ut0_5_0_5_NA_Grey.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,sdMap=F
+        ,leg2 = T, grey = T, County = F, RawThreshVals = util_thresh5, Unit = '$/MMBTU', dpi = 600, FigFun = 'tiff')
 
 # buffering utilization (5 km)
 # five color
@@ -798,6 +940,20 @@ makeMap(rast=ut5_5_0_5_NA
         ,numCol=5
         ,comTy=NA
         ,numRF=1)
+makeMap(rast=ut5_5_0_5_NA 
+        ,plotnm='ut5_5_0_5_NA.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,sdMap=F, leg2 = T, dpi = 300, FigFun = 'tiff', County = F, RawThreshVals = util_thresh5, Unit = '$/MMBTU')
+makeMap(rast=ut5_5_0_5_NA 
+        ,plotnm='ut5_5_0_5_NA_Grey.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,leg2 = T, grey = T, County = F, RawThreshVals = util_thresh5, Unit = '$/MMBTU', dpi = 600, FigFun = 'tiff')
 
 # making uncertainty map
 util_interp_tab5 <-  as.matrix(read.xlsx(paste(wd_error_interp,'/ut_slcoh_pfvar5.xlsx',sep=''),1,header=FALSE))
@@ -864,6 +1020,20 @@ makeMap(rast=calc(util_pfa_var5,fun=sqrt)
          ,comTy=NA
          ,numRF=1
          ,sdMap=TRUE)
+makeMap(rast=calc(util_pfa_var5,fun=sqrt)
+        ,plotnm='util_pfa_sd5.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,sdMap=TRUE, dpi = 300, FigFun = 'tiff')
+makeMap(rast=calc(util_pfa_var5,fun=sqrt)
+        ,plotnm='util_pfa_sd5_Grey.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,sdMap=TRUE, dpi = 600, FigFun = 'tiff', grey = T)
 
 saveRast(rast=calc(util_pfa_var5_ls,fun=sqrt)
           ,wd=wd_raster_out
@@ -875,6 +1045,20 @@ makeMap(rast=calc(util_pfa_var5_ls,fun=sqrt)
          ,comTy=NA
          ,numRF=1
          ,sdMap=TRUE)
+makeMap(rast=calc(util_pfa_var5_ls,fun=sqrt)
+        ,plotnm='util_pfa_sd5_ls.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,sdMap=TRUE, dpi = 300, FigFun = 'tiff')
+makeMap(rast=calc(util_pfa_var5_ls,fun=sqrt)
+        ,plotnm='util_pfa_sd5_ls_Grey.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,sdMap=TRUE, dpi = 600, FigFun = 'tiff', grey = T)
 
 # deleting unneeded files
 rm(ut0_5_0_5_NA, utvecPFmean5, utilvecPFvar5, utilvecPFvar5_ls)
@@ -969,6 +1153,18 @@ makeMap(rast=seEq_5_0_5_NA
         ,numCol=5
         ,comTy=NA
         ,numRF=1)
+makeMap(rast=seEq_5_0_5_NA
+        ,plotnm='seEq_5_0_5_NA.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1, dpi = 300, FigFun = 'tiff')
+makeMap(rast=seEq_5_0_5_NA
+        ,plotnm='seEq_5_0_5_NA_Grey.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1, dpi = 600, FigFun = 'tiff', grey = T)
 
 saveRast(rast=seSt_5_0_5_NA
          ,wd=wd_raster_out
@@ -979,6 +1175,18 @@ makeMap(rast=seSt_5_0_5_NA
         ,numCol=5
         ,comTy=NA
         ,numRF=1)
+makeMap(rast=seSt_5_0_5_NA
+        ,plotnm='seSt_5_0_5_NA.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1, dpi = 300, FigFun = 'tiff')
+makeMap(rast=seSt_5_0_5_NA
+        ,plotnm='seSt_5_0_5_NA_Grey.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1, dpi = 600, FigFun = 'tiff', grey = T)
 
 
 # combining stress and earthquakes into play fairway seismic map
@@ -994,6 +1202,18 @@ makeMap(rast=se_5_0_5_a
         ,numCol=5
         ,comTy=NA
         ,numRF=1)
+makeMap(rast=se_5_0_5_a
+        ,plotnm='se_5_0_5_a.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1, dpi = 300, FigFun = 'tiff')
+makeMap(rast=se_5_0_5_a
+        ,plotnm='se_5_0_5_a_Grey.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1, grey = T, dpi = 600, FigFun = 'tiff')
 
 ## calcualting uncertainty maps for the play fairway scheme
 # reading-in tables for interpolated values
@@ -1053,6 +1273,20 @@ makeMap(rast=calc(seSt_pfa_var5,fun=sqrt)
          ,comTy=NA
          ,numRF=1
          ,sdMap=TRUE)
+makeMap(rast=calc(seSt_pfa_var5,fun=sqrt)
+        ,plotnm='seSt_pfa_sd5.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,sdMap=TRUE, dpi = 300, FigFun = 'tiff')
+makeMap(rast=calc(seSt_pfa_var5,fun=sqrt)
+        ,plotnm='seSt_pfa_sd5_Grey.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,sdMap=TRUE, dpi = 600, FigFun = 'tiff', grey = T)
 
 saveRast(rast=calc(seSt_pfa_var5_ls,fun=sqrt)
           ,wd=wd_raster_out
@@ -1064,6 +1298,20 @@ makeMap(rast=calc(seSt_pfa_var5_ls,fun=sqrt)
          ,comTy=NA
          ,numRF=1
          ,sdMap=TRUE)
+makeMap(rast=calc(seSt_pfa_var5_ls,fun=sqrt)
+        ,plotnm='seSt_pfa_sd5_ls.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,sdMap=TRUE, dpi = 300, FigFun = 'tiff')
+makeMap(rast=calc(seSt_pfa_var5_ls,fun=sqrt)
+        ,plotnm='seSt_pfa_sd5_ls_Grey.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,sdMap=TRUE, dpi = 600, FigFun = 'tiff', grey = T)
 
 # for EARTHQUAKE
 # interpolating for the 5 color scheme
@@ -1115,6 +1363,20 @@ makeMap(rast=calc(seEq_pfa_var5,fun=sqrt)
          ,comTy=NA
          ,numRF=1
          ,sdMap=TRUE)
+makeMap(rast=calc(seEq_pfa_var5,fun=sqrt)
+        ,plotnm='seEq_pfa_sd5.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,sdMap=TRUE, dpi = 300, FigFun = 'tiff')
+makeMap(rast=calc(seEq_pfa_var5,fun=sqrt)
+        ,plotnm='seEq_pfa_sd5_Grey.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,sdMap=TRUE, dpi = 600, FigFun = 'tiff', grey = T)
 
 saveRast(rast=calc(seEq_pfa_var5_ls,fun=sqrt)
          ,wd=wd_raster_out
@@ -1126,6 +1388,20 @@ makeMap(rast=calc(seEq_pfa_var5_ls,fun=sqrt)
         ,comTy=NA
         ,numRF=1
         ,sdMap=TRUE)
+makeMap(rast=calc(seEq_pfa_var5_ls,fun=sqrt)
+        ,plotnm='seEq_pfa_sd5_ls.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,sdMap=TRUE, dpi = 300, FigFun = 'tiff')
+makeMap(rast=calc(seEq_pfa_var5_ls,fun=sqrt)
+        ,plotnm='seEq_pfa_sd5_ls_Grey.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,sdMap=TRUE, dpi = 600, FigFun = 'tiff', grey = T)
 
 # for COMBINED
 se_pfa_var5s <- stack(c(seEq_pfa_var5,seSt_pfa_var5))
@@ -1162,6 +1438,20 @@ makeMap(rast=calc(se_pfa_var5,fun=sqrt)
          ,comTy=NA
          ,numRF=1
          ,sdMap=TRUE)
+makeMap(rast=calc(se_pfa_var5,fun=sqrt)
+        ,plotnm='se_pfa_sd5.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,sdMap=TRUE, dpi = 300, FigFun = 'tiff')
+makeMap(rast=calc(se_pfa_var5,fun=sqrt)
+        ,plotnm='se_pfa_sd5_Grey.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,sdMap=TRUE, grey = T, dpi = 600, FigFun = 'tiff')
 
 saveRast(rast=calc(se_pfa_var5_ls,fun=sqrt)
          ,wd=wd_raster_out
@@ -1173,6 +1463,20 @@ makeMap(rast=calc(se_pfa_var5_ls,fun=sqrt)
         ,comTy=NA
         ,numRF=1
         ,sdMap=TRUE)
+makeMap(rast=calc(se_pfa_var5_ls,fun=sqrt)
+        ,plotnm='se_pfa_sd5_ls.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,sdMap=TRUE, dpi = 300, FigFun = 'tiff')
+makeMap(rast=calc(se_pfa_var5_ls,fun=sqrt)
+        ,plotnm='se_pfa_sd5_ls_Grey.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,sdMap=TRUE, grey = T, dpi = 600, FigFun = 'tiff')
 
 # removing unneeded files
 rm(seEqvecPFvar5,seStvecPFvar5)
