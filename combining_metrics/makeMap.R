@@ -14,6 +14,7 @@ makeMap <- function(rast    # raster
                     ,Unit = NA #Unit for the RawThreshVals
                     ,dpi = 300 #dots per square inch for the figure
                     ,FigFun = 'png' #figure function to use. Accepts tiff and png
+                    ,NumCols = 5    #Number of colors for sdMap
                     ){
   
   # setting directory for saving file
@@ -67,11 +68,11 @@ makeMap <- function(rast    # raster
   
   if(sdMap == TRUE){
     if (grey){
-      breaks <- pretty(seq(0,max(values(rast), na.rm=T), length.out = 6))
-      cols <- rev(grey.colors(length(breaks)))
+      breaks <- pretty(seq(0,max(values(rast), na.rm=T), length.out = NumCols+1))
+      cols <- rev(grey.colors(length(breaks)-1))
     }else{
-      cols <- rev(brewer.pal(9,'GnBu')[seq(3,9)])
-      breaks <- pretty(seq(0,max(values(rast),na.rm=T),length.out=length(cols)+1))
+      breaks <- pretty(seq(0,max(values(rast),na.rm=T),length.out=NumCols+1))
+      cols <- rev(brewer.pal(length(breaks)-1,'GnBu'))
     }
   }
   
