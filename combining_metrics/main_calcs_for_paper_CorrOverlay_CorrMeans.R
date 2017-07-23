@@ -1556,6 +1556,20 @@ makeMap(rast=co_5_0_20_s_rfc
         ,numCol=5
         ,comTy='min' #Use min because the mean is on 0:3
         ,numRF=4)
+makeMap(rast=co_5_0_20_s_rfc
+        ,plotnm='co_5_0_5_a_rfc.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min' #Use min because the mean is on 0:5
+        ,numRF=4
+        ,leg2 = F, County = F, grey = F, dpi = 300, FigFun = 'tiff')
+makeMap(rast=co_5_0_20_s_rfc
+        ,plotnm='co_5_0_5_a_rfc_Grey.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min' #Use min because the mean is on 0:5
+        ,numRF=4
+        ,leg2 = F, County = F, grey = T, dpi = 600, FigFun = 'tiff')
 
 saveRast(rast=co_5_0_20_s_RPIw
          ,wd=wd_raster_out
@@ -1655,6 +1669,20 @@ makeMap(rast=co_5_0_625_p_rfc
         ,numCol=5
         ,comTy='min' #Use min because the geomean is on 0:5
         ,numRF=4)
+makeMap(rast=co_5_0_625_p_rfc
+        ,plotnm='co_5_0_5_g_rfc.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min' #Use min because the geomean is on 0:5
+        ,numRF=4
+        ,leg2 = F, County = F, grey = F, dpi = 300, FigFun = 'tiff')
+makeMap(rast=co_5_0_625_p_rfc
+        ,plotnm='co_5_0_5_g_rfc_Grey.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min' #Use min because the geomean is on 0:5
+        ,numRF=4
+        ,leg2 = F, County = F, grey = T, dpi = 600, FigFun = 'tiff')
 
 saveRast(rast=co_5_0_625_p_RPIw
          ,wd=wd_raster_out
@@ -1740,6 +1768,20 @@ makeMap(rast=co_5_0_5_m_rfc
         ,numCol=5
         ,comTy='min' #Use min because the min is on 0:5
         ,numRF=4)
+makeMap(rast=co_5_0_5_m_rfc
+        ,plotnm='co_5_0_5_m_rfc.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min' #Use min because the min is on 0:5
+        ,numRF=4
+        ,leg2 = F, County = F, grey = F, dpi = 300, FigFun = 'tiff')
+makeMap(rast=co_5_0_5_m_rfc
+        ,plotnm='co_5_0_5_m_rfc_Grey.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min' #Use min because the min is on 0:5
+        ,numRF=4
+        ,leg2 = F, County = F, grey = T, dpi = 600, FigFun = 'tiff')
 
 saveRast(rast=co_5_0_5_m_RPIw
          ,wd=wd_raster_out
@@ -1865,6 +1907,22 @@ makeMap(rast=calc(co_pfa_var5_avg_rfc,fun=sqrt)
         ,comTy='min'
         ,numRF=4
         ,sdMap=TRUE)
+makeMap(rast=calc(co_pfa_var5_avg_rfc,fun=sqrt)
+        ,plotnm='co_pfa_sd5_avg_rfc.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min'
+        ,numRF=4
+        ,sdMap=TRUE
+        ,leg2 = F, County = F, grey = F, dpi = 300, FigFun = 'tiff')
+makeMap(rast=calc(co_pfa_var5_avg_rfc,fun=sqrt)
+        ,plotnm='co_pfa_sd5_avg_rfc_Grey.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min'
+        ,numRF=4
+        ,sdMap=TRUE
+        ,leg2 = F, County = F, grey = T, dpi = 600, FigFun = 'tiff')
 
 saveRast(rast=co_pfa_var5_avg_RPIw
          ,wd=wd_raster_out
@@ -2015,6 +2073,22 @@ makeMap(rast=calc(co_pfa_var5_geomean_rfc,fun=sqrt)
         ,comTy='min'
         ,numRF=4
         ,sdMap=TRUE)
+makeMap(rast=calc(co_pfa_var5_geomean_rfc,fun=sqrt)
+        ,plotnm='co_pfa_sd5_geomean_rfc.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min'
+        ,numRF=4
+        ,sdMap=TRUE
+        ,leg2 = F, County = F, grey = F, dpi = 300, FigFun = 'tiff')
+makeMap(rast=calc(co_pfa_var5_geomean_rfc,fun=sqrt)
+        ,plotnm='co_pfa_sd5_geomean_rfc_Grey.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min'
+        ,numRF=4
+        ,sdMap=TRUE
+        ,leg2 = F, County = F, grey = T, dpi = 600, FigFun = 'tiff')
 
 saveRast(rast=calc(co_pfa_var5_geomean_RPIw,fun=sqrt)
          ,wd=wd_raster_out
@@ -2097,40 +2171,6 @@ rm(co_pfa_var5_geomean_rfc, co_pfa_var5_geomean_rfc_geo, co_pfa_var5_geomean_RPI
 # reading-in the scaled rasters
 # note that scaled rasters are in the wd_raster_out
 # because they were output from the first part of the code
-
-#Set Thresholds
-# Reservoirs
-res_rfc_min <- 0.001 # minimum for reservoir (both 3-color and 5-color)
-res_rfc_max <- 10000 # maximum for reservoir (both 3-color and 5-color)
-res_rfc_thresh5 <- c(res_rfc_min,c(1,10,100,1000),res_rfc_max)
-
-res_RPIw_min <- 0.0001 # minimum for reservoir (both 3-color and 5-color)
-res_RPIw_max <- 10    # maximum for reservoir (both 3-color and 5-color)
-res_RPIw_thresh5 <- c(res_RPIw_min,c(0.001,0.01,0.1,1.0),res_RPIw_max)
-
-res_RPIg_min <- 0.0001 # minimum for reservoir (both 3-color and 5-color)
-res_RPIg_max <- 10     # maximum for reservoir (both 3-color and 5-color)
-res_RPIg_thresh5 <- c(res_RPIg_min,c(0.001,0.01,0.1,1.0),res_RPIg_max)
-
-#Seismic Stress
-seis_stress_min <- 0.001 # to avoid problems with numerically zero values
-seis_stress_max <- 25
-seis_stress_thresh5<- c(seis_stress_min,c(5,10,15,20),seis_stress_max)
-
-# set critical angles:
-critical_ang1 = 65.2
-critical_ang2 = 114.8
-
-#Seismic angle
-seis_eq_min <- 0.001 # to avoid problems with numerically zero values
-seis_eq_max <- 25
-seis_eq_thresh5<- 10^3*c(seis_eq_min,c(5,10,15,20),seis_eq_max)
-
-#Thermal
-therm_thresh5 <- rev(c(5000,4000,3000,2500,2000,1000)) #3000 is about $6.4 mil/well and 23 C/km. 2500 is about $4.8 mil/well and 28C/km.
-
-#Utilization
-util_thresh5 <- c(5,12,13.5,16,20,25)
 
 #Five Color:
 reservoir_rfc <- raster(paste(wd_raster_out,'/re_5_0_5_NA_rfc.tif',sep=''))
@@ -2764,185 +2804,6 @@ for(i in ind_use){
     ps <- 0.95
     roots1[i,3] <- uniroot(solveQuant,interval=c(0,5))$root
     converge1[i,3] <- uniroot(solveQuant,interval=c(0,5))$iter
-  }
-}
-rm(params, ps)
-
-# Seismic Doubly Truncated Normal when lb = 2.5, all else Weibull - Used for paper
-dataParams <- matrix(NA,10,4*2) #4 is for the number of RFs
-dp2 <- matrix(NA,10,4) #Number of iterations
-#set the lower bound of the Weibull as 0
-lb = 0
-#Set the right truncation point to Inf
-right = Inf
-#Record the value of the lower bound in a matrix
-lb_mat = matrix(0, nrow=nrow(points), ncol=ncol(dataParams)/2)
-for(i in ind_use){
-  
-  mom <- c(points$thermal[i],points$th_pfa_var5[i])
-  #check if thermal is 5 with 0 uncertainty
-  if ((points$thermal[i] == 5 & points$th_pfa_var5[i] == 0)){
-    #Use a lower bound of 5
-    lb_mat[i,1] = 5
-    dataParams[i,c(1,2)] <- NA
-    dp2[i,1] <-  NA
-  }
-  else{
-    #Use a 2 parameter Weibull because the lower bound will be 0
-    lb_mat[i,1] = 0
-    dataParams[i,c(1,2)] <- multiroot(solveWeibull,start=c(1,1), positive=TRUE)$root
-    dp2[i,1] <-  multiroot(solveWeibull,start=c(1,1), positive=TRUE)$iter
-  }
-  
-  mom <- c(points$reservoir_rfc[i],points$re_pfa_var5_rfc[i])
-  #check if reservoir rfc is 5 with 0 uncertainty
-  if ((points$reservoir_rfc[i] == 5 & points$re_pfa_var5_rfc[i] == 0)){
-    #Use a lower bound of 5
-    lb_mat[i,2] = 5
-    dataParams[i,c(3,4)] <- NA
-    dp2[i,2] <-  NA
-  }
-  else{
-    #Use a 2 parameter Weibull because the lower bound will be 0
-    lb_mat[i,2] = 0
-    dataParams[i,c(3,4)] <- multiroot(solveWeibull,start=c(1,2), positive=TRUE)$root
-    dp2[i,2] <-  multiroot(solveWeibull,start=c(1,2), positive=TRUE)$iter
-  }
-  
-  mom <- c(points$seismic[i],points$se_pfa_var5[i])
-  #check if either seismic stress or earthquake is a 5 with no uncertainty
-  if ((points$seis_eq_pred[i] > 25000 & points$seis_eq_err[i] == 0) | (points$seis_stress_pred[i] > 25 & points$seis_stress_err[i] == 0)){
-    #Use a 3 parameter Weibull. Need to find the lower bound.
-    if ((points$seis_eq_pred[i] > 25000 & points$seis_eq_err[i] == 0) & (points$seis_stress_pred[i] > 25 & points$seis_stress_err[i] == 0)){
-      lb_mat[i,3] = 5
-      #These have no need to be fit because the lower bound is a 5. Set parameters to NA.
-      dataParams[i,5] <- NA
-      dataParams[i,6] <- NA
-    }
-    else{
-      if (right != Inf){
-        if (points$seismic[i] == 5){
-          #No matter what the variance is, this distribution by definition of being truncated at 5 cannot be fit.
-          lb_mat[i,3] = 2.5
-          dataParams[i,5] <- NA
-          dataParams[i,6] <- NA
-        }else{
-          #Use the doubly truncated normal
-          lb = 2.5
-          lb_mat[i,3] = lb
-          dataParams[i,c(5,6)] <- mom
-          dp2[i,3] <-  1
-          
-          lb=0
-        }
-      }else{
-        #Use the doubly truncated normal
-        lb = 2.5
-        lb_mat[i,3] = lb
-        dataParams[i,c(5,6)] <- mom
-        dp2[i,3] <-  1
-        
-        lb=0
-      }
-    }
-  }
-  else{
-    #Use a 2 parameter Weibull because the lower bound will be 0
-    lb_mat[i,3] = 0
-    dataParams[i,c(5,6)] <- multiroot(solveWeibull,start=c(1,2), positive=TRUE)$root
-    dp2[i,3] <-  multiroot(solveWeibull,start=c(1,2), positive=TRUE)$iter
-  }
-  
-  mom <- c(points$utilization[i],points$util_pfa_var5[i])
-  #check if utilization is 5 with 0 uncertainty
-  if ((points$utilization[i] == 5 & points$util_pfa_var5[i] == 0)){
-    #Use a lower bound of 5
-    lb_mat[i,4] = 5
-    dataParams[i,c(3,4)] <- NA
-    dp2[i,2] <-  NA
-  }
-  else{
-    #Use a 2 parameter Weibull because the lower bound will be 0
-    lb_mat[i,4] = 0
-    dataParams[i,c(7,8)] <- multiroot(solveWeibull,start=c(1,2), positive=TRUE)$root
-    dp2[i,4] <-  multiroot(solveWeibull,start=c(1,2), positive=TRUE)$iter
-  }
-}
-rm(mom)
-
-# setting NAs for utilization 0 because this will have no uncertainty.
-dataParams[which(points$utilization == 0),7] <- NA
-dataParams[which(points$utilization == 0),8] <- NA
-
-roots1 <- matrix(NA,10,3) #Percentiles to find roots
-converge1 <- matrix(NA,10,3) #Iterations to converge
-for(i in ind_use){
-  params <- dataParams[i,]
-  
-  #Determine how to search for the root:
-  #First check for utilization 0. All roots for this are 0.
-  if (is.na(dataParams[i,7]) == TRUE){
-    roots1[i,1] = roots1[i,2] = roots1[i,3] = 0.0
-  }else if (any(lb_mat[i,] != 0)){
-    #The lower bound is non-zero for some terms. Solve for the value using only the smallest values.
-    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
-    
-    ps <- 0.05
-    roots1[i,1] <- uniroot(solveQuant_SpecialSeis,interval=c(min(lb_mat[i,]),5))$root
-    converge1[i,1] <- uniroot(solveQuant_SpecialSeis,interval=c(min(lb_mat[i,]),5))$iter
-    
-    if (roots1[i,1] > sort(unique(lb_mat[i,]))[2]){
-      #The value of this percentile should be checked for the lower bound.
-      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
-      
-      roots1[i,1] <- uniroot(solveQuant_SpecialSeis,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
-      converge1[i,1] <- uniroot(solveQuant_SpecialSeis,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
-    }
-    
-    #Next Percentile
-    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
-    
-    ps <- 0.50
-    roots1[i,2] <- uniroot(solveQuant_SpecialSeis,interval=c(min(lb_mat[i,]),5))$root
-    converge1[i,2] <- uniroot(solveQuant_SpecialSeis,interval=c(min(lb_mat[i,]),5))$iter
-    
-    if (roots1[i,2] > sort(unique(lb_mat[i,]))[2]){
-      #The value of this percentile should be checked for the lower bound.
-      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
-      
-      roots1[i,2] <- uniroot(solveQuant_SpecialSeis,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
-      converge1[i,2] <- uniroot(solveQuant_SpecialSeis,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
-    }
-    
-    #Next Percentile
-    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
-    
-    ps <- 0.95
-    roots1[i,3] <- uniroot(solveQuant_SpecialSeis,interval=c(min(lb_mat[i,]),5))$root
-    converge1[i,3] <- uniroot(solveQuant_SpecialSeis,interval=c(min(lb_mat[i,]),5))$iter
-    
-    if (roots1[i,3] > sort(unique(lb_mat[i,]))[2]){
-      #The value of this percentile should be checked for the lower bound.
-      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
-      
-      roots1[i,3] <- uniroot(solveQuant_SpecialSeis,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
-      converge1[i,3] <- uniroot(solveQuant_SpecialSeis,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
-    }
-  }else{
-    #The lower bound is 0 for all risk factors.
-    ind_params = which(lb_mat[i,] == 0)
-    
-    ps <- 0.05
-    roots1[i,1] <- uniroot(solveQuant_SpecialSeis,interval=c(0,5))$root
-    converge1[i,1] <- uniroot(solveQuant_SpecialSeis,interval=c(0,5))$iter
-    
-    ps <- 0.5
-    roots1[i,2] <- uniroot(solveQuant_SpecialSeis,interval=c(0,5))$root
-    converge1[i,2] <- uniroot(solveQuant_SpecialSeis,interval=c(0,5))$iter
-    
-    ps <- 0.95
-    roots1[i,3] <- uniroot(solveQuant_SpecialSeis,interval=c(0,5))$root
-    converge1[i,3] <- uniroot(solveQuant_SpecialSeis,interval=c(0,5))$iter
   }
 }
 rm(params, ps)
@@ -3616,6 +3477,187 @@ for(i in ind_use){
 }
 rm(params, ps)
 
+# Seismic Doubly Truncated Normal when lb = 2.5, all else Weibull - Used for paper
+dataParams <- matrix(NA,10,4*2) #4 is for the number of RFs
+dp2 <- matrix(NA,10,4) #Number of iterations
+#set the lower bound of the Weibull as 0
+lb = 0
+#Set the upper bound as 5
+ub = 5
+#Set the right truncation point to Inf
+right = Inf
+#Record the value of the lower and upper bound in a matrix
+lb_mat = matrix(0, nrow=nrow(points), ncol=ncol(dataParams)/2)
+ub_mat = matrix(5, nrow=nrow(points), ncol=ncol(dataParams)/2)
+for(i in ind_use){
+  
+  mom <- c(points$thermal[i],points$th_pfa_var5[i])
+  #check if thermal is 5 with 0 uncertainty
+  if ((points$thermal[i] == 5 & points$th_pfa_var5[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,1] = 5
+    dataParams[i,c(1,2)] <- NA
+    dp2[i,1] <-  NA
+  }
+  else{
+    #Use a 2 parameter Weibull because the lower bound will be 0
+    lb_mat[i,1] = 0
+    dataParams[i,c(1,2)] <- multiroot(solveWeibull,start=c(1,1), positive=TRUE)$root
+    dp2[i,1] <-  multiroot(solveWeibull,start=c(1,1), positive=TRUE)$iter
+  }
+  
+  mom <- c(points$reservoir_rfc[i],points$re_pfa_var5_rfc[i])
+  #check if reservoir rfc is 5 with 0 uncertainty
+  if ((points$reservoir_rfc[i] == 5 & points$re_pfa_var5_rfc[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,2] = 5
+    dataParams[i,c(3,4)] <- NA
+    dp2[i,2] <-  NA
+  }
+  else{
+    #Use a 2 parameter Weibull because the lower bound will be 0
+    lb_mat[i,2] = 0
+    dataParams[i,c(3,4)] <- multiroot(solveWeibull,start=c(1,2), positive=TRUE)$root
+    dp2[i,2] <-  multiroot(solveWeibull,start=c(1,2), positive=TRUE)$iter
+  }
+  
+  mom <- c(points$seismic[i],points$se_pfa_var5[i])
+  #check if either seismic stress or earthquake is a 5 with no uncertainty
+  if ((points$seis_eq_pred[i] > 25000 & points$seis_eq_err[i] == 0) | (points$seis_stress_pred[i] > 25 & points$seis_stress_err[i] == 0)){
+    #Use a 3 parameter Weibull. Need to find the lower bound.
+    if ((points$seis_eq_pred[i] > 25000 & points$seis_eq_err[i] == 0) & (points$seis_stress_pred[i] > 25 & points$seis_stress_err[i] == 0)){
+      lb_mat[i,3] = 5
+      #These have no need to be fit because the lower bound is a 5. Set parameters to NA.
+      dataParams[i,5] <- NA
+      dataParams[i,6] <- NA
+    }
+    else{
+      if (right != Inf){
+        if (points$seismic[i] == 5){
+          #No matter what the variance is, this distribution by definition of being truncated at 5 cannot be fit.
+          lb_mat[i,3] = 2.5
+          dataParams[i,5] <- NA
+          dataParams[i,6] <- NA
+        }else{
+          #Use the doubly truncated normal
+          lb = 2.5
+          lb_mat[i,3] = lb
+          dataParams[i,c(5,6)] <- mom
+          dp2[i,3] <-  1
+          
+          lb=0
+        }
+      }else{
+        #Use the doubly truncated normal
+        lb = 2.5
+        lb_mat[i,3] = lb
+        dataParams[i,c(5,6)] <- mom
+        dp2[i,3] <-  1
+        
+        lb=0
+      }
+    }
+  }
+  else{
+    #Use a 2 parameter Weibull because the lower bound will be 0
+    lb_mat[i,3] = 0
+    dataParams[i,c(5,6)] <- multiroot(solveWeibull,start=c(1,2), positive=TRUE)$root
+    dp2[i,3] <-  multiroot(solveWeibull,start=c(1,2), positive=TRUE)$iter
+  }
+  
+  mom <- c(points$utilization[i],points$util_pfa_var5[i])
+  #check if utilization is 5 with 0 uncertainty
+  if ((points$utilization[i] == 5 & points$util_pfa_var5[i] == 0)){
+    #Use a lower bound of 5
+    lb_mat[i,4] = 5
+    dataParams[i,c(3,4)] <- NA
+    dp2[i,2] <-  NA
+  }
+  else{
+    #Use a 2 parameter Weibull because the lower bound will be 0
+    lb_mat[i,4] = 0
+    dataParams[i,c(7,8)] <- multiroot(solveWeibull,start=c(1,2), positive=TRUE)$root
+    dp2[i,4] <-  multiroot(solveWeibull,start=c(1,2), positive=TRUE)$iter
+  }
+}
+rm(mom)
+
+# setting NAs for utilization 0 because this will have no uncertainty.
+dataParams[which(points$utilization == 0),7] <- NA
+dataParams[which(points$utilization == 0),8] <- NA
+
+roots1 <- matrix(NA,10,3) #Percentiles to find roots
+converge1 <- matrix(NA,10,3) #Iterations to converge
+for(i in ind_use){
+  params <- dataParams[i,]
+  
+  #Determine how to search for the root:
+  #First check for utilization 0. All roots for this are 0.
+  if (is.na(dataParams[i,7]) == TRUE){
+    roots1[i,1] = roots1[i,2] = roots1[i,3] = 0.0
+  }else if (any(lb_mat[i,] != 0)){
+    #The lower bound is non-zero for some terms. Solve for the value using only the smallest values.
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.05
+    roots1[i,1] <- uniroot(solveQuant_SpecialSeis,interval=c(min(lb_mat[i,]),5))$root
+    converge1[i,1] <- uniroot(solveQuant_SpecialSeis,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots1[i,1] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots1[i,1] <- uniroot(solveQuant_SpecialSeis,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge1[i,1] <- uniroot(solveQuant_SpecialSeis,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+    
+    #Next Percentile
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.50
+    roots1[i,2] <- uniroot(solveQuant_SpecialSeis,interval=c(min(lb_mat[i,]),5))$root
+    converge1[i,2] <- uniroot(solveQuant_SpecialSeis,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots1[i,2] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots1[i,2] <- uniroot(solveQuant_SpecialSeis,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge1[i,2] <- uniroot(solveQuant_SpecialSeis,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+    
+    #Next Percentile
+    ind_params = which(lb_mat[i,] == min(lb_mat[i,]))
+    
+    ps <- 0.95
+    roots1[i,3] <- uniroot(solveQuant_SpecialSeis,interval=c(min(lb_mat[i,]),5))$root
+    converge1[i,3] <- uniroot(solveQuant_SpecialSeis,interval=c(min(lb_mat[i,]),5))$iter
+    
+    if (roots1[i,3] > sort(unique(lb_mat[i,]))[2]){
+      #The value of this percentile should be checked for the lower bound.
+      ind_params = which(lb_mat[i,] <= sort(unique(lb_mat[i,]))[2])
+      
+      roots1[i,3] <- uniroot(solveQuant_SpecialSeis,interval=c(sort(unique(lb_mat[i,]))[2],5))$root
+      converge1[i,3] <- uniroot(solveQuant_SpecialSeis,interval=c(sort(unique(lb_mat[i,]))[2],5))$iter
+    }
+  }else{
+    #The lower bound is 0 for all risk factors.
+    ind_params = which(lb_mat[i,] == 0)
+    
+    ps <- 0.05
+    roots1[i,1] <- uniroot(solveQuant_SpecialSeis,interval=c(0,5))$root
+    converge1[i,1] <- uniroot(solveQuant_SpecialSeis,interval=c(0,5))$iter
+    
+    ps <- 0.5
+    roots1[i,2] <- uniroot(solveQuant_SpecialSeis,interval=c(0,5))$root
+    converge1[i,2] <- uniroot(solveQuant_SpecialSeis,interval=c(0,5))$iter
+    
+    ps <- 0.95
+    roots1[i,3] <- uniroot(solveQuant_SpecialSeis,interval=c(0,5))$root
+    converge1[i,3] <- uniroot(solveQuant_SpecialSeis,interval=c(0,5))$iter
+  }
+} #Note that a warning message will pop up when Utilization is 0 (not fit by Weibull)
+rm(params, ps)
 
 # loop for Monte Carlo
 right = Inf #Set to Inf for non-truncated Weibull plots
@@ -3803,376 +3845,418 @@ for(i in 1:length(ind_use)){
   }else{
     name = 'scdist'
   }
-  png(paste(name,i,'.png',sep='')
-      ,height=6
-      ,width=6
-      ,units='in'
-      ,res=300
-  )
+  # png(paste(name,i,'.png',sep='')
+  #     ,height=6
+  #     ,width=6
+  #     ,units='in'
+  #     ,res=300
+  # )
+  # tiff(paste(name,i,'.tiff',sep='')
+  #     ,height=6
+  #     ,width=6
+  #     ,units='in'
+  #     ,res=600
+  # )
+  setEPS()
+  postscript(paste(name,i,'.eps',sep=''), height = 6, width = 6)
   
   par(mfrow=c(2,2)
       ,oma=c(0.5,0.5,0.5,0.5)+0.1
       ,mar=c(5,5,3,0)+0.1)
   
+  ymax = ceil(max(hist(mat_mc[,1], plot = F, breaks = seq(0,5,0.1))$density, 
+                  ifelse(right != Inf, 
+                         max(dweibull(seq(0,5,0.001),shape=dataParams_trunc[ind_use[i],4],scale=dataParams_trunc[ind_use[i],3])/pweibull(5,shape=dataParams_trunc[ind_use[i],4],scale=dataParams_trunc[ind_use[i],3]), na.rm=TRUE), 
+                         max(dweibull(seq(0,5,0.001),shape=dataParams[ind_use[i],4],scale=dataParams[ind_use[i],3]), na.rm=TRUE)), na.rm=TRUE))
   hist(mat_mc[,1]
        ,freq=F
        ,xlim=c(0,5)
+       ,ylim=c(0,ymax)
        ,main="Reservoir"
        ,xlab="SFF"
+       ,breaks = seq(0,5,0.1)
   )
   if (right != Inf){
     #Truncated Weibull pdf
-    lines(seq(0,5,0.01)
-          ,dweibull(seq(0,5,0.01),shape=dataParams_trunc[ind_use[i],4],scale=dataParams_trunc[ind_use[i],3])/pweibull(5,shape=dataParams_trunc[ind_use[i],4],scale=dataParams_trunc[ind_use[i],3])
-          ,col='royalblue'
+    lines(seq(0,5,0.001)
+          ,dweibull(seq(0,5,0.001),shape=dataParams_trunc[ind_use[i],4],scale=dataParams_trunc[ind_use[i],3])/pweibull(5,shape=dataParams_trunc[ind_use[i],4],scale=dataParams_trunc[ind_use[i],3])
+          ,col='black'
           ,lwd=2
+          ,ylim=c(0,ymax)
     )
   }else{
-    lines(seq(0,5,0.01)
-          ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],4],scale=dataParams[ind_use[i],3])
-          ,col='royalblue'
+    lines(seq(0,5,0.001)
+          ,dweibull(seq(0,5,0.001),shape=dataParams[ind_use[i],4],scale=dataParams[ind_use[i],3])
+          ,col='black'
           ,lwd=2
+          ,ylim=c(0,ymax)
     )
   }
   points(points$reservoir[ind_use[i]],0
          ,pch=19
+         ,ylim=c(0,ymax)
   )
   
+  ymax = ceil(max(hist(mat_mc[,2], plot = F, breaks = seq(0,5,0.1))$density, 
+                  ifelse(right != Inf, 
+                         max(dweibull(seq(0,5,0.001),shape=dataParams_trunc[ind_use[i],2],scale=dataParams_trunc[ind_use[i],1])/pweibull(5,shape=dataParams_trunc[ind_use[i],2],scale=dataParams_trunc[ind_use[i],1]), na.rm=TRUE), 
+                         max(dweibull(seq(0,5,0.001),shape=dataParams[ind_use[i],2],scale=dataParams[ind_use[i],1]), na.rm = TRUE)), na.rm=TRUE))
   hist(mat_mc[,2]
        ,freq=F
        ,xlim=c(0,5)
        ,main="Thermal"
        ,xlab="SFF"
+       ,ylim=c(0,ymax), breaks = seq(0,5,0.1)
   )
   if (right != Inf){
     #Truncated Weibull pdf
-    lines(seq(0,5,0.01)
-          ,dweibull(seq(0,5,0.01),shape=dataParams_trunc[ind_use[i],2],scale=dataParams_trunc[ind_use[i],1])/pweibull(5,shape=dataParams_trunc[ind_use[i],2],scale=dataParams_trunc[ind_use[i],1])
-          ,col='royalblue'
+    lines(seq(0,5,0.001)
+          ,dweibull(seq(0,5,0.001),shape=dataParams_trunc[ind_use[i],2],scale=dataParams_trunc[ind_use[i],1])/pweibull(5,shape=dataParams_trunc[ind_use[i],2],scale=dataParams_trunc[ind_use[i],1])
+          ,col='black'
           ,lwd=2
+          ,ylim=c(0,ymax)
     )
   }else{
-    lines(seq(0,5,0.01)
-          ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],2],scale=dataParams[ind_use[i],1])
-          ,col='royalblue'
+    lines(seq(0,5,0.001)
+          ,dweibull(seq(0,5,0.001),shape=dataParams[ind_use[i],2],scale=dataParams[ind_use[i],1])
+          ,col='black'
           ,lwd=2
+          ,ylim=c(0,ymax)
     )
   }
   points(points$thermal[ind_use[i]],0
          ,pch=19
+         ,ylim=c(0,ymax)
   )
   
+  ymax = ceil(max(hist(0.5*(mat_mc[,3]+mat_mc[,4]), plot = F, breaks = seq(0,5,0.1))$density), digits = 1)
   hist(0.5*(mat_mc[,3]+mat_mc[,4])
        ,freq=F
        ,xlim=c(0,5)
        ,main="Seismic"
        ,xlab="SFF"
+       ,ylim=c(0,ymax), breaks = seq(0,5,0.1)
   )
   if (right != Inf){
     #Use truncated Weibull pdf
     if (lb_mat[ind_use[i],3] != 0){
-      lines(seq(lb_mat[ind_use[i],3],right,0.01)
-            ,dweibull(seq(0,(right - lb_mat[ind_use[i],3]),0.01),shape=dataParams_trunc[ind_use[i],6],scale=dataParams_trunc[ind_use[i],5])/pweibull((right - lb_mat[ind_use[i],3]), shape=dataParams_trunc[ind_use[i],6],scale=dataParams_trunc[ind_use[i],5])
-            ,col='royalblue'
+      lines(seq(lb_mat[ind_use[i],3],right,0.001)
+            ,dweibull(seq(0,(right - lb_mat[ind_use[i],3]),0.001),shape=dataParams_trunc[ind_use[i],6],scale=dataParams_trunc[ind_use[i],5])/pweibull((right - lb_mat[ind_use[i],3]), shape=dataParams_trunc[ind_use[i],6],scale=dataParams_trunc[ind_use[i],5])
+            ,col='black'
             ,lwd=2
+            ,ylim=c(0,ymax)
       )
     }
     else{
-      lines(seq(0,5,0.01)
-            ,dweibull(seq(0,5,0.01),shape=dataParams_trunc[ind_use[i],6],scale=dataParams_trunc[ind_use[i],5])/pweibull(5,shape=dataParams_trunc[ind_use[i],6],scale=dataParams_trunc[ind_use[i],5])
-            ,col='royalblue'
+      lines(seq(0,5,0.001)
+            ,dweibull(seq(0,5,0.001),shape=dataParams_trunc[ind_use[i],6],scale=dataParams_trunc[ind_use[i],5])/pweibull(5,shape=dataParams_trunc[ind_use[i],6],scale=dataParams_trunc[ind_use[i],5])
+            ,col='black'
             ,lwd=2
+            ,ylim=c(0,ymax)
       )
     }
   }else{
     if (seis != TRUE){
       if (lb_mat[ind_use[i],3] != 0){
-        lines(seq(lb_mat[ind_use[i],3],5+lb_mat[ind_use[i],3],0.01)
-              ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],6],scale=dataParams[ind_use[i],5])
-              ,col='royalblue'
+        lines(seq(lb_mat[ind_use[i],3],5+lb_mat[ind_use[i],3],0.001)
+              ,dweibull(seq(0,5,0.001),shape=dataParams[ind_use[i],6],scale=dataParams[ind_use[i],5])
+              ,col='black'
               ,lwd=2
+              ,ylim=c(0,ymax)
         )
       }
       else{
-        lines(seq(0,5,0.01)
-              ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],6],scale=dataParams[ind_use[i],5])
-              ,col='royalblue'
+        lines(seq(0,5,0.001)
+              ,dweibull(seq(0,5,0.001),shape=dataParams[ind_use[i],6],scale=dataParams[ind_use[i],5])
+              ,col='black'
               ,lwd=2
+              ,ylim=c(0,ymax)
         )
       }
     }else{
       if (lb_mat[ind_use[i],3] != 0){
-        lines(seq(lb_mat[ind_use[i],3], ub_mat[ind_use[i],3],0.01)
-              ,dtnorm(seq(lb_mat[ind_use[i],3], ub_mat[ind_use[i],3],0.01), dataParams[ind_use[i],5], sqrt(dataParams[ind_use[i],6]), lb_mat[ind_use[i],3], ub_mat[ind_use[i],3])
-              ,col='royalblue'
+        lines(seq(lb_mat[ind_use[i],3], ub_mat[ind_use[i],3],0.001)
+              ,dtnorm(seq(lb_mat[ind_use[i],3], ub_mat[ind_use[i],3],0.001), dataParams[ind_use[i],5], sqrt(dataParams[ind_use[i],6]), lb_mat[ind_use[i],3], ub_mat[ind_use[i],3])
+              ,col='black'
               ,lwd=2
+              ,ylim=c(0,ymax)
         )
       }
       else{
-        lines(seq(0,5,0.01)
-              ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],6],scale=dataParams[ind_use[i],5])
-              ,col='royalblue'
+        lines(seq(0,5,0.001)
+              ,dweibull(seq(0,5,0.001),shape=dataParams[ind_use[i],6],scale=dataParams[ind_use[i],5])
+              ,col='black'
               ,lwd=2
+              ,ylim=c(0,ymax)
         )
       }
     }
   }
   points(points$seismic[ind_use[i]],0
          ,pch=19
+         ,ylim=c(0,ymax)
   )
   
+  ymax = ceil(max(hist(mat_mc[,5], plot = F, breaks = seq(0,5,0.1))$density, 
+                  ifelse(right != Inf, 
+                         max(dweibull(seq(0,5,0.001),shape=dataParams_trunc[ind_use[i],8],scale=dataParams_trunc[ind_use[i],7])/pweibull(5,shape=dataParams_trunc[ind_use[i],8],scale=dataParams_trunc[ind_use[i],7]), na.rm=TRUE), 
+                         max(dweibull(seq(0,5,0.001),shape=dataParams[ind_use[i],8],scale=dataParams[ind_use[i],7]), na.rm = TRUE)), na.rm=TRUE))
   hist(mat_mc[,5]
        ,freq=F
        ,xlim=c(0,5)
        ,main="Utilization"
        ,xlab="SFF"
+       ,ylim=c(0,ymax), breaks = seq(0,5,0.1)
   )
   if (right != Inf){
     #Truncated Weibull pdf
-    lines(seq(0,5,0.01)
-          ,dweibull(seq(0,5,0.01),shape=dataParams_trunc[ind_use[i],8],scale=dataParams_trunc[ind_use[i],7])/pweibull(5,shape=dataParams_trunc[ind_use[i],8],scale=dataParams_trunc[ind_use[i],7])
-          ,col='royalblue'
+    lines(seq(0,5,0.001)
+          ,dweibull(seq(0,5,0.001),shape=dataParams_trunc[ind_use[i],8],scale=dataParams_trunc[ind_use[i],7])/pweibull(5,shape=dataParams_trunc[ind_use[i],8],scale=dataParams_trunc[ind_use[i],7])
+          ,col='black'
           ,lwd=2
+          ,ylim=c(0,ymax)
     )
   }else{
-    lines(seq(0,5,0.01)
-          ,dweibull(seq(0,5,0.01),shape=dataParams[ind_use[i],8],scale=dataParams[ind_use[i],7])
-          ,col='royalblue'
+    lines(seq(0,5,0.001)
+          ,dweibull(seq(0,5,0.001),shape=dataParams[ind_use[i],8],scale=dataParams[ind_use[i],7])
+          ,col='black'
           ,lwd=2
+          ,ylim=c(0,ymax)
     )
   }
   points(points$utilization[ind_use[i]],0
          ,pch=19
+         ,ylim=c(0,ymax)
   )
   
   par(xpd=T)
   dev.off()
   
-  setwd(wd_image)
-  par(xpd=T)
-  png(paste('scdist_Beta',i,'.png',sep='')
-      ,height=6
-      ,width=6
-      ,units='in'
-      ,res=300
-  )
-
-  par(mfrow=c(2,2)
-      ,oma=c(0.5,0.5,0.5,0.5)+0.1
-      ,mar=c(5,5,3,0)+0.1)
-
-  hist(mat_mc[,1]
-       ,freq=F
-       ,xlim=c(0,5)
-       ,main="Reservoir"
-       ,xlab="SFF"
-  )
-  lines(seq(0,5,0.01)
-        ,dBeta_ab(seq(0,5,0.01),dataParams_Beta[ind_use[i],3],dataParams_Beta[ind_use[i],4], 0, 5)
-        ,col='royalblue'
-        ,lwd=2
-  )
-  points(points$reservoir[ind_use[i]],0
-         ,pch=19
-  )
-
-  hist(mat_mc[,2]
-       ,freq=F
-       ,xlim=c(0,5)
-       ,main="Thermal"
-       ,xlab="SFF"
-  )
-  lines(seq(0,5,0.01)
-        ,dBeta_ab(seq(0,5,0.01),dataParams_Beta[ind_use[i],1],dataParams_Beta[ind_use[i],2], 0, 5)
-        ,col='royalblue'
-        ,lwd=2
-  )
-  points(points$thermal[ind_use[i]],0
-         ,pch=19
-  )
-
-  hist(0.5*(mat_mc[,3]+mat_mc[,4])
-       ,freq=F
-       ,xlim=c(0,5)
-       ,main="Seismic"
-       ,xlab="SFF"
-  )
-  lines(seq(lb_mat[ind_use[i],3], ub_mat[ind_use[i],3],0.01)
-        ,dBeta_ab(seq(lb_mat[ind_use[i],3], ub_mat[ind_use[i],3],0.01), dataParams_Beta[ind_use[i],5], dataParams_Beta[ind_use[i],6], lb_mat[ind_use[i],3], ub_mat[ind_use[i],3])
-        ,col='royalblue'
-        ,lwd=2
-  )
-  points(points$seismic[ind_use[i]],0
-         ,pch=19
-  )
-
-  hist(mat_mc[,5]
-       ,freq=F
-       ,xlim=c(0,5)
-       ,main="Utilization"
-       ,xlab="SFF"
-  )
-  lines(seq(0,5,0.01)
-        ,dBeta_ab(seq(0,5,0.01),dataParams_Beta[ind_use[i],7],dataParams_Beta[ind_use[i],8], 0, 5)
-        ,col='royalblue'
-        ,lwd=2
-  )
-  points(points$utilization[ind_use[i]],0
-         ,pch=19
-  )
-
-  par(xpd=T)
-  dev.off()
+  # setwd(wd_image)
+  # par(xpd=T)
+  # png(paste('scdist_Beta',i,'.png',sep='')
+  #     ,height=6
+  #     ,width=6
+  #     ,units='in'
+  #     ,res=300
+  # )
+  # 
+  # par(mfrow=c(2,2)
+  #     ,oma=c(0.5,0.5,0.5,0.5)+0.1
+  #     ,mar=c(5,5,3,0)+0.1)
+  # 
+  # hist(mat_mc[,1]
+  #      ,freq=F
+  #      ,xlim=c(0,5)
+  #      ,main="Reservoir"
+  #      ,xlab="SFF"
+  # )
+  # lines(seq(0,5,0.01)
+  #       ,dBeta_ab(seq(0,5,0.01),dataParams_Beta[ind_use[i],3],dataParams_Beta[ind_use[i],4], 0, 5)
+  #       ,col='royalblue'
+  #       ,lwd=2
+  # )
+  # points(points$reservoir[ind_use[i]],0
+  #        ,pch=19
+  # )
+  # 
+  # hist(mat_mc[,2]
+  #      ,freq=F
+  #      ,xlim=c(0,5)
+  #      ,main="Thermal"
+  #      ,xlab="SFF"
+  # )
+  # lines(seq(0,5,0.01)
+  #       ,dBeta_ab(seq(0,5,0.01),dataParams_Beta[ind_use[i],1],dataParams_Beta[ind_use[i],2], 0, 5)
+  #       ,col='royalblue'
+  #       ,lwd=2
+  # )
+  # points(points$thermal[ind_use[i]],0
+  #        ,pch=19
+  # )
+  # 
+  # hist(0.5*(mat_mc[,3]+mat_mc[,4])
+  #      ,freq=F
+  #      ,xlim=c(0,5)
+  #      ,main="Seismic"
+  #      ,xlab="SFF"
+  # )
+  # lines(seq(lb_mat[ind_use[i],3], ub_mat[ind_use[i],3],0.01)
+  #       ,dBeta_ab(seq(lb_mat[ind_use[i],3], ub_mat[ind_use[i],3],0.01), dataParams_Beta[ind_use[i],5], dataParams_Beta[ind_use[i],6], lb_mat[ind_use[i],3], ub_mat[ind_use[i],3])
+  #       ,col='royalblue'
+  #       ,lwd=2
+  # )
+  # points(points$seismic[ind_use[i]],0
+  #        ,pch=19
+  # )
+  # 
+  # hist(mat_mc[,5]
+  #      ,freq=F
+  #      ,xlim=c(0,5)
+  #      ,main="Utilization"
+  #      ,xlab="SFF"
+  # )
+  # lines(seq(0,5,0.01)
+  #       ,dBeta_ab(seq(0,5,0.01),dataParams_Beta[ind_use[i],7],dataParams_Beta[ind_use[i],8], 0, 5)
+  #       ,col='royalblue'
+  #       ,lwd=2
+  # )
+  # points(points$utilization[ind_use[i]],0
+  #        ,pch=19
+  # )
+  # 
+  # par(xpd=T)
+  # dev.off()
   
-  par(xpd=T)
-  png(paste('scdist_dtn',i,'.png',sep='')
-      ,height=6
-      ,width=6
-      ,units='in'
-      ,res=300
-  )
-  
-  par(mfrow=c(2,2)
-      ,oma=c(0.5,0.5,0.5,0.5)+0.1
-      ,mar=c(5,5,3,0)+0.1)
-  
-  hist(mat_mc[,1]
-       ,freq=F
-       ,xlim=c(0,5)
-       ,main="Reservoir"
-       ,xlab="SFF"
-  )
-  lines(seq(0,5,0.01)
-        ,dtnorm(seq(0,5,0.01),dataParams_dtn[ind_use[i],3],sqrt(dataParams_dtn[ind_use[i],4]), 0 , 5)
-        ,col='royalblue'
-        ,lwd=2
-  )
-  points(points$reservoir[ind_use[i]],0
-         ,pch=19
-  )
-  
-  hist(mat_mc[,2]
-       ,freq=F
-       ,xlim=c(0,5)
-       ,main="Thermal"
-       ,xlab="SFF"
-  )
-  lines(seq(0,5,0.01)
-        ,dtnorm(seq(0,5,0.01),dataParams_dtn[ind_use[i],1],sqrt(dataParams_dtn[ind_use[i],2]), 0 , 5)
-        ,col='royalblue'
-        ,lwd=2
-  )
-  points(points$thermal[ind_use[i]],0
-         ,pch=19
-  )
-  
-  hist(0.5*(mat_mc[,3]+mat_mc[,4])
-       ,freq=F
-       ,xlim=c(0,5)
-       ,main="Seismic"
-       ,xlab="SFF"
-  )
-  lines(seq(lb_mat[ind_use[i],3], ub_mat[ind_use[i],3],0.01)
-        ,dtnorm(seq(lb_mat[ind_use[i],3], ub_mat[ind_use[i],3],0.01), dataParams_dtn[ind_use[i],5], sqrt(dataParams_dtn[ind_use[i],6]), lb_mat[ind_use[i],3], ub_mat[ind_use[i],3])
-        ,col='royalblue'
-        ,lwd=2
-  )
-  points(points$seismic[ind_use[i]],0
-         ,pch=19
-  )
-  
-  hist(mat_mc[,5]
-       ,freq=F
-       ,xlim=c(0,5)
-       ,main="Utilization"
-       ,xlab="SFF"
-  )
-  lines(seq(0,5,0.01)
-        ,dtnorm(seq(0,5,0.01),dataParams_dtn[ind_use[i],7],sqrt(dataParams_dtn[ind_use[i],8]), 0, 5)
-        ,col='royalblue'
-        ,lwd=2
-  )
-  points(points$utilization[ind_use[i]],0
-         ,pch=19
-  )
-  
-  par(xpd=T)
-  dev.off()
-  
-  par(xpd=T)
-  png(paste('scdist_ftn',i,'.png',sep='')
-      ,height=6
-      ,width=6
-      ,units='in'
-      ,res=300
-  )
-  
-  par(mfrow=c(2,2)
-      ,oma=c(0.5,0.5,0.5,0.5)+0.1
-      ,mar=c(5,5,3,0)+0.1)
-  
-  hist(mat_mc[,1]
-       ,freq=F
-       ,xlim=c(0,5)
-       ,main="Reservoir"
-       ,xlab="SFF"
-  )
-  lines(seq(0,5,0.01)
-        ,dfoldnorm(seq(0,5,0.01), dataParams_ftn[ind_use[i],3], sqrt(dataParams_ftn[ind_use[i],4]))/(pfoldnorm(ub_mat[ind_use[i],2], dataParams_ftn[ind_use[i],3], sqrt(dataParams_ftn[ind_use[i],4])) - pfoldnorm(lb_mat[ind_use[i],2], dataParams_ftn[ind_use[i],3], sqrt(dataParams_ftn[ind_use[i],4])))
-        ,col='royalblue'
-        ,lwd=2
-  )
-  points(points$reservoir[ind_use[i]],0
-         ,pch=19
-  )
-  
-  hist(mat_mc[,2]
-       ,freq=F
-       ,xlim=c(0,5)
-       ,main="Thermal"
-       ,xlab="SFF"
-  )
-  lines(seq(0,5,0.01)
-        ,dfoldnorm(seq(0,5,0.01),dataParams_ftn[ind_use[i],1],sqrt(dataParams_ftn[ind_use[i],2]))/(pfoldnorm(ub_mat[ind_use[i],1], dataParams_ftn[ind_use[i],1], sqrt(dataParams_ftn[ind_use[i],2])) - pfoldnorm(lb_mat[ind_use[i],1], dataParams_ftn[ind_use[i],1], sqrt(dataParams_ftn[ind_use[i],2])))
-        ,col='royalblue'
-        ,lwd=2
-  )
-  points(points$thermal[ind_use[i]],0
-         ,pch=19
-  )
-  
-  hist(0.5*(mat_mc[,3]+mat_mc[,4])
-       ,freq=F
-       ,xlim=c(0,5)
-       ,main="Seismic"
-       ,xlab="SFF"
-  )
-  lines(seq(lb_mat[ind_use[i],3], ub_mat[ind_use[i],3],0.01)
-        ,dfoldnorm(seq(0, (ub_mat[ind_use[i],3] - lb_mat[ind_use[i],3]),0.01), (dataParams_ftn[ind_use[i],5] - lb_mat[ind_use[i],3]), sqrt(dataParams_ftn[ind_use[i],6]))/(pfoldnorm((ub_mat[ind_use[i],3] - lb_mat[ind_use[i],3]), (dataParams_ftn[ind_use[i],5] - lb_mat[ind_use[i],3]), sqrt(dataParams_ftn[ind_use[i],6])) - pfoldnorm(0, (dataParams_ftn[ind_use[i],5] - lb_mat[ind_use[i],3]), sqrt(dataParams_ftn[ind_use[i],6])))
-        ,col='royalblue'
-        ,lwd=2
-  )
-  points(points$seismic[ind_use[i]],0
-         ,pch=19
-  )
-  
-  hist(mat_mc[,5]
-       ,freq=F
-       ,xlim=c(0,5)
-       ,main="Utilization"
-       ,xlab="SFF"
-  )
-  lines(seq(0,5,0.01)
-        ,dfoldnorm(seq(0,5,0.01),dataParams_ftn[ind_use[i],7],sqrt(dataParams_ftn[ind_use[i],8]))/(pfoldnorm(ub_mat[ind_use[i],4], dataParams_ftn[ind_use[i],7], sqrt(dataParams_ftn[ind_use[i],8])) - pfoldnorm(lb_mat[ind_use[i],4], dataParams_ftn[ind_use[i],7], sqrt(dataParams_ftn[ind_use[i],8])))
-        ,col='royalblue'
-        ,lwd=2
-  )
-  points(points$utilization[ind_use[i]],0
-         ,pch=19
-  )
-  
-  par(xpd=T)
-  dev.off()
+  # par(xpd=T)
+  # png(paste('scdist_dtn',i,'.png',sep='')
+  #     ,height=6
+  #     ,width=6
+  #     ,units='in'
+  #     ,res=300
+  # )
+  # 
+  # par(mfrow=c(2,2)
+  #     ,oma=c(0.5,0.5,0.5,0.5)+0.1
+  #     ,mar=c(5,5,3,0)+0.1)
+  # 
+  # hist(mat_mc[,1]
+  #      ,freq=F
+  #      ,xlim=c(0,5)
+  #      ,main="Reservoir"
+  #      ,xlab="SFF"
+  # )
+  # lines(seq(0,5,0.01)
+  #       ,dtnorm(seq(0,5,0.01),dataParams_dtn[ind_use[i],3],sqrt(dataParams_dtn[ind_use[i],4]), 0 , 5)
+  #       ,col='royalblue'
+  #       ,lwd=2
+  # )
+  # points(points$reservoir[ind_use[i]],0
+  #        ,pch=19
+  # )
+  # 
+  # hist(mat_mc[,2]
+  #      ,freq=F
+  #      ,xlim=c(0,5)
+  #      ,main="Thermal"
+  #      ,xlab="SFF"
+  # )
+  # lines(seq(0,5,0.01)
+  #       ,dtnorm(seq(0,5,0.01),dataParams_dtn[ind_use[i],1],sqrt(dataParams_dtn[ind_use[i],2]), 0 , 5)
+  #       ,col='royalblue'
+  #       ,lwd=2
+  # )
+  # points(points$thermal[ind_use[i]],0
+  #        ,pch=19
+  # )
+  # 
+  # hist(0.5*(mat_mc[,3]+mat_mc[,4])
+  #      ,freq=F
+  #      ,xlim=c(0,5)
+  #      ,main="Seismic"
+  #      ,xlab="SFF"
+  # )
+  # lines(seq(lb_mat[ind_use[i],3], ub_mat[ind_use[i],3],0.01)
+  #       ,dtnorm(seq(lb_mat[ind_use[i],3], ub_mat[ind_use[i],3],0.01), dataParams_dtn[ind_use[i],5], sqrt(dataParams_dtn[ind_use[i],6]), lb_mat[ind_use[i],3], ub_mat[ind_use[i],3])
+  #       ,col='royalblue'
+  #       ,lwd=2
+  # )
+  # points(points$seismic[ind_use[i]],0
+  #        ,pch=19
+  # )
+  # 
+  # hist(mat_mc[,5]
+  #      ,freq=F
+  #      ,xlim=c(0,5)
+  #      ,main="Utilization"
+  #      ,xlab="SFF"
+  # )
+  # lines(seq(0,5,0.01)
+  #       ,dtnorm(seq(0,5,0.01),dataParams_dtn[ind_use[i],7],sqrt(dataParams_dtn[ind_use[i],8]), 0, 5)
+  #       ,col='royalblue'
+  #       ,lwd=2
+  # )
+  # points(points$utilization[ind_use[i]],0
+  #        ,pch=19
+  # )
+  # 
+  # par(xpd=T)
+  # dev.off()
+  # 
+  # par(xpd=T)
+  # png(paste('scdist_ftn',i,'.png',sep='')
+  #     ,height=6
+  #     ,width=6
+  #     ,units='in'
+  #     ,res=300
+  # )
+  # 
+  # par(mfrow=c(2,2)
+  #     ,oma=c(0.5,0.5,0.5,0.5)+0.1
+  #     ,mar=c(5,5,3,0)+0.1)
+  # 
+  # hist(mat_mc[,1]
+  #      ,freq=F
+  #      ,xlim=c(0,5)
+  #      ,main="Reservoir"
+  #      ,xlab="SFF"
+  # )
+  # lines(seq(0,5,0.01)
+  #       ,dfoldnorm(seq(0,5,0.01), dataParams_ftn[ind_use[i],3], sqrt(dataParams_ftn[ind_use[i],4]))/(pfoldnorm(ub_mat[ind_use[i],2], dataParams_ftn[ind_use[i],3], sqrt(dataParams_ftn[ind_use[i],4])) - pfoldnorm(lb_mat[ind_use[i],2], dataParams_ftn[ind_use[i],3], sqrt(dataParams_ftn[ind_use[i],4])))
+  #       ,col='royalblue'
+  #       ,lwd=2
+  # )
+  # points(points$reservoir[ind_use[i]],0
+  #        ,pch=19
+  # )
+  # 
+  # hist(mat_mc[,2]
+  #      ,freq=F
+  #      ,xlim=c(0,5)
+  #      ,main="Thermal"
+  #      ,xlab="SFF"
+  # )
+  # lines(seq(0,5,0.01)
+  #       ,dfoldnorm(seq(0,5,0.01),dataParams_ftn[ind_use[i],1],sqrt(dataParams_ftn[ind_use[i],2]))/(pfoldnorm(ub_mat[ind_use[i],1], dataParams_ftn[ind_use[i],1], sqrt(dataParams_ftn[ind_use[i],2])) - pfoldnorm(lb_mat[ind_use[i],1], dataParams_ftn[ind_use[i],1], sqrt(dataParams_ftn[ind_use[i],2])))
+  #       ,col='royalblue'
+  #       ,lwd=2
+  # )
+  # points(points$thermal[ind_use[i]],0
+  #        ,pch=19
+  # )
+  # 
+  # hist(0.5*(mat_mc[,3]+mat_mc[,4])
+  #      ,freq=F
+  #      ,xlim=c(0,5)
+  #      ,main="Seismic"
+  #      ,xlab="SFF"
+  # )
+  # lines(seq(lb_mat[ind_use[i],3], ub_mat[ind_use[i],3],0.01)
+  #       ,dfoldnorm(seq(0, (ub_mat[ind_use[i],3] - lb_mat[ind_use[i],3]),0.01), (dataParams_ftn[ind_use[i],5] - lb_mat[ind_use[i],3]), sqrt(dataParams_ftn[ind_use[i],6]))/(pfoldnorm((ub_mat[ind_use[i],3] - lb_mat[ind_use[i],3]), (dataParams_ftn[ind_use[i],5] - lb_mat[ind_use[i],3]), sqrt(dataParams_ftn[ind_use[i],6])) - pfoldnorm(0, (dataParams_ftn[ind_use[i],5] - lb_mat[ind_use[i],3]), sqrt(dataParams_ftn[ind_use[i],6])))
+  #       ,col='royalblue'
+  #       ,lwd=2
+  # )
+  # points(points$seismic[ind_use[i]],0
+  #        ,pch=19
+  # )
+  # 
+  # hist(mat_mc[,5]
+  #      ,freq=F
+  #      ,xlim=c(0,5)
+  #      ,main="Utilization"
+  #      ,xlab="SFF"
+  # )
+  # lines(seq(0,5,0.01)
+  #       ,dfoldnorm(seq(0,5,0.01),dataParams_ftn[ind_use[i],7],sqrt(dataParams_ftn[ind_use[i],8]))/(pfoldnorm(ub_mat[ind_use[i],4], dataParams_ftn[ind_use[i],7], sqrt(dataParams_ftn[ind_use[i],8])) - pfoldnorm(lb_mat[ind_use[i],4], dataParams_ftn[ind_use[i],7], sqrt(dataParams_ftn[ind_use[i],8])))
+  #       ,col='royalblue'
+  #       ,lwd=2
+  # )
+  # points(points$utilization[ind_use[i]],0
+  #        ,pch=19
+  # )
+  # 
+  # par(xpd=T)
+  # dev.off()
 }
 rm(rand, pfm5, i)
 
@@ -4277,12 +4361,22 @@ cols[3:10] = c('black', cols[3:9])
 
 # setting working directory and name
 setwd(wd_image)
-png('parallel_axis_5_rfc_a.png'
-    ,height=5
-    ,width=7
-    ,units='in'
-    ,res=300
-)
+# png('parallel_axis_5_rfc_a.png'
+#     ,height=5
+#     ,width=7
+#     ,units='in'
+#     ,res=300
+# )
+cols = grey.colors(10)
+# tiff('parallel_axis_5_rfc_a.tiff'
+#     ,height=5
+#     ,width=7
+#     ,units='in'
+#     ,res=600
+# )
+setEPS()
+postscript('parallel_axis_5_rfc_a.eps', height=5, width=7)
+
 par(xpd=FALSE)
 par(mar=c(3,5,1,12))
 plot(NA,NA
@@ -4337,12 +4431,12 @@ text(c(0,1,2,3)
 text(-0.35,5
      ,'Better'
      ,adj=1
-     ,col='darkgreen'
+     ,col='black'
      ,font=2)
 text(-0.35,0
      ,'Worse'
      ,adj=1
-     ,col='firebrick'
+     ,col='black'
      ,font=2)
 legend(x=3.2,y=5
        ,legend=names[ind_use]
@@ -16523,13 +16617,22 @@ par(xpd=F)
 dev.off()
 
 
-par(mar=c(1,1,1,1)*0.1)
-png('three_panel2_all_med.png'
-    ,height=6
-    ,width=6
-    ,units='in'
-    ,res=300
-)
+# par(mar=c(1,1,1,1)*0.1)
+# png('three_panel2_all_med.png'
+#     ,height=6
+#     ,width=6
+#     ,units='in'
+#     ,res=300
+# )
+# tiff('three_panel2_all_med.tiff'
+#     ,height=6
+#     ,width=6
+#     ,units='in'
+#     ,res=600
+# )
+
+setEPS()
+postscript(file = "three_panel2_all_med.eps", width = 6, height = 6)
 
 par(mfrow=c(1,5)
     ,oma=c(1,0,0,3)+0.1
@@ -16594,9 +16697,9 @@ for(i in 1:length(ind_use)){
   )
   
   points(roots1[ind_use[i],2],i-1+dshift1+dshift2
-         ,pch=3
-         ,col='blue'
-         ,cex=1.5
+         ,pch="|"
+         ,col='black'
+         ,cex=1.2
   )
   
   # empirical values
@@ -16612,9 +16715,9 @@ for(i in 1:length(ind_use)){
   )
   
   points(median(distsmin[,i]),i-1+dshift1
-         ,pch=3
-         ,col='skyblue'
-         ,cex=1.5
+         ,pch="|"
+         ,col='grey48'
+         ,cex=1.2
   )
 }
 
@@ -16745,8 +16848,8 @@ plot(NA,NA
 
 legend('right'
        ,legend=c('Approximate \n Mean', 'Monte Carlo \n Mean','3 Parameter \n Weibull Median', 'Monte Carlo \n Median','Approximate \n 90% PI','Monte Carlo \n 90% PI')
-       ,pch=c(4,4,3,3,NA,NA)
-       ,col=c('black','gray48','blue','skyblue','black','gray48')
+       ,pch=c("X","X","|","|",NA,NA)
+       ,col=c('black','gray48','black','grey48','black','gray48')
        ,lwd=c(NA,NA,NA,NA,2,2)
        ,y.intersp = 1.5
 )
@@ -16979,12 +17082,17 @@ dev.off()
 ##### Metric Comparison #####
 # making plot of different metrics for all favorability factors
 setwd(wd_image)
-png('single_panel2_all_rfc.png'
-    ,height=6
-    ,width=7
-    ,units='in'
-    ,res=300
-)
+# png('single_panel2_all_rfc.png'
+#     ,height=6
+#     ,width=7
+#     ,units='in'
+#     ,res=300
+# )
+
+color = grey.colors(4)
+setEPS()
+postscript('single_panel2_all_rfc.eps', height=6, width=7)
+
 layout(mat=matrix(c(1,2,3),1,3)
        ,widths=c(1,3,1.5))
 par(oma=c(1,0,0,3)+0.1
@@ -17100,12 +17208,12 @@ for(i in 1:length(ind_use)){
   # calculated valuesseis_mean
   lines(qnorm(c(0.05,0.95),mean_avg,sqrt(var_avg)),c(i-1+dshift1+2*dshift2,i-1+dshift1+2*dshift2)
         ,lwd=2
-        ,col='royalblue'
+        ,col=color[3]
   )
 
   points(mean_avg,i-1+dshift1+2*dshift2
          ,pch=4
-         ,col='royalblue'
+         ,col=color[3]
          ,cex=1.5
   )
 }
@@ -17122,7 +17230,7 @@ plot(NA,NA
 legend('center'
        ,legend=c(rev(c('FM Minimum','FM Geometric \n  Mean','FM Average')),rev(c('Approximate 90% \n PI Minimum','Approximate 90% \n PI Geometric Mean','Approximate 90% \n PI Average')))
        ,pch=c(4,4,4,NA,NA,NA)
-       ,col=rev(c('black','gray48','royalblue'))
+       ,col=rev(c('black','gray48',color[3]))
        ,lwd=c(NA,NA,NA,2,2,2)
        ,y.intersp = 1.5
 )
@@ -17323,12 +17431,16 @@ wv_inds <- intersect(which(extract_pts3$USPS == 'WV'),which(extract_pts3$co_p_5 
 inds_gtr0 <- c(ny_inds,pa_inds,wv_inds)
 # setting export criteria for plot
 setwd(wd_image)
-png('scatter_rfc_p_s.png'
+# png('scatter_rfc_p_s.png'
+#     ,height=6
+#     ,width=6
+#     ,units='in'
+#     ,res=300
+# )
+setEPS()
+postscript('scatter_rfc_p_s.eps'
     ,height=6
-    ,width=6
-    ,units='in'
-    ,res=300
-)
+    ,width=6)
 plot(extract_pts3$co_s_5[inds_gtr0]/4
      ,extract_pts3$co_p_5[inds_gtr0]^0.25
      ,pch=19
@@ -17362,12 +17474,16 @@ dev.off()
 
 # setting export criteria for plot
 setwd(wd_image)
-png('scatter_rfc_m_s.png'
-    ,height=6
-    ,width=6
-    ,units='in'
-    ,res=300
-)
+# png('scatter_rfc_m_s.png'
+#     ,height=6
+#     ,width=6
+#     ,units='in'
+#     ,res=300
+# )
+setEPS()
+postscript('scatter_rfc_m_s.eps'
+           ,height=6
+           ,width=6)
 plot(extract_pts3$co_s_5[inds_gtr0]/4
      ,extract_pts3$co_m_5[inds_gtr0]
      ,pch=19
@@ -17401,12 +17517,16 @@ dev.off()
 
 # setting export criteria for plot
 setwd(wd_image)
-png('scatter_rfc_m_p.png'
-    ,height=6
-    ,width=6
-    ,units='in'
-    ,res=300
-)
+# png('scatter_rfc_m_p.png'
+#     ,height=6
+#     ,width=6
+#     ,units='in'
+#     ,res=300
+# )
+setEPS()
+postscript('scatter_rfc_m_p.eps'
+           ,height=6
+           ,width=6)
 plot(extract_pts3$co_p_5[inds_gtr0]^0.25
      ,extract_pts3$co_m_5[inds_gtr0]
      ,pch=19
@@ -17442,6 +17562,110 @@ dev.off()
 cor(extract_pts3$co_p_5[inds_gtr0]^.25, extract_pts3$co_s_5[inds_gtr0]/4)
 cor(extract_pts3$co_p_5[inds_gtr0]^.25, extract_pts3$co_m_5[inds_gtr0])
 cor(extract_pts3$co_m_5[inds_gtr0], extract_pts3$co_s_5[inds_gtr0]/4)
+
+
+#All 3 Together
+setwd(wd_image)
+setEPS()
+postscript('scatter_rfc_all.eps'
+           ,height=6
+           ,width=6)
+par(mar = c(5,5,0.5,0.5))
+layout(rbind(c(1,1,2,2), c(4,3,3,5)), widths = c(0.25,0.25,0.25,0.25))
+plot(extract_pts3$co_s_5[inds_gtr0]/4
+     ,extract_pts3$co_p_5[inds_gtr0]^0.25
+     ,pch=19
+     ,xlim=c(0,5)
+     ,ylim=c(0,5)
+     ,xlab='Average'
+     ,ylab='Geometric Mean'
+     ,xaxt='n'
+     ,yaxt='n'
+     ,cex=0.8
+     ,cex.lab = 1.5
+)
+grid()
+points(extract_pts3$co_s_5[inds_gtr0]/4
+       ,extract_pts3$co_p_5[inds_gtr0]^0.25
+       ,pch=19
+       ,xlim=c(0,5)
+       ,ylim=c(0,5)
+       ,xlab=''
+       ,ylab=''
+       ,xaxt='n'
+       ,yaxt='n'
+       ,cex=0.8
+)
+axis(1
+     ,at=c(0,1,2,3,4,5)
+     ,labels=c(0,1,2,3,4,5), cex.axis=1.5)
+axis(2
+     ,at=c(0,1,2,3,4,5)
+     ,labels=c(0,1,2,3,4,5), cex.axis=1.5)
+
+plot(extract_pts3$co_s_5[inds_gtr0]/4
+     ,extract_pts3$co_m_5[inds_gtr0]
+     ,pch=19
+     ,xlim=c(0,5)
+     ,ylim=c(0,5)
+     ,xlab='Average'
+     ,ylab='Minimum'
+     ,xaxt='n'
+     ,yaxt='n'
+     ,cex=0.8
+     ,cex.lab = 1.5
+)
+grid()
+points(extract_pts3$co_s_5[inds_gtr0]/4
+       ,extract_pts3$co_m_5[inds_gtr0]
+       ,pch=19
+       ,xlim=c(0,5)
+       ,ylim=c(0,5)
+       ,xlab=''
+       ,ylab=''
+       ,xaxt='n'
+       ,yaxt='n'
+       ,cex=0.8
+)
+axis(1
+     ,at=c(0,1,2,3,4,5)
+     ,labels=c(0,1,2,3,4,5), cex.axis=1.5)
+axis(2
+     ,at=c(0,1,2,3,4,5)
+     ,labels=c(0,1,2,3,4,5), cex.axis=1.5)
+
+plot(extract_pts3$co_p_5[inds_gtr0]^0.25
+     ,extract_pts3$co_m_5[inds_gtr0]
+     ,pch=19
+     ,xlim=c(0,5)
+     ,ylim=c(0,5)
+     ,xlab='Geometric Mean'
+     ,ylab='Minimum'
+     ,xaxt='n'
+     ,yaxt='n'
+     ,cex=0.8
+     ,cex.lab = 1.5
+)
+grid()
+points(extract_pts3$co_p_5[inds_gtr0]^0.25
+       ,extract_pts3$co_m_5[inds_gtr0]
+       ,pch=19
+       ,xlim=c(0,5)
+       ,ylim=c(0,5)
+       ,xlab=''
+       ,ylab=''
+       ,xaxt='n'
+       ,yaxt='n'
+       ,cex=0.8
+)
+axis(1
+     ,at=c(0,1,2,3,4,5)
+     ,labels=c(0,1,2,3,4,5), cex.axis=1.5)
+axis(2
+     ,at=c(0,1,2,3,4,5)
+     ,labels=c(0,1,2,3,4,5), cex.axis=1.5)
+dev.off()
+
 
 #### RPIw ####
 combined_all_rasters <- stack(c(th_5_0_5_NA,re_5_0_5_NA_RPIw,se_5_0_5_a,ut5_5_0_5_NA))
