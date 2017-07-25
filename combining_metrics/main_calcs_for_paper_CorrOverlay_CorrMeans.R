@@ -1490,6 +1490,130 @@ rm(se_stress_interp_tab5, se_stress_interp_tab5_ls)
 rm(seEq_interp_tab5_mean, seSt_interp_tab5_mean)
 rm(se_pfa_var5s)
 
+#### Panel Map of All Risk Factors ####
+tiff('All_5_0_5_NA.tiff'
+     ,height=8
+     ,width=8
+     ,units='in'
+     ,res=300
+)
+layout(rbind(c(1,2), c(3,4)))
+par(mar = c(4,4,2,2))
+makeMap (rast=th_5_0_5_NA
+         ,plotnm='th_5_0_5_NA.tiff'
+         ,wd=wd_image
+         ,numCol=5
+         ,comTy=NA
+         ,numRF=1, leg2 = T, grey = F, County = F, RawThreshVals = therm_thresh5/1000, Unit = 'km', dpi = 300, FigFun = NA
+         ,xUnitLoc = 11.5e5, yUnitLine = -15
+         ,ScaleLegmgp = c(-3,-1,0), UnscaleLegmgp = c(3,0.75,0)
+         ,ScalePos = 'bottomright')
+title('Thermal Resource', cex.main = 1.5)
+
+makeMap(rast=re_5_0_5_NA_rfc
+        ,plotnm='re_5_0_5_NA_rfc.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,leg2 = T
+        ,grey = F
+        ,County = F
+        ,Unit = 'mD-m'
+        ,dpi = 300
+        ,FigFun = NA
+        ,RawThreshVals = c(bquote(10^.(log10(res_rfc_thresh5)[1])),bquote(10^.(log10(res_rfc_thresh5)[2])),bquote(10^.(log10(res_rfc_thresh5)[3])),bquote(10^.(log10(res_rfc_thresh5)[4])),bquote(10^.(log10(res_rfc_thresh5)[5])),expression(10^4))
+        ,xUnitLoc = 11.2e5, yUnitLine = -15
+        ,ScaleLegmgp = c(-3,-1,0), UnscaleLegmgp = c(3,0.75,0)
+        ,ScalePos = 'bottomright')
+title('Natural Reservoirs', cex.main = 1.5)
+
+makeMap(rast=ut5_5_0_5_NA 
+        ,plotnm='ut5_5_0_5_NA.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,sdMap=F, leg2 = T, dpi = 300, FigFun = NA, County = F, RawThreshVals = util_thresh5, Unit = '$/MMBTU'
+        ,xUnitLoc = 11.6e5, yUnitLine = -15
+        ,ScaleLegmgp = c(-3,-1,0), UnscaleLegmgp = c(3,0.75,0)
+        ,ScalePos = 'bottomright')
+title('Surface Utilization', cex.main = 1.5)
+
+makeMap(rast=se_5_0_5_a
+        ,plotnm='se_5_0_5_a.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1, dpi = 300, FigFun = NA
+        ,xUnitLoc = 11.5e5, yUnitLine = -15
+        ,ScaleLegmgp = c(-3,-1,0), UnscaleLegmgp = c(3,0.75,0)
+        ,ScalePos = 'bottomright')
+title('Seismic Risk', cex.main = 1.5)
+dev.off()
+
+
+tiff('All_5_0_5_NA_Grey.tiff'
+     ,height=8
+     ,width=8
+     ,units='in'
+     ,res=600
+)
+layout(rbind(c(1,2), c(3,4)))
+par(mar = c(4,4,2,2))
+makeMap (rast=th_5_0_5_NA
+         ,plotnm='th_5_0_5_NA.tiff'
+         ,wd=wd_image
+         ,numCol=5
+         ,comTy=NA
+         ,numRF=1, leg2 = T, grey = T, County = F, RawThreshVals = therm_thresh5/1000, Unit = 'km', dpi = 600, FigFun = NA
+         ,xUnitLoc = 11.5e5, yUnitLine = -15
+         ,ScaleLegmgp = c(-3,-1,0), UnscaleLegmgp = c(3,0.75,0)
+         ,ScalePos = 'bottomright')
+title('Thermal Resource', cex.main = 1.5)
+
+makeMap(rast=re_5_0_5_NA_rfc
+        ,plotnm='re_5_0_5_NA_rfc.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,leg2 = T
+        ,grey = T
+        ,County = F
+        ,Unit = 'mD-m'
+        ,dpi = 600
+        ,FigFun = NA
+        ,RawThreshVals = c(bquote(10^.(log10(res_rfc_thresh5)[1])),bquote(10^.(log10(res_rfc_thresh5)[2])),bquote(10^.(log10(res_rfc_thresh5)[3])),bquote(10^.(log10(res_rfc_thresh5)[4])),bquote(10^.(log10(res_rfc_thresh5)[5])),expression(10^4))
+        ,xUnitLoc = 11.2e5, yUnitLine = -15
+        ,ScaleLegmgp = c(-3,-1,0), UnscaleLegmgp = c(3,0.75,0)
+        ,ScalePos = 'bottomright')
+title('Natural Reservoirs', cex.main = 1.5)
+
+makeMap(rast=ut5_5_0_5_NA 
+        ,plotnm='ut5_5_0_5_NA.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1
+        ,sdMap=F, leg2 = T, grey = T, dpi = 600, FigFun = NA, County = F, RawThreshVals = util_thresh5, Unit = '$/MMBTU'
+        ,xUnitLoc = 11.6e5, yUnitLine = -15
+        ,ScaleLegmgp = c(-3,-1,0), UnscaleLegmgp = c(3,0.75,0)
+        ,ScalePos = 'bottomright')
+title('Surface Utilization', cex.main = 1.5)
+
+makeMap(rast=se_5_0_5_a
+        ,plotnm='se_5_0_5_a.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy=NA
+        ,numRF=1, grey = T, dpi = 600, FigFun = NA
+        ,xUnitLoc = 11.5e5, yUnitLine = -15
+        ,ScaleLegmgp = c(-3,-1,0), UnscaleLegmgp = c(3,0.75,0)
+        ,ScalePos = 'bottomright')
+title('Seismic Risk', cex.main = 1.5)
+dev.off()
+
 ##### combining maps, all variables ###----
 # creating a stacked raster
 re_5_0_5_NA_rfc <- raster(paste(wd_raster_out,'re_5_0_5_NA_rfc.tif',sep='/'))
@@ -17602,6 +17726,8 @@ axis(1
 axis(2
      ,at=c(0,1,2,3,4,5)
      ,labels=c(0,1,2,3,4,5), cex.axis=1.5)
+text('A', x = 4.75, y = 4.75, cex=1.5)
+rect(xleft = 4.5, ybottom = 4.5, xright = 5, ytop = 5)
 
 plot(extract_pts3$co_s_5[inds_gtr0]/4
      ,extract_pts3$co_m_5[inds_gtr0]
@@ -17633,6 +17759,8 @@ axis(1
 axis(2
      ,at=c(0,1,2,3,4,5)
      ,labels=c(0,1,2,3,4,5), cex.axis=1.5)
+text('B', x = 4.75, y = 4.75, cex=1.5)
+rect(xleft = 4.5, ybottom = 4.5, xright = 5, ytop = 5)
 
 plot(extract_pts3$co_p_5[inds_gtr0]^0.25
      ,extract_pts3$co_m_5[inds_gtr0]
@@ -17664,6 +17792,9 @@ axis(1
 axis(2
      ,at=c(0,1,2,3,4,5)
      ,labels=c(0,1,2,3,4,5), cex.axis=1.5)
+text('C', x = 4.75, y = 4.75, cex=1.5)
+rect(xleft = 4.5, ybottom = 4.5, xright = 5, ytop = 5)
+
 dev.off()
 
 

@@ -15,6 +15,11 @@ makeMap <- function(rast    # raster
                     ,dpi = 300 #dots per square inch for the figure
                     ,FigFun = 'png' #figure function to use. Accepts tiff and png
                     ,NumCols = 5    #Number of colors for sdMap
+                    ,xUnitLoc = 12e5  #Location for the Unit on the x axis
+                    ,yUnitLine = -18  #Line for the placement of Unit on the y axis
+                    ,ScaleLegmgp = c(-3,-1.5,0) #mgp for scaled legend
+                    ,UnscaleLegmgp = c(3,1,0)   #mgp for unscaled legend
+                    ,ScalePos = 'topleft'       #Location of scale bar
                     ){
   
   # setting directory for saving file
@@ -80,20 +85,22 @@ makeMap <- function(rast    # raster
 #   pdf('test.pdf'
 #       ,height=6
 #       ,width=6)
-  if (FigFun == 'png'){
-    png(plotnm
-        ,height=6
-        ,width=6
-        ,units='in'
-        ,res=dpi
-    )
-  }else{
-    tiff(plotnm
-        ,height=6
-        ,width=6
-        ,units='in'
-        ,res=dpi
-    )
+  if (!is.na(FigFun)){
+    if (FigFun == 'png'){
+      png(plotnm
+          ,height=6
+          ,width=6
+          ,units='in'
+          ,res=dpi
+      )
+    }else{
+      tiff(plotnm
+           ,height=6
+           ,width=6
+           ,units='in'
+           ,res=dpi
+      )
+    }
   }
   
   
@@ -123,7 +130,7 @@ makeMap <- function(rast    # raster
     plot(WV2, lwd=3,add=TRUE)
     
     addnortharrow(pos='topleft',padin=c(0.15,0.15),scale=0.5)
-    addscalebar(plotunit='m',padin=c(0.15,0.7),pos='topleft')
+    addscalebar(plotunit='m',padin=c(0.15,0.7),pos=ScalePos)
     
     text(x=800000,y=4200000,'Projection: UTM 17N')
     axis(2,at=c(42,44,46,48)*10^5,labels=format(c(42,44,46,48)*10^5,scientific=T))
@@ -158,14 +165,14 @@ makeMap <- function(rast    # raster
       plot(WV2, lwd=3,add=TRUE)
       
       addnortharrow(pos='topleft',padin=c(0.15,0.15),scale=0.5)
-      addscalebar(plotunit='m',padin=c(0.15,0.7),pos='topleft')
+      addscalebar(plotunit='m',padin=c(0.15,0.7),pos=ScalePos)
       
       text(x=800000,y=4200000,'Projection: UTM 17N')
       axis(2,at=c(42,44,46,48)*10^5,labels=format(c(42,44,46,48)*10^5,scientific=T))
       axis(1,at=c(4,6,8,10)*10^5,labels=format(c(4,6,8,10)*10^5,scientific=T))
       
       #Add Unit to plot:
-      mtext(text = Unit, side = 1, at = 12e5, cex = 1.1, line = -18)
+      mtext(text = Unit, side = 1, at = xUnitLoc, cex = 1.1, line = yUnitLine)
 
       #Then plot the threshold legend without the map.
       plot(rast
@@ -178,7 +185,7 @@ makeMap <- function(rast    # raster
            #,ylim=c(4150000,4850000)
            #,xlim=c(400000,1000000)
            ,axes=F
-           ,axis.args = list(at = breaks, labels = breaks, mgp = c(-3,-1.5,0), tck = 1.7)
+           ,axis.args = list(at = breaks, labels = breaks, mgp = ScaleLegmgp, tck = 1.7)
       )
 
       #Then plot the unscaled legend without the map.
@@ -192,7 +199,7 @@ makeMap <- function(rast    # raster
            #,ylim=c(4150000,4850000)
            #,xlim=c(400000,1000000)
            ,axes=F
-           ,axis.args = list(at = seq(0,5,1), labels = RawThreshVals, mgp = c(3,1,0))
+           ,axis.args = list(at = seq(0,5,1), labels = RawThreshVals, mgp = UnscaleLegmgp)
       )
     }else{
       # plotting raster
@@ -221,7 +228,7 @@ makeMap <- function(rast    # raster
       plot(WV2, lwd=3,add=TRUE)
       
       addnortharrow(pos='topleft',padin=c(0.15,0.15),scale=0.5)
-      addscalebar(plotunit='m',padin=c(0.15,0.7),pos='topleft')
+      addscalebar(plotunit='m',padin=c(0.15,0.7),pos=ScalePos)
       
       text(x=800000,y=4200000,'Projection: UTM 17N')
       axis(2,at=c(42,44,46,48)*10^5,labels=format(c(42,44,46,48)*10^5,scientific=T))
@@ -230,5 +237,7 @@ makeMap <- function(rast    # raster
   }
   
   #map.axes()
-  dev.off()
+  if (!is.na(FigFun)){
+    dev.off()
+  }
 }
