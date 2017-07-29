@@ -2290,6 +2290,111 @@ rm(co_pfa_var5_avg_rfc, co_pfa_var5_avg_rfc_geo, co_pfa_var5_avg_RPIw,
 rm(co_pfa_var5_geomean_rfc, co_pfa_var5_geomean_rfc_geo, co_pfa_var5_geomean_RPIw,
    co_pfa_var5_geomean_RPIw_geo, co_pfa_var5_geomean_RPIg, co_pfa_var5_geomean_RPIg_geo)
 
+
+#### Panel plot of all FMs ####
+tiff('co_pfa_all_rfc.tiff'
+     ,height=8
+     ,width=8
+     ,units='in'
+     ,res=300
+)
+layout(rbind(c(1,2), c(3,4)))
+par(mar = c(4,4,2,2))
+makeMap(rast=co_5_0_20_s_rfc
+        ,plotnm='co_5_0_5_a_rfc.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min' #Use min because the mean is on 0:5
+        ,numRF=4
+        ,leg2 = F, County = F, grey = F, dpi = 300, FigFun = NA
+        ,ScalePos = 'bottomright')
+title(expression(bold('Favorability Metric: FM'['avg'])), cex.main = 1.5)
+
+makeMap(rast=calc(co_pfa_var5_avg_rfc,fun=sqrt)
+        ,plotnm='co_pfa_sd5_avg_rfc.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min'
+        ,numRF=4
+        ,sdMap=TRUE
+        ,leg2 = F, County = F, grey = F, dpi = 300, FigFun = NA
+        ,ScalePos = 'bottomright')
+title(expression(bold('Standard Deviation of FM'['avg'])), cex.main = 1.5)
+
+makeMap(rast=co_5_0_625_p_rfc
+        ,plotnm='co_5_0_5_g_rfc.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min' #Use min because the geomean is on 0:5
+        ,numRF=4
+        ,leg2 = F, County = F, grey = F, dpi = 300, FigFun = NA
+        ,ScalePos = 'bottomright')
+title(expression(bold('Favorability Metric: FM'['gm'])), cex.main = 1.5)
+
+makeMap(rast=calc(co_pfa_var5_geomean_rfc,fun=sqrt)
+        ,plotnm='co_pfa_sd5_geomean_rfc.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min'
+        ,numRF=4
+        ,sdMap=TRUE
+        ,leg2 = F, County = F, grey = F, dpi = 300, FigFun = NA        
+        ,ScalePos = 'bottomright')
+title(expression(bold('Standard Deviation of FM'['gm'])), cex.main = 1.5)
+dev.off()
+
+
+tiff('co_pfa_all_rfc_Grey.tiff'
+     ,height=8
+     ,width=8
+     ,units='in'
+     ,res=600
+)
+layout(rbind(c(1,2), c(3,4)))
+par(mar = c(4,4,2,2))
+makeMap(rast=co_5_0_20_s_rfc
+        ,plotnm='co_5_0_5_a_rfc.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min' #Use min because the mean is on 0:5
+        ,numRF=4
+        ,leg2 = F, County = F, grey = T, dpi = 300, FigFun = NA
+        ,ScalePos = 'bottomright')
+title(expression(bold('Favorability Metric: FM'['avg'])), cex.main = 1.5)
+
+makeMap(rast=calc(co_pfa_var5_avg_rfc,fun=sqrt)
+        ,plotnm='co_pfa_sd5_avg_rfc.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min'
+        ,numRF=4
+        ,sdMap=TRUE
+        ,leg2 = F, County = F, grey = T, dpi = 300, FigFun = NA
+        ,ScalePos = 'bottomright')
+title(expression(bold('Standard Deviation of FM'['avg'])), cex.main = 1.5)
+
+makeMap(rast=co_5_0_625_p_rfc
+        ,plotnm='co_5_0_5_g_rfc.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min' #Use min because the geomean is on 0:5
+        ,numRF=4
+        ,leg2 = F, County = F, grey = T, dpi = 300, FigFun = NA
+        ,ScalePos = 'bottomright')
+title(expression(bold('Favorability Metric: FM'['gm'])), cex.main = 1.5)
+
+makeMap(rast=calc(co_pfa_var5_geomean_rfc,fun=sqrt)
+        ,plotnm='co_pfa_sd5_geomean_rfc.tiff'
+        ,wd=wd_image
+        ,numCol=5
+        ,comTy='min'
+        ,numRF=4
+        ,sdMap=TRUE
+        ,leg2 = F, County = F, grey = T, dpi = 300, FigFun = NA        
+        ,ScalePos = 'bottomright')
+title(expression(bold('Standard Deviation of FM'['gm'])), cex.main = 1.5)
+dev.off()
+
 ##### Extracting City Info----
 # extracting values of layers for cities
 # reading-in the scaled rasters
