@@ -231,13 +231,13 @@ makeMap (rast=th_5_0_5_NA
          ,wd=wd_image
          ,numCol=5
          ,comTy=NA
-         ,numRF=1, leg2 = T, grey = F, County = F, RawThreshVals = therm_thresh5/1000, Unit = 'km', dpi = 300, FigFun = 'tiff')
+         ,numRF=1, leg2 = T, grey = F, County = F, RawThreshVals = rev(therm_thresh5)/1000, Unit = 'km', dpi = 300, FigFun = 'tiff')
 makeMap (rast=th_5_0_5_NA
          ,plotnm='th_5_0_5_NA_Grey.tiff'
          ,wd=wd_image
          ,numCol=5
          ,comTy=NA
-         ,numRF=1, leg2 = T, grey = T, County = F, RawThreshVals = therm_thresh5/1000, Unit = 'km', dpi = 600, FigFun = 'tiff')
+         ,numRF=1, leg2 = T, grey = T, County = F, RawThreshVals = rev(therm_thresh5)/1000, Unit = 'km', dpi = 600, FigFun = 'tiff')
 
 # making thermal uncertainty maps
 th_interp_tab5 <- as.matrix(read.xlsx(paste(wd_error_interp,'/th_pfvar5.xlsx',sep=''),1,header=FALSE))
@@ -908,7 +908,7 @@ makeMap(rast=ut0_5_0_5_NA
         ,numCol=5
         ,comTy=NA
         ,numRF=1
-        ,sdMap=F, leg2 = T, dpi = 300, FigFun = 'tiff', County = F, RawThreshVals = util_thresh5, Unit = '$/MMBTU')
+        ,sdMap=F, leg2 = T, dpi = 300, FigFun = 'tiff', County = F, RawThreshVals = rev(util_thresh5), Unit = '$/MMBTU')
 makeMap(rast=ut0_5_0_5_NA 
         ,plotnm='ut0_5_0_5_NA_Grey.tiff'
         ,wd=wd_image
@@ -916,7 +916,7 @@ makeMap(rast=ut0_5_0_5_NA
         ,comTy=NA
         ,numRF=1
         ,sdMap=F
-        ,leg2 = T, grey = T, County = F, RawThreshVals = util_thresh5, Unit = '$/MMBTU', dpi = 600, FigFun = 'tiff')
+        ,leg2 = T, grey = T, County = F, RawThreshVals = rev(util_thresh5), Unit = '$/MMBTU', dpi = 600, FigFun = 'tiff')
 
 # buffering utilization (5 km)
 # five color
@@ -946,14 +946,14 @@ makeMap(rast=ut5_5_0_5_NA
         ,numCol=5
         ,comTy=NA
         ,numRF=1
-        ,sdMap=F, leg2 = T, dpi = 300, FigFun = 'tiff', County = F, RawThreshVals = util_thresh5, Unit = '$/MMBTU')
+        ,sdMap=F, leg2 = T, dpi = 300, FigFun = 'tiff', County = F, RawThreshVals = rev(util_thresh5), Unit = '$/MMBTU')
 makeMap(rast=ut5_5_0_5_NA 
         ,plotnm='ut5_5_0_5_NA_Grey.tiff'
         ,wd=wd_image
         ,numCol=5
         ,comTy=NA
         ,numRF=1
-        ,leg2 = T, grey = T, County = F, RawThreshVals = util_thresh5, Unit = '$/MMBTU', dpi = 600, FigFun = 'tiff')
+        ,leg2 = T, grey = T, County = F, RawThreshVals = rev(util_thresh5), Unit = '$/MMBTU', dpi = 600, FigFun = 'tiff')
 
 # making uncertainty map
 util_interp_tab5 <-  as.matrix(read.xlsx(paste(wd_error_interp,'/ut_slcoh_pfvar5.xlsx',sep=''),1,header=FALSE))
@@ -1504,7 +1504,7 @@ makeMap (rast=th_5_0_5_NA
          ,wd=wd_image
          ,numCol=5
          ,comTy=NA
-         ,numRF=1, leg2 = T, grey = F, County = F, RawThreshVals = therm_thresh5/1000, Unit = 'km', dpi = 300, FigFun = NA
+         ,numRF=1, leg2 = T, grey = F, County = F, RawThreshVals = rev(therm_thresh5)/1000, Unit = 'km', dpi = 300, FigFun = NA
          ,xUnitLoc = 11.5e5, yUnitLine = -15
          ,ScaleLegmgp = c(-3,-1,0), UnscaleLegmgp = c(3,0.75,0)
          ,ScalePos = 'bottomright')
@@ -1534,7 +1534,7 @@ makeMap(rast=ut5_5_0_5_NA
         ,numCol=5
         ,comTy=NA
         ,numRF=1
-        ,sdMap=F, leg2 = T, dpi = 300, FigFun = NA, County = F, RawThreshVals = util_thresh5, Unit = '$/MMBTU'
+        ,sdMap=F, leg2 = T, dpi = 300, FigFun = NA, County = F, RawThreshVals = rev(util_thresh5), Unit = '$/MMBTU'
         ,xUnitLoc = 11.6e5, yUnitLine = -15
         ,ScaleLegmgp = c(-3,-1,0), UnscaleLegmgp = c(3,0.75,0)
         ,ScalePos = 'bottomright')
@@ -1566,7 +1566,7 @@ makeMap (rast=th_5_0_5_NA
          ,wd=wd_image
          ,numCol=5
          ,comTy=NA
-         ,numRF=1, leg2 = T, grey = T, County = F, RawThreshVals = therm_thresh5/1000, Unit = 'km', dpi = 600, FigFun = NA
+         ,numRF=1, leg2 = T, grey = T, County = F, RawThreshVals = rev(therm_thresh5)/1000, Unit = 'km', dpi = 600, FigFun = NA
          ,xUnitLoc = 11.5e5, yUnitLine = -15
          ,ScaleLegmgp = c(-3,-1,0), UnscaleLegmgp = c(3,0.75,0)
          ,ScalePos = 'bottomright')
@@ -1596,7 +1596,7 @@ makeMap(rast=ut5_5_0_5_NA
         ,numCol=5
         ,comTy=NA
         ,numRF=1
-        ,sdMap=F, leg2 = T, grey = T, dpi = 600, FigFun = NA, County = F, RawThreshVals = util_thresh5, Unit = '$/MMBTU'
+        ,sdMap=F, leg2 = T, grey = T, dpi = 600, FigFun = NA, County = F, RawThreshVals = rev(util_thresh5), Unit = '$/MMBTU'
         ,xUnitLoc = 11.6e5, yUnitLine = -15
         ,ScaleLegmgp = c(-3,-1,0), UnscaleLegmgp = c(3,0.75,0)
         ,ScalePos = 'bottomright')
