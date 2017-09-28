@@ -4560,6 +4560,7 @@ rm(IndTake, Ind0Mean, Ind0Var, i, IndNaN)
 
 # plotting indices for probability of minimum and average
 #png('SensitivityPlot.png', res = 300, units = 'in', width = 6, height = 6)
+#tiff('SensitivityPlot.tiff', res = 300, units = 'in', width = 6, height = 6)
 
 setEPS()
 postscript('SensitivityPlot.eps', height=6, width=6)
@@ -4573,7 +4574,7 @@ plot(NA,NA
      ,ylab=''
      ,yaxt='n'
 )
-colsSens <- grey.colors(ncol(dataParams)/2,start=0,end=0.85)
+colsSens <- grey.colors(ncol(dataParams)/2,start=0,end=0.75)
 for(i in ind_use){
   
   for(j in 1:4){
