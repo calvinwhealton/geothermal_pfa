@@ -4512,7 +4512,6 @@ for(i in 1:nrow(dataParams)){
                                             ,params=dataParams[i,]
                                             ,lb=lb_mat[i,]
                                             ,ub=ub_mat[i,])
-  
 }
 
 round(MinFrac, 3)
@@ -4520,6 +4519,59 @@ round(t(calcd_freq_min), 3)
 
 #Check sum to 1
 apply(t(calcd_freq_min), 2, FUN = sum)
+
+#Calculating the mean of the minimum
+calcd_mean_min <- matrix(0,nrow=nrow(dataParams),ncol=ncol(dataParams)/2)
+
+for(i in 1:nrow(dataParams)){
+  calcd_mean_min[i,] <- MeanMin_SpecialSeis(x=seq(0.0001,5,0.0001)
+                                            ,params=dataParams[i,]
+                                            ,lb=lb_mat[i,]
+                                            ,ub=ub_mat[i,])
+}
+
+#Compare this to the mean of the Monte Carlo minimums
+SiteMeansApprox = apply(t(calcd_mean_min), 2, FUN = sum)
+SiteMeansMC = apply(distsmin, MARGIN = 2, FUN = mean)
+
+
+#Calculating the variance of the minimum
+calcd_var_min <- matrix(0,nrow=nrow(dataParams),ncol=ncol(dataParams)/2)
+
+for(i in 1:nrow(dataParams)){
+  calcd_var_min[i,] <- VarMin_SpecialSeis(x=seq(0.0001,5,0.0001)
+                                            ,params=dataParams[i,]
+                                            ,lb=lb_mat[i,]
+                                            ,ub=ub_mat[i,]
+                                            ,SiteMean = SiteMeansApprox[i])
+}
+
+#Compare this to the variance of the Monte Carlo minimums
+SiteVarApprox = apply(t(calcd_var_min), 2, FUN = sum)
+SiteVarMC = apply(distsmin, MARGIN = 2, FUN = var)
+
+#Compute fraction of variance for minimum
+min_var_fracs <- calcd_var_min / apply(calcd_var_min, 1, sum)
+
+# Any site with NaN values is a divide by 0. 
+# Find the factors that are 0 with no uncertainty and give them a sensitivity value of 1.0, 0 to all other factors.
+IndNaN = which(is.nan(min_var_fracs[,1]) == TRUE)
+
+for (i in IndNaN){
+  Ind0Var = which(c(points$th_pfa_var5[i], points$re_pfa_var5_rfc[i], points$se_pfa_var5[i], points$util_pfa_var5[i]) == 0)
+  Ind0Mean = which(c(points$thermal[i], points$reservoir_rfc[i], points$seismic[i], points$utilization[i]) == 0) 
+  
+  if(length(Ind0Mean) > length(Ind0Var)){
+    IndTake = Ind0Mean[which(Ind0Var == Ind0Mean)]
+    min_var_fracs[i, IndTake] = 1/length(IndTake) #accounts for multiple variables each having 0 mean with 0 uncertainty.
+    min_var_fracs[i, -IndTake] = 0
+  }else{
+    IndTake = Ind0Var[which(Ind0Var == Ind0Mean)]
+    min_var_fracs[i, IndTake] = 1/length(IndTake)
+    min_var_fracs[i, -IndTake] = 0
+  }
+}
+rm(IndTake, Ind0Mean, Ind0Var, i, IndNaN)
 
 ####Testing Plot of Variance Contribution to FMs####
 # calcuations for fraction of variance for average
@@ -4631,6 +4683,159 @@ legend(x=-0.3,y=9.3
        ,lwd=3
        ,col=colsSens[1]
        ,c(expression(FM[avg]), expression(FM[gm]), expression(FM[min]))
+       ,xjust=0.5
+       ,yjust=0
+)
+par(xpd=F)
+
+par("lend" = 0)
+dev.off()
+
+
+setEPS()
+postscript('SensitivityPlot_VarianceOfMin.eps', height=6, width=6)
+par("lend" = 2)
+par(mar=c(4,8,4,2))
+
+plot(NA,NA
+     ,xlim=c(0,1)
+     ,ylim = c(0.5,9.5)
+     ,xlab="Sensitivity"
+     ,ylab=''
+     ,yaxt='n'
+)
+colsSens <- grey.colors(ncol(dataParams)/2,start=0,end=0.75)
+for(i in ind_use){
+  
+  for(j in 1:4){
+    lines(c(ifelse(j==1,0,sum(min_var_fracs[i,1:(j-1)])),ifelse(j==1,min_var_fracs[i,1],sum(min_var_fracs[i,1:j])))
+          ,rep(ifelse(i > 3,i-1,i),2)-0.3
+          ,col=colsSens[j]
+          ,lwd=3)
+  }
+  par(xpd=T)
+  text(x=-0.05
+       ,y=ifelse(i>3,i-1,i)
+       ,points$names[i]
+       ,col="black"
+       ,adj=1)
+  par(xpd=F)
+  
+  #Add dashed lines separating each place:
+  if(i < ind_use[length(ind_use)]){
+    lines(c(-2,2), c(ifelse(i > 3, i - 0.5, i + 0.5), ifelse(i > 3, i - 0.5, i + 0.5)), lty = 2)
+  }
+}
+
+for(i in ind_use){
+  
+  for(j in 1:4){
+    lines(c(ifelse(j==1,0,sum(avg_var_fracs[i,1:(j-1)])),ifelse(j==1,avg_var_fracs[i,1],sum(avg_var_fracs[i,1:j])))
+          ,rep(ifelse(i > 3,i-1,i),2)+0.3
+          ,col=colsSens[j]
+          ,lwd=3)
+  }
+}
+
+for(i in ind_use){
+  
+  for(j in 1:4){
+    lines(c(ifelse(j==1,0,sum(avg_var_fracs_ls[i,1:(j-1)])),ifelse(j==1,avg_var_fracs_ls[i,1],sum(avg_var_fracs_ls[i,1:j])))
+          ,rep(ifelse(i > 3,i-1,i),2)
+          ,col=colsSens[j]
+          ,lwd=3)
+  }
+}
+
+par(xpd=T)
+legend(x=0.5,y=10
+       ,lwd=3
+       ,col=colsSens
+       ,c("Thermal","Reservoir","Seismic","Utilization")
+       ,ncol=2
+       ,xjust=0.5
+       ,yjust=0
+)
+legend(x=-0.3,y=9.3
+       ,title = 'Line Order'
+       ,lwd=3
+       ,col=colsSens[1]
+       ,c(expression(FM[avg]), expression(FM[gm]), expression(FM[min]))
+       ,xjust=0.5
+       ,yjust=0
+)
+par(xpd=F)
+
+par("lend" = 0)
+dev.off()
+
+#tiff('SensitivityPlot_ProbabilityVsVarianceOfMin.tiff', res = 300, units = 'in', width = 6, height = 6)
+setEPS()
+postscript('SensitivityPlot_ProbabilityVsVarianceOfMin.eps', height=6, width=6)
+par("lend" = 2)
+par(mar=c(4,8,4,2))
+
+plot(NA,NA
+     ,xlim=c(0,1)
+     ,ylim = c(0.5,9.5)
+     ,xlab="Sensitivity"
+     ,ylab=''
+     ,yaxt='n'
+)
+colsSens <- grey.colors(ncol(dataParams)/2,start=0,end=0.75)
+for(i in ind_use){
+  
+  for(j in 1:4){
+    lines(c(ifelse(j==1,0,sum(min_var_fracs[i,1:(j-1)])),ifelse(j==1,min_var_fracs[i,1],sum(min_var_fracs[i,1:j])))
+          ,rep(ifelse(i > 3,i-1,i),2)-0.3
+          ,col=colsSens[j]
+          ,lwd=3)
+  }
+  par(xpd=T)
+  text(x=-0.05
+       ,y=ifelse(i>3,i-1,i)
+       ,points$names[i]
+       ,col="black"
+       ,adj=1)
+  par(xpd=F)
+  
+  #Add dashed lines separating each place:
+  if(i < ind_use[length(ind_use)]){
+    lines(c(-2,2), c(ifelse(i > 3, i - 0.5, i + 0.5), ifelse(i > 3, i - 0.5, i + 0.5)), lty = 2)
+  }
+}
+
+for(i in ind_use){
+  
+  for(j in 1:4){
+    lines(c(ifelse(j==1,0,sum(calcd_freq_min[i,1:(j-1)])),ifelse(j==1,calcd_freq_min[i,1],sum(calcd_freq_min[i,1:j])))
+          ,rep(ifelse(i > 3,i-1,i),2) + 0.3
+          ,col=colsSens[j]
+          ,lwd=3)
+  }
+  par(xpd=T)
+  text(x=-0.05
+       ,y=ifelse(i>3,i-1,i)
+       ,points$names[i]
+       ,col="black"
+       ,adj=1)
+  par(xpd=F)
+}
+
+par(xpd=T)
+legend(x=0.5,y=10
+       ,lwd=3
+       ,col=colsSens
+       ,c("Thermal","Reservoir","Seismic","Utilization")
+       ,ncol=2
+       ,xjust=0.5
+       ,yjust=0
+)
+legend(x=-0.3,y=9.3
+       ,title = 'Line Order'
+       ,lwd=3
+       ,col=colsSens[1]
+       ,c(expression(p ~ FM[min]), expression(var ~ FM[min]))
        ,xjust=0.5
        ,yjust=0
 )
@@ -17073,6 +17278,13 @@ for(i in 1:length(ind_use)){
   points(min(res_mean,therm_mean,seis_mean,util_mean),i-1+dshift1+dshift2
          ,pch=4
          ,col='black'
+         ,cex=1.5
+  )
+  
+  #Approximate mean of minimums using analytical distributions
+  points(SiteMeansApprox[ind_use[i]],i-1+dshift1+dshift2
+         ,pch=4
+         ,col='blue'
          ,cex=1.5
   )
   
