@@ -137,6 +137,7 @@ source('makeMap.R')
 source('saveRast.R')
 source('plotWeightBuf.R')
 source('rw_functions_lb.R') #Weibull and beta dists. Note that the new functions have not been added to all variables yet.
+source('pmin_inds.R') #Testing the frequency of the minimum
 
 #### Set Thresholds ####
 # Reservoirs
@@ -3888,6 +3889,12 @@ for(i in ind_use){
 } #Note that a warning message will pop up when Utilization is 0 (not fit by Weibull)
 rm(params, ps)
 
+#All RFs - may need to change the reservoir and theremal here.
+minRe <- rep(0,length(ind_use))
+minTh <- rep(0,length(ind_use))
+minSe <- rep(0,length(ind_use))
+minUt <- rep(0,length(ind_use))
+
 # loop for Monte Carlo
 right = Inf #Set to Inf for non-truncated Weibull plots
 seis = TRUE #Set to TRUE for doubly truncated normal condition
@@ -4027,21 +4034,25 @@ for(i in 1:length(ind_use)){
   distsmin[,i] <- apply(cbind(mat_mc[,1],mat_mc[,2],0.5*mat_mc[,3]+0.5*mat_mc[,4],mat_mc[,5]),1,min)
   
   #Fraction of time each RF is the minimum for each city
+  temp_AvgSeis = (mat_mc[,3]+mat_mc[,4])/2
+  temp_mat_mc = cbind(mat_mc[,1:2], temp_AvgSeis, mat_mc[,5])
   for(j in 1:rps){
-    if(distsmin[j,i] == mat_mc[j,1]){
-      minRe[i] <- minRe[i] + 1
+    Inds = which(temp_mat_mc[j,] == distsmin[j,i])
+    add = 1/length(Inds)
+    if(any(Inds == 1)){
+      minRe[i] <- minRe[i] + add
     }
-    if(distsmin[j,i] == mat_mc[j,2]){
-      minTh[i] <- minTh[i] + 1
+    if(any(Inds == 2)){
+      minTh[i] <- minTh[i] + add
     }
-    if(distsmin[j,i] == 0.5*(mat_mc[j,3]+mat_mc[j,4])){
-      minSe[i] <- minSe[i] + 1
+    if(any(Inds == 3)){
+      minSe[i] <- minSe[i] + add
     }
-    if(distsmin[j,i] == mat_mc[j,5]){
-      minUt[i] <- minUt[i] + 1
+    if(any(Inds == 4)){
+      minUt[i] <- minUt[i] + add
     }
   }
-  rm(j)
+  rm(j, temp_AvgSeis, temp_mat_mc, Inds, add)
   
   #for(j in 1:rps){
   #  if(distsmin_g[j,i] == mat_mc[j,1]){
@@ -4087,7 +4098,7 @@ for(i in 1:length(ind_use)){
   #     ,res=600
   # )
   setEPS()
-  postscript(paste(name,i,'.eps',sep=''), height = 6, width = 6)
+  postscript(paste(name,i,'test_.eps',sep=''), height = 6, width = 6)
   
   par(mfrow=c(2,2)
       ,oma=c(0.5,0.5,0.5,0.5)+0.1
@@ -4488,6 +4499,145 @@ for(i in 1:length(ind_use)){
   # dev.off()
 }
 rm(rand, pfm5, i)
+
+#Minimum MC Matrix
+MinMat = rbind(minTh, minRe, minSe, minUt)
+MinFrac = MinMat/rps
+
+####Testing the numerical integration for the minimum:####
+calcd_freq_min <- matrix(0,nrow=nrow(dataParams),ncol=ncol(dataParams)/2)
+
+for(i in 1:nrow(dataParams)){
+  calcd_freq_min[i,] <- freqMin_SpecialSeis(x=seq(0.0001,5,0.0001)
+                                            ,params=dataParams[i,]
+                                            ,lb=lb_mat[i,]
+                                            ,ub=ub_mat[i,])
+  
+}
+
+round(MinFrac, 3)
+round(t(calcd_freq_min), 3)
+
+#Check sum to 1
+apply(t(calcd_freq_min), 2, FUN = sum)
+
+####Testing Plot of Variance Contribution to FMs####
+# calcuations for fraction of variance for average
+avg_var_fracs <- matrix(0,nrow(dataParams),ncol(dataParams)/2)
+avg_var_fracs[,1] <- points$th_pfa_var5*(0.25^2)/(points$co_pfa_sd5_avg_rfc^2)
+avg_var_fracs[,2] <- points$re_pfa_var5_rfc*(0.25^2)/(points$co_pfa_sd5_avg_rfc^2)
+avg_var_fracs[,3] <- points$se_pfa_var5*(0.25^2)/(points$co_pfa_sd5_avg_rfc^2)
+avg_var_fracs[,4] <- points$util_pfa_var5*(0.25^2)/(points$co_pfa_sd5_avg_rfc^2)
+
+# calculations for fraction of variance for geometric mean (log space, problems with division by 0 in real-space)
+# JDS: I think it's fixed for log space.
+# JDS: Divided by square of mean in denominator to get log space total variance. 
+avg_var_fracs_ls <- matrix(0,nrow(dataParams),ncol(dataParams)/2)
+avg_var_fracs_ls[,1] <- points$th_pfa_var5_ls*(0.25^2)/((points$co_pfa_sd5_geomean_rfc^2)/(points$co_5_0_625_p_rfc^2))
+avg_var_fracs_ls[,2] <- points$re_pfa_var5_rfc_ls*(0.25^2)/((points$co_pfa_sd5_geomean_rfc^2)/(points$co_5_0_625_p_rfc^2))
+avg_var_fracs_ls[,3] <- points$se_pfa_var5_ls*(0.25^2)/((points$co_pfa_sd5_geomean_rfc^2)/(points$co_5_0_625_p_rfc^2))
+avg_var_fracs_ls[,4] <- points$util_pfa_var5_ls*(0.25^2)/((points$co_pfa_sd5_geomean_rfc^2)/(points$co_5_0_625_p_rfc^2))
+
+# Any site with NaN values is a divide by 0. 
+# Find the factors that are 0 with no uncertainty and give them a sensitivity value of 1.0, 0 to all other factors.
+IndNaN = which(is.nan(avg_var_fracs_ls[,1]) == TRUE)
+
+for (i in IndNaN){
+  Ind0Var = which(c(points$th_pfa_var5_ls[i], points$re_pfa_var5_rfc_ls[i], points$se_pfa_var5_ls[i], points$util_pfa_var5_ls[i]) == 0)
+  Ind0Mean = which(c(points$thermal[i], points$reservoir_rfc[i], points$seismic[i], points$utilization[i]) == 0) 
+  
+  if(length(Ind0Mean) > length(Ind0Var)){
+    IndTake = Ind0Mean[which(Ind0Var == Ind0Mean)]
+    avg_var_fracs_ls[i, IndTake] = 1/length(IndTake) #accounts for multiple variables each having 0 mean with 0 uncertainty.
+    avg_var_fracs_ls[i, -IndTake] = 0
+  }else{
+    IndTake = Ind0Var[which(Ind0Var == Ind0Mean)]
+    avg_var_fracs_ls[i, IndTake] = 1/length(IndTake)
+    avg_var_fracs_ls[i, -IndTake] = 0
+  }
+}
+rm(IndTake, Ind0Mean, Ind0Var, i, IndNaN)
+
+# plotting indices for probability of minimum and average
+#png('SensitivityPlot.png', res = 300, units = 'in', width = 6, height = 6)
+
+setEPS()
+postscript('SensitivityPlot.eps', height=6, width=6)
+par("lend" = 2)
+par(mar=c(4,8,4,2))
+
+plot(NA,NA
+     ,xlim=c(0,1)
+     ,ylim = c(0.5,9.5)
+     ,xlab="Sensitivity"
+     ,ylab=''
+     ,yaxt='n'
+)
+colsSens <- grey.colors(ncol(dataParams)/2,start=0,end=0.85)
+for(i in ind_use){
+  
+  for(j in 1:4){
+    lines(c(ifelse(j==1,0,sum(calcd_freq_min[i,1:(j-1)])),ifelse(j==1,calcd_freq_min[i,1],sum(calcd_freq_min[i,1:j])))
+          ,rep(ifelse(i > 3,i-1,i),2)-0.3
+          ,col=colsSens[j]
+          ,lwd=3)
+  }
+  par(xpd=T)
+  text(x=-0.05
+       ,y=ifelse(i>3,i-1,i)
+       ,points$names[i]
+       ,col="black"
+       ,adj=1)
+  par(xpd=F)
+  
+  #Add dashed lines separating each place:
+  if(i < ind_use[length(ind_use)]){
+    lines(c(-2,2), c(ifelse(i > 3, i - 0.5, i + 0.5), ifelse(i > 3, i - 0.5, i + 0.5)), lty = 2)
+  }
+}
+
+for(i in ind_use){
+  
+  for(j in 1:4){
+    lines(c(ifelse(j==1,0,sum(avg_var_fracs[i,1:(j-1)])),ifelse(j==1,avg_var_fracs[i,1],sum(avg_var_fracs[i,1:j])))
+          ,rep(ifelse(i > 3,i-1,i),2)+0.3
+          ,col=colsSens[j]
+          ,lwd=3)
+  }
+}
+
+for(i in ind_use){
+  
+  for(j in 1:4){
+    lines(c(ifelse(j==1,0,sum(avg_var_fracs_ls[i,1:(j-1)])),ifelse(j==1,avg_var_fracs_ls[i,1],sum(avg_var_fracs_ls[i,1:j])))
+          ,rep(ifelse(i > 3,i-1,i),2)
+          ,col=colsSens[j]
+          ,lwd=3)
+  }
+}
+
+par(xpd=T)
+legend(x=0.5,y=10
+       ,lwd=3
+       ,col=colsSens
+       ,c("Thermal","Reservoir","Seismic","Utilization")
+       ,ncol=2
+       ,xjust=0.5
+       ,yjust=0
+)
+legend(x=-0.3,y=9.3
+       ,title = 'Line Order'
+       ,lwd=3
+       ,col=colsSens[1]
+       ,c(expression(FM[avg]), expression(FM[gm]), expression(FM[min]))
+       ,xjust=0.5
+       ,yjust=0
+)
+par(xpd=F)
+
+par("lend" = 0)
+dev.off()
+
 
 # making boxplot
 cols <- c(brewer.pal(9,'Set1'))
@@ -6146,7 +6296,7 @@ for(i in 1:length(ind_use)){
   
   setwd(wd_image)
   par(xpd=T)
-  png(paste('scdist',i,'.png',sep='')
+  png(paste('scdist_test',i,'.png',sep='')
       ,height=6
       ,width=6
       ,units='in'
@@ -17791,6 +17941,11 @@ dev.off()
 cor(extract_pts3$co_p_5[inds_gtr0]^.25, extract_pts3$co_s_5[inds_gtr0]/4)
 cor(extract_pts3$co_p_5[inds_gtr0]^.25, extract_pts3$co_m_5[inds_gtr0])
 cor(extract_pts3$co_m_5[inds_gtr0], extract_pts3$co_s_5[inds_gtr0]/4)
+
+#Spearman Rank Correlation
+cor(extract_pts3$co_p_5[inds_gtr0]^.25, extract_pts3$co_s_5[inds_gtr0]/4, method = 'spearman')
+cor(extract_pts3$co_p_5[inds_gtr0]^.25, extract_pts3$co_m_5[inds_gtr0], method = 'spearman')
+cor(extract_pts3$co_m_5[inds_gtr0], extract_pts3$co_s_5[inds_gtr0]/4, method = 'spearman')
 
 
 #All 3 Together
